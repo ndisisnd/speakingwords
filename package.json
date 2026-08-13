@@ -16,7 +16,8 @@
     "install.sh"
   ],
   "scripts": {
-    "eval:p2": "node evals/run_p2.js"
+    "eval:p2": "node evals/run_p2.js",
+    "eval:p3": "python3 evals/run_p3.py"
   },
   "keywords": [
     "claude-code",

@@ -3,14 +3,16 @@
 
 // speakingwords CLI — thin dispatcher.
 //
-// Phase 2 ships `init` (memory mode only) and `version`. `status`, `update`
-// and `unhook`/`unset` are declared here so the command surface is stable, but
-// they exit 1 until their phase lands. No runtime dependencies anywhere.
+// Phase 2 ships `init` in memory mode; phase 3 adds hook mode for Claude Code.
+// `status`, `update` and `unhook`/`unset` are declared here so the command
+// surface is stable, but they exit 1 until their phase lands. No runtime
+// dependencies anywhere.
 
 const fs = require('node:fs');
 const path = require('node:path');
 
 const adapters = require('../lib/adapters');
+const hooks = require('../lib/hooks');
 const memory = require('../lib/memory');
 const pref = require('../lib/pref');
 const prompts = require('../lib/prompts');
@@ -32,9 +34,9 @@ Usage
 
 init flags (skip the questions, for scripts and CI)
   --memory                       memory mode: write rules into the memory file
-  --hook                         hook mode                        (phase 3 / 4)
+  --hook                         hook mode: lint every reply     (Claude Code)
   --agent claude|codex|both      which agent to install for
-  --scope local|global           project memory file, or the home one
+  --scope local|global           this project only, or everywhere
   --voice terse|convo            point form only, or prose retained
   -h, --help                     this text
 
@@ -107,20 +109,6 @@ async function cmdInit(flags) {
     ], 'memory');
   }
 
-  if (mode === 'hook') {
-    process.stderr.write(
-      [
-        'Hook mode is not installed yet.',
-        '',
-        'It lands in phase 3 for Claude Code (Stop hook in settings.json) and phase 4',
-        'for Codex CLI (hooks.json, plus the notify audit fallback on older versions).',
-        'Until then, run `speakingwords init --memory` for the suggestive install.',
-        '',
-      ].join('\n')
-    );
-    process.exit(1);
-  }
-
   // --- Question 2: agent + scope, collapsed into one question to stay at 3 ---
   const detected = adapters.detectAgents();
   let agentSel = oneOf('agent', flags.agent, ['claude', 'codex', 'both']);
@@ -138,9 +126,13 @@ async function cmdInit(flags) {
     const candidates = detected.length === 2 ? ['claude', 'codex', 'both'] : detected;
     for (const candidate of candidates) {
       for (const candidateScope of ['local', 'global']) {
-        const targets = agentsFor(candidate)
-          .map((id) => adapters.memoryTarget(id, candidateScope, cwd))
-          .join(' + ');
+        const targets = mode === 'hook'
+          ? (candidate === 'claude'
+            ? hooks.settingsPath(candidateScope, cwd)
+            : 'Codex hook wiring lands in phase 4')
+          : agentsFor(candidate)
+            .map((id) => adapters.memoryTarget(id, candidateScope, cwd))
+            .join(' + ');
         const name = candidate === 'both'
           ? 'Both agents'
           : adapters.getAdapter(candidate).label;
@@ -173,6 +165,26 @@ async function cmdInit(flags) {
 
   // --- Write ---
   const agentIds = agentsFor(agentSel);
+
+  if (mode === 'hook') {
+    // Codex hook wiring (hooks.json, trust step, notify fallback) is phase 4.
+    // Refuse loudly rather than half-install across two agents.
+    if (agentIds.includes('codex')) {
+      process.stderr.write(
+        [
+          'Hook mode is Claude Code only for now.',
+          '',
+          'The Codex adapter (hooks.json wiring, the trust step, and the notify audit',
+          'fallback on versions below v0.124.0) lands in phase 4.',
+          'Run `speakingwords init --hook --agent claude`, or use --memory for Codex.',
+          '',
+        ].join('\n')
+      );
+      process.exit(1);
+    }
+    return installHookMode({ scope, voice, version, cwd });
+  }
+
   const block = memory.renderBlock({ voice, version });
   const results = agentIds.map((id) =>
     memory.writeBlock(adapters.memoryTarget(id, scope, cwd), block)
@@ -192,6 +204,30 @@ async function cmdInit(flags) {
   lines.push('');
   lines.push('  Memory mode is suggestive, not enforced — the agent can still drift.');
   lines.push('  Hook mode enforces the same rules on every reply (phase 3).');
+  lines.push('');
+  process.stdout.write(lines.join('\n'));
+}
+
+// Hook mode installs two things and nothing else: the skill core at the
+// installed root, and one Stop-hook entry in settings.json. No memory block is
+// written — hook mode enforces the rules, so restating them as suggestions in
+// CLAUDE.md would only duplicate the contract in a second place.
+function installHookMode({ scope, voice, version, cwd }) {
+  const { skillRoot } = hooks.installSkillCore('claude');
+  const result = hooks.installClaudeHook({ scope, cwd, skillRoot });
+  const prefFile = pref.writePref({ agents: ['claude'], mode: 'hook', scope, voice, version });
+
+  const lines = ['', `speakingwords ${version} installed — hook mode, ${voice} voice.`, ''];
+  lines.push(`  hook entry   ${result.path}`);
+  lines.push(`               Stop → ${result.command}`);
+  lines.push(`  skill root   ${skillRoot}`);
+  lines.push(`  preferences  ${prefFile}`);
+  lines.push('');
+  lines.push('  Every reply is linted when the agent finishes. A clean reply passes silently;');
+  lines.push('  a violating one is bounced once, rewritten against the voice contract, and');
+  lines.push('  logged to hits.jsonl. One bounce maximum — the second pass never blocks.');
+  lines.push('');
+  lines.push('  No memory block was written. Hook mode enforces the rules directly.');
   lines.push('');
   process.stdout.write(lines.join('\n'));
 }

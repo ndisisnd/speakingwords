@@ -255,22 +255,26 @@ function evalCli() {
     fs.rmSync(project, { recursive: true, force: true });
   }
 
-  // Hook mode must refuse loudly rather than half-install.
+  // Hook mode on an agent that has no wiring yet must refuse loudly rather
+  // than half-install. Claude hook mode landed in phase 3 (see run_p3.py);
+  // Codex hook wiring is still phase 4.
   const home = mkTemp('home');
   const project = mkTemp('project');
   fs.mkdirSync(path.join(home, '.claude'), { recursive: true });
+  fs.mkdirSync(path.join(home, '.codex'), { recursive: true });
   let hookCode = 0;
   let hookErr = '';
   try {
-    runInit(home, project, ['--hook', '--agent', 'claude', '--scope', 'local', '--voice', 'terse']);
+    runInit(home, project, ['--hook', '--agent', 'codex', '--scope', 'local', '--voice', 'terse']);
   } catch (err) {
     hookCode = err.status;
     hookErr = String(err.stderr || '');
   }
-  check('P2', 'hook mode exits 1 and says which phase installs it',
-    hookCode === 1 && /phase 3/.test(hookErr));
-  check('P2', 'hook mode wrote nothing',
-    !fs.existsSync(path.join(project, 'CLAUDE.local.md')));
+  check('P2', 'codex hook mode exits 1 and says which phase installs it',
+    hookCode === 1 && /phase 4/.test(hookErr));
+  check('P2', 'refused hook mode wrote nothing',
+    !fs.existsSync(path.join(project, 'CLAUDE.local.md'))
+    && !fs.existsSync(path.join(project, '.claude', 'settings.json')));
   fs.rmSync(home, { recursive: true, force: true });
   fs.rmSync(project, { recursive: true, force: true });
 }
