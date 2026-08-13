@@ -1,0 +1,1 @@
+The tile grid assumes a perfect square, which is why 12 items render with a gap.

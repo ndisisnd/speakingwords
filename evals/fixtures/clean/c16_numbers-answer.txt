@@ -1,0 +1,1 @@
+The p95 dropped from 420 ms to 88 ms after the index was added.

@@ -1,0 +1,1 @@
+Jobs retry three times with a 2s backoff, then move to the dead-letter table.

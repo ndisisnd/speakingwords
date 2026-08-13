@@ -1,0 +1,3 @@
+Landed the parser change.
+
+Sweep of the remaining call sites found four that still pass the old options object.

@@ -1,0 +1,1 @@
+The users table owns `email`. The profiles table joins on `user_id` and has no email column.

@@ -1,0 +1,8 @@
+## What changed
+
+- Retry budget is now five attempts.
+- Backoff starts at 2s.
+
+## What did not
+
+- The dead-letter path is untouched.

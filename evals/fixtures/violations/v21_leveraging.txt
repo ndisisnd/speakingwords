@@ -1,0 +1,1 @@
+By leveraging the index on created_at the query drops from two seconds to forty milliseconds.

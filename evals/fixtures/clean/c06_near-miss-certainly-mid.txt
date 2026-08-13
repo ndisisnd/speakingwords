@@ -1,0 +1,1 @@
+It is certainly true that the second query is slower, but it runs once per hour.

@@ -1,0 +1,1 @@
+I will delve into the authentication middleware and report back on the session handling.

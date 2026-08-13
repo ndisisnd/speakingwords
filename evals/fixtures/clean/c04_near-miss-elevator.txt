@@ -1,0 +1,3 @@
+The elevator pitch for this change: one fewer round trip per page load.
+
+Elevation data is unaffected.

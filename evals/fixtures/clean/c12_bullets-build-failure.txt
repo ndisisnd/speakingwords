@@ -1,0 +1,3 @@
+- Build fails on a stale lockfile.
+- The dep was added without reinstalling.
+- Run `npm install`, then rebuild.

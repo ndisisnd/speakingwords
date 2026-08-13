@@ -1,0 +1,1 @@
+Before delving into the details, note that the endpoint is versioned under /v2.

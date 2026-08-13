@@ -1,0 +1,707 @@
+The plane landed safely, so the incident report only covers the delayed takeoff.
+
+Nothing in the flight log points at the scheduler.
+
+We swept the floor of the test directory and removed two stale snapshots.
+
+Both were written by a runner that no longer exists.
+
+That is a great pointer to the right file. The handler is defined at line 214 and re-exported from the index.
+
+The elevator pitch for this change: one fewer round trip per page load.
+
+Elevation data is unaffected.
+
+The tile grid assumes a perfect square, which is why 12 items render with a gap.
+
+It is certainly true that the second query is slower, but it runs once per hour.
+
+The header is absolutely required by the upstream service, so removing it breaks auth.
+
+The dive team logged four hours of footage, and the encoder handled it without dropping frames.
+
+The report reaches a conclusion I disagree with, mostly because it ignores the retry cost.
+
+Sweet spot for the batch size is 500 rows.
+
+Below that the overhead dominates and above it the memory ceiling hits.
+
+The timeout is 30 seconds.
+
+It is set in `config/http.json` and applies per request, not per connection.
+
+- Build fails on a stale lockfile.
+- The dep was added without reinstalling.
+- Run `npm install`, then rebuild.
+
+Use the second form:
+
+```js
+const rows = await db.query(sql, [id]);
+```
+
+The first form interpolates the id into the string.
+
+Yes. The value is cached for the life of the process.
+
+The loader lives at `src/boot/loader.ts` and is imported once from `src/index.ts`.
+
+The p95 dropped from 420 ms to 88 ms after the index was added.
+
+Two options:
+
+- Queue the writes and flush every second.
+- Write through and accept the extra round trip.
+
+The queue is cheaper at this volume.
+
+I cannot run the deploy from here. The command is `make deploy staging` and it needs the ops role.
+
+I had the wrong file. The POST route is in `routes/upload.js`.
+
+| Env | Timeout |
+|-----|---------|
+| dev | 60s |
+| prod | 30s |
+
+Prod is the one that matters here.
+
+The socket closes after thirty seconds without a ping.
+
+Set `pingInterval` to 10000 and the connection stays open.
+
+Only the worker reads that env var. The API ignores it entirely.
+
+The migration backfilled 412 rows and took nine seconds on staging.
+
+Production has 1.2 million rows, so plan for roughly four minutes.
+
+Twelve tests are skipped. Nine reference a fixture that was deleted in March.
+
+The flag is read once at boot. Changing it at runtime has no effect until a restart.
+
+Node 18 fails because `fetch` is behind a flag there. Node 20 works with no changes.
+
+The endpoint is versioned under `/v2`. The `/v1` handler still exists but returns a 410.
+
+The cache key includes the locale. Two users in different regions get different entries.
+
+Jobs retry three times with a 2s backoff, then move to the dead-letter table.
+
+The token expires after fifteen minutes. The refresh call fires at twelve minutes.
+
+Debug logging on the payment path is off in production. Turn it on with `LOG_LEVEL=debug`.
+
+The users table owns `email`. The profiles table joins on `user_id` and has no email column.
+
+The reducer runs before the middleware, so the state you read is one tick behind.
+
+Memory sits at eighty percent under current load. The importer is the largest consumer.
+
+Adding an index on `created_at` is enough. The composite index is not needed for this query.
+
+Rolling back is safe. The migration is additive and the old code ignores the new column.
+
+The cron entry runs at 03:00 UTC daily. It is defined in `deploy/cron.yaml`.
+
+The crash is a null dereference in the decoder when the frame header is truncated.
+
+Batch size 500 is the sweet spot. Below that the per-call overhead dominates.
+
+Streaming cuts time-to-first-byte from 1.8s to 200 ms. Total time is unchanged.
+
+- `lib/parse.ts` no longer mutates its input.
+- `lib/emit.ts` is unchanged.
+- One test was renamed.
+
+Risks:
+
+- The backfill locks the table for about four minutes.
+- Reads are unaffected.
+
+## What changed
+
+- Retry budget is now five attempts.
+- Backoff starts at 2s.
+
+## What did not
+
+- The dead-letter path is untouched.
+
+Which environment do you mean? The staging and production configs differ on the pool size.
+
+I am not sure. The log line is truncated, so the failing call is not identifiable from it.
+
+Write-through costs an extra round trip per write. Queuing risks losing up to one second of data.
+
+The header is stripped by the proxy before it reaches the app, so the app never sees it.
+
+Pin the engine field to `>=20`. That turns the Node 18 failure into an install-time error.
+
+Four call sites still pass the old options object. They are listed in `docs/callsites.md`.
+
+Six files moved and two were deleted. No behaviour changed outside the importer.
+
+The plane landed safely, so the incident report only covers the delayed takeoff.
+
+Nothing in the flight log points at the scheduler.
+
+We swept the floor of the test directory and removed two stale snapshots.
+
+Both were written by a runner that no longer exists.
+
+That is a great pointer to the right file. The handler is defined at line 214 and re-exported from the index.
+
+The elevator pitch for this change: one fewer round trip per page load.
+
+Elevation data is unaffected.
+
+The tile grid assumes a perfect square, which is why 12 items render with a gap.
+
+It is certainly true that the second query is slower, but it runs once per hour.
+
+The header is absolutely required by the upstream service, so removing it breaks auth.
+
+The dive team logged four hours of footage, and the encoder handled it without dropping frames.
+
+The report reaches a conclusion I disagree with, mostly because it ignores the retry cost.
+
+Sweet spot for the batch size is 500 rows.
+
+Below that the overhead dominates and above it the memory ceiling hits.
+
+The timeout is 30 seconds.
+
+It is set in `config/http.json` and applies per request, not per connection.
+
+- Build fails on a stale lockfile.
+- The dep was added without reinstalling.
+- Run `npm install`, then rebuild.
+
+Use the second form:
+
+```js
+const rows = await db.query(sql, [id]);
+```
+
+The first form interpolates the id into the string.
+
+Yes. The value is cached for the life of the process.
+
+The loader lives at `src/boot/loader.ts` and is imported once from `src/index.ts`.
+
+The p95 dropped from 420 ms to 88 ms after the index was added.
+
+Two options:
+
+- Queue the writes and flush every second.
+- Write through and accept the extra round trip.
+
+The queue is cheaper at this volume.
+
+I cannot run the deploy from here. The command is `make deploy staging` and it needs the ops role.
+
+I had the wrong file. The POST route is in `routes/upload.js`.
+
+| Env | Timeout |
+|-----|---------|
+| dev | 60s |
+| prod | 30s |
+
+Prod is the one that matters here.
+
+The socket closes after thirty seconds without a ping.
+
+Set `pingInterval` to 10000 and the connection stays open.
+
+Only the worker reads that env var. The API ignores it entirely.
+
+The migration backfilled 412 rows and took nine seconds on staging.
+
+Production has 1.2 million rows, so plan for roughly four minutes.
+
+Twelve tests are skipped. Nine reference a fixture that was deleted in March.
+
+The flag is read once at boot. Changing it at runtime has no effect until a restart.
+
+Node 18 fails because `fetch` is behind a flag there. Node 20 works with no changes.
+
+The endpoint is versioned under `/v2`. The `/v1` handler still exists but returns a 410.
+
+The cache key includes the locale. Two users in different regions get different entries.
+
+Jobs retry three times with a 2s backoff, then move to the dead-letter table.
+
+The token expires after fifteen minutes. The refresh call fires at twelve minutes.
+
+Debug logging on the payment path is off in production. Turn it on with `LOG_LEVEL=debug`.
+
+The users table owns `email`. The profiles table joins on `user_id` and has no email column.
+
+The reducer runs before the middleware, so the state you read is one tick behind.
+
+Memory sits at eighty percent under current load. The importer is the largest consumer.
+
+Adding an index on `created_at` is enough. The composite index is not needed for this query.
+
+Rolling back is safe. The migration is additive and the old code ignores the new column.
+
+The cron entry runs at 03:00 UTC daily. It is defined in `deploy/cron.yaml`.
+
+The crash is a null dereference in the decoder when the frame header is truncated.
+
+Batch size 500 is the sweet spot. Below that the per-call overhead dominates.
+
+Streaming cuts time-to-first-byte from 1.8s to 200 ms. Total time is unchanged.
+
+- `lib/parse.ts` no longer mutates its input.
+- `lib/emit.ts` is unchanged.
+- One test was renamed.
+
+Risks:
+
+- The backfill locks the table for about four minutes.
+- Reads are unaffected.
+
+## What changed
+
+- Retry budget is now five attempts.
+- Backoff starts at 2s.
+
+## What did not
+
+- The dead-letter path is untouched.
+
+Which environment do you mean? The staging and production configs differ on the pool size.
+
+I am not sure. The log line is truncated, so the failing call is not identifiable from it.
+
+Write-through costs an extra round trip per write. Queuing risks losing up to one second of data.
+
+The header is stripped by the proxy before it reaches the app, so the app never sees it.
+
+Pin the engine field to `>=20`. That turns the Node 18 failure into an install-time error.
+
+Four call sites still pass the old options object. They are listed in `docs/callsites.md`.
+
+Six files moved and two were deleted. No behaviour changed outside the importer.
+
+The plane landed safely, so the incident report only covers the delayed takeoff.
+
+Nothing in the flight log points at the scheduler.
+
+We swept the floor of the test directory and removed two stale snapshots.
+
+Both were written by a runner that no longer exists.
+
+That is a great pointer to the right file. The handler is defined at line 214 and re-exported from the index.
+
+The elevator pitch for this change: one fewer round trip per page load.
+
+Elevation data is unaffected.
+
+The tile grid assumes a perfect square, which is why 12 items render with a gap.
+
+It is certainly true that the second query is slower, but it runs once per hour.
+
+The header is absolutely required by the upstream service, so removing it breaks auth.
+
+The dive team logged four hours of footage, and the encoder handled it without dropping frames.
+
+The report reaches a conclusion I disagree with, mostly because it ignores the retry cost.
+
+Sweet spot for the batch size is 500 rows.
+
+Below that the overhead dominates and above it the memory ceiling hits.
+
+The timeout is 30 seconds.
+
+It is set in `config/http.json` and applies per request, not per connection.
+
+- Build fails on a stale lockfile.
+- The dep was added without reinstalling.
+- Run `npm install`, then rebuild.
+
+Use the second form:
+
+```js
+const rows = await db.query(sql, [id]);
+```
+
+The first form interpolates the id into the string.
+
+Yes. The value is cached for the life of the process.
+
+The loader lives at `src/boot/loader.ts` and is imported once from `src/index.ts`.
+
+The p95 dropped from 420 ms to 88 ms after the index was added.
+
+Two options:
+
+- Queue the writes and flush every second.
+- Write through and accept the extra round trip.
+
+The queue is cheaper at this volume.
+
+I cannot run the deploy from here. The command is `make deploy staging` and it needs the ops role.
+
+I had the wrong file. The POST route is in `routes/upload.js`.
+
+| Env | Timeout |
+|-----|---------|
+| dev | 60s |
+| prod | 30s |
+
+Prod is the one that matters here.
+
+The socket closes after thirty seconds without a ping.
+
+Set `pingInterval` to 10000 and the connection stays open.
+
+Only the worker reads that env var. The API ignores it entirely.
+
+The migration backfilled 412 rows and took nine seconds on staging.
+
+Production has 1.2 million rows, so plan for roughly four minutes.
+
+Twelve tests are skipped. Nine reference a fixture that was deleted in March.
+
+The flag is read once at boot. Changing it at runtime has no effect until a restart.
+
+Node 18 fails because `fetch` is behind a flag there. Node 20 works with no changes.
+
+The endpoint is versioned under `/v2`. The `/v1` handler still exists but returns a 410.
+
+The cache key includes the locale. Two users in different regions get different entries.
+
+Jobs retry three times with a 2s backoff, then move to the dead-letter table.
+
+The token expires after fifteen minutes. The refresh call fires at twelve minutes.
+
+Debug logging on the payment path is off in production. Turn it on with `LOG_LEVEL=debug`.
+
+The users table owns `email`. The profiles table joins on `user_id` and has no email column.
+
+The reducer runs before the middleware, so the state you read is one tick behind.
+
+Memory sits at eighty percent under current load. The importer is the largest consumer.
+
+Adding an index on `created_at` is enough. The composite index is not needed for this query.
+
+Rolling back is safe. The migration is additive and the old code ignores the new column.
+
+The cron entry runs at 03:00 UTC daily. It is defined in `deploy/cron.yaml`.
+
+The crash is a null dereference in the decoder when the frame header is truncated.
+
+Batch size 500 is the sweet spot. Below that the per-call overhead dominates.
+
+Streaming cuts time-to-first-byte from 1.8s to 200 ms. Total time is unchanged.
+
+- `lib/parse.ts` no longer mutates its input.
+- `lib/emit.ts` is unchanged.
+- One test was renamed.
+
+Risks:
+
+- The backfill locks the table for about four minutes.
+- Reads are unaffected.
+
+## What changed
+
+- Retry budget is now five attempts.
+- Backoff starts at 2s.
+
+## What did not
+
+- The dead-letter path is untouched.
+
+Which environment do you mean? The staging and production configs differ on the pool size.
+
+I am not sure. The log line is truncated, so the failing call is not identifiable from it.
+
+Write-through costs an extra round trip per write. Queuing risks losing up to one second of data.
+
+The header is stripped by the proxy before it reaches the app, so the app never sees it.
+
+Pin the engine field to `>=20`. That turns the Node 18 failure into an install-time error.
+
+Four call sites still pass the old options object. They are listed in `docs/callsites.md`.
+
+Six files moved and two were deleted. No behaviour changed outside the importer.
+
+The plane landed safely, so the incident report only covers the delayed takeoff.
+
+Nothing in the flight log points at the scheduler.
+
+We swept the floor of the test directory and removed two stale snapshots.
+
+Both were written by a runner that no longer exists.
+
+That is a great pointer to the right file. The handler is defined at line 214 and re-exported from the index.
+
+The elevator pitch for this change: one fewer round trip per page load.
+
+Elevation data is unaffected.
+
+The tile grid assumes a perfect square, which is why 12 items render with a gap.
+
+It is certainly true that the second query is slower, but it runs once per hour.
+
+The header is absolutely required by the upstream service, so removing it breaks auth.
+
+The dive team logged four hours of footage, and the encoder handled it without dropping frames.
+
+The report reaches a conclusion I disagree with, mostly because it ignores the retry cost.
+
+Sweet spot for the batch size is 500 rows.
+
+Below that the overhead dominates and above it the memory ceiling hits.
+
+The timeout is 30 seconds.
+
+It is set in `config/http.json` and applies per request, not per connection.
+
+- Build fails on a stale lockfile.
+- The dep was added without reinstalling.
+- Run `npm install`, then rebuild.
+
+Use the second form:
+
+```js
+const rows = await db.query(sql, [id]);
+```
+
+The first form interpolates the id into the string.
+
+Yes. The value is cached for the life of the process.
+
+The loader lives at `src/boot/loader.ts` and is imported once from `src/index.ts`.
+
+The p95 dropped from 420 ms to 88 ms after the index was added.
+
+Two options:
+
+- Queue the writes and flush every second.
+- Write through and accept the extra round trip.
+
+The queue is cheaper at this volume.
+
+I cannot run the deploy from here. The command is `make deploy staging` and it needs the ops role.
+
+I had the wrong file. The POST route is in `routes/upload.js`.
+
+| Env | Timeout |
+|-----|---------|
+| dev | 60s |
+| prod | 30s |
+
+Prod is the one that matters here.
+
+The socket closes after thirty seconds without a ping.
+
+Set `pingInterval` to 10000 and the connection stays open.
+
+Only the worker reads that env var. The API ignores it entirely.
+
+The migration backfilled 412 rows and took nine seconds on staging.
+
+Production has 1.2 million rows, so plan for roughly four minutes.
+
+Twelve tests are skipped. Nine reference a fixture that was deleted in March.
+
+The flag is read once at boot. Changing it at runtime has no effect until a restart.
+
+Node 18 fails because `fetch` is behind a flag there. Node 20 works with no changes.
+
+The endpoint is versioned under `/v2`. The `/v1` handler still exists but returns a 410.
+
+The cache key includes the locale. Two users in different regions get different entries.
+
+Jobs retry three times with a 2s backoff, then move to the dead-letter table.
+
+The token expires after fifteen minutes. The refresh call fires at twelve minutes.
+
+Debug logging on the payment path is off in production. Turn it on with `LOG_LEVEL=debug`.
+
+The users table owns `email`. The profiles table joins on `user_id` and has no email column.
+
+The reducer runs before the middleware, so the state you read is one tick behind.
+
+Memory sits at eighty percent under current load. The importer is the largest consumer.
+
+Adding an index on `created_at` is enough. The composite index is not needed for this query.
+
+Rolling back is safe. The migration is additive and the old code ignores the new column.
+
+The cron entry runs at 03:00 UTC daily. It is defined in `deploy/cron.yaml`.
+
+The crash is a null dereference in the decoder when the frame header is truncated.
+
+Batch size 500 is the sweet spot. Below that the per-call overhead dominates.
+
+Streaming cuts time-to-first-byte from 1.8s to 200 ms. Total time is unchanged.
+
+- `lib/parse.ts` no longer mutates its input.
+- `lib/emit.ts` is unchanged.
+- One test was renamed.
+
+Risks:
+
+- The backfill locks the table for about four minutes.
+- Reads are unaffected.
+
+## What changed
+
+- Retry budget is now five attempts.
+- Backoff starts at 2s.
+
+## What did not
+
+- The dead-letter path is untouched.
+
+Which environment do you mean? The staging and production configs differ on the pool size.
+
+I am not sure. The log line is truncated, so the failing call is not identifiable from it.
+
+Write-through costs an extra round trip per write. Queuing risks losing up to one second of data.
+
+The header is stripped by the proxy before it reaches the app, so the app never sees it.
+
+Pin the engine field to `>=20`. That turns the Node 18 failure into an install-time error.
+
+Four call sites still pass the old options object. They are listed in `docs/callsites.md`.
+
+Six files moved and two were deleted. No behaviour changed outside the importer.
+
+The plane landed safely, so the incident report only covers the delayed takeoff.
+
+Nothing in the flight log points at the scheduler.
+
+We swept the floor of the test directory and removed two stale snapshots.
+
+Both were written by a runner that no longer exists.
+
+That is a great pointer to the right file. The handler is defined at line 214 and re-exported from the index.
+
+The elevator pitch for this change: one fewer round trip per page load.
+
+Elevation data is unaffected.
+
+The tile grid assumes a perfect square, which is why 12 items render with a gap.
+
+It is certainly true that the second query is slower, but it runs once per hour.
+
+The header is absolutely required by the upstream service, so removing it breaks auth.
+
+The dive team logged four hours of footage, and the encoder handled it without dropping frames.
+
+The report reaches a conclusion I disagree with, mostly because it ignores the retry cost.
+
+Sweet spot for the batch size is 500 rows.
+
+Below that the overhead dominates and above it the memory ceiling hits.
+
+The timeout is 30 seconds.
+
+It is set in `config/http.json` and applies per request, not per connection.
+
+- Build fails on a stale lockfile.
+- The dep was added without reinstalling.
+- Run `npm install`, then rebuild.
+
+Use the second form:
+
+```js
+const rows = await db.query(sql, [id]);
+```
+
+The first form interpolates the id into the string.
+
+Yes. The value is cached for the life of the process.
+
+The loader lives at `src/boot/loader.ts` and is imported once from `src/index.ts`.
+
+The p95 dropped from 420 ms to 88 ms after the index was added.
+
+Two options:
+
+- Queue the writes and flush every second.
+- Write through and accept the extra round trip.
+
+The queue is cheaper at this volume.
+
+I cannot run the deploy from here. The command is `make deploy staging` and it needs the ops role.
+
+I had the wrong file. The POST route is in `routes/upload.js`.
+
+| Env | Timeout |
+|-----|---------|
+| dev | 60s |
+| prod | 30s |
+
+Prod is the one that matters here.
+
+The socket closes after thirty seconds without a ping.
+
+Set `pingInterval` to 10000 and the connection stays open.
+
+Only the worker reads that env var. The API ignores it entirely.
+
+The migration backfilled 412 rows and took nine seconds on staging.
+
+Production has 1.2 million rows, so plan for roughly four minutes.
+
+Twelve tests are skipped. Nine reference a fixture that was deleted in March.
+
+The flag is read once at boot. Changing it at runtime has no effect until a restart.
+
+Node 18 fails because `fetch` is behind a flag there. Node 20 works with no changes.
+
+The endpoint is versioned under `/v2`. The `/v1` handler still exists but returns a 410.
+
+The cache key includes the locale. Two users in different regions get different entries.
+
+Jobs retry three times with a 2s backoff, then move to the dead-letter table.
+
+The token expires after fifteen minutes. The refresh call fires at twelve minutes.
+
+Debug logging on the payment path is off in production. Turn it on with `LOG_LEVEL=debug`.
+
+The users table owns `email`. The profiles table joins on `user_id` and has no email column.
+
+The reducer runs before the middleware, so the state you read is one tick behind.
+
+Memory sits at eighty percent under current load. The importer is the largest consumer.
+
+Adding an index on `created_at` is enough. The composite index is not needed for this query.
+
+Rolling back is safe. The migration is additive and the old code ignores the new column.
+
+The cron entry runs at 03:00 UTC daily. It is defined in `deploy/cron.yaml`.
+
+The crash is a null dereference in the decoder when the frame header is truncated.
+
+Batch size 500 is the sweet spot. Below that the per-call overhead dominates.
+
+Streaming cuts time-to-first-byte from 1.8s to 200 ms. Total time is unchanged.
+
+- `lib/parse.ts` no longer mutates its input.
+- `lib/emit.ts` is unchanged.
+- One test was renamed.
+
+Risks:
+
+- The backfill locks the table for about four minutes.
+- Reads are unaffected.
+
+## What changed
+
+- Retry budget is now five attempts.
+- Backoff starts at 2s.
+
+## What did not
+
+- The dead-letter path is untouched.
+
+Which environment do you mean? The staging and production configs differ on the pool size.

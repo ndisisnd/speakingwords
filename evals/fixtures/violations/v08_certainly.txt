@@ -1,0 +1,3 @@
+Certainly! Here is how the parser handles a trailing comma.
+
+It tolerates one and errors on two.

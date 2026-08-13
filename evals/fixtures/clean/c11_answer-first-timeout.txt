@@ -1,0 +1,3 @@
+The timeout is 30 seconds.
+
+It is set in `config/http.json` and applies per request, not per connection.

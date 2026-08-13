@@ -1,0 +1,1 @@
+The crash is a null dereference in the decoder when the frame header is truncated.

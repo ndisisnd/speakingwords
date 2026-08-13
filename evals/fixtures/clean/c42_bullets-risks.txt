@@ -1,0 +1,4 @@
+Risks:
+
+- The backfill locks the table for about four minutes.
+- Reads are unaffected.

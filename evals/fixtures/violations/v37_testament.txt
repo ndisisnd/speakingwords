@@ -1,0 +1,3 @@
+The zero-downtime cutover is a testament to the team's planning.
+
+The old pool drained in nine seconds.

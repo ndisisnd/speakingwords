@@ -1,0 +1,1 @@
+Rolling back is safe. The migration is additive and the old code ignores the new column.

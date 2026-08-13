@@ -1,0 +1,1 @@
+We leverage the existing connection pool rather than opening a second one.

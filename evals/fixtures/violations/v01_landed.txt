@@ -1,0 +1,3 @@
+Landed the retry fix on the worker queue.
+
+The job now retries three times with a 2s backoff before it goes to the dead-letter table.

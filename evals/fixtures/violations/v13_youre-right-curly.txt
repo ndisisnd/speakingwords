@@ -1,0 +1,1 @@
+You’re absolutely right about the off-by-one. The loop should stop at length minus one.

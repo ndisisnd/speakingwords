@@ -1,0 +1,3 @@
+- `lib/parse.ts` no longer mutates its input.
+- `lib/emit.ts` is unchanged.
+- One test was renamed.

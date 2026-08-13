@@ -1,0 +1,3 @@
+The three candidates were compared on latency and cost.
+
+In conclusion, the queue-based option is cheaper at this volume.

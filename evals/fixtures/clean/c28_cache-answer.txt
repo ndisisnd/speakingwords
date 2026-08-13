@@ -1,0 +1,1 @@
+The cache key includes the locale. Two users in different regions get different entries.

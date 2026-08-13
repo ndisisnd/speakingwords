@@ -1,0 +1,1 @@
+The parser is robust and handles malformed input without throwing.

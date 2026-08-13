@@ -1,0 +1,5 @@
+You're absolutely right that the header is missing.
+
+The proxy strips it on the way in.
+
+Let me know if you want the config diff.

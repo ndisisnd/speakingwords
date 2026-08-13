@@ -1,0 +1,3 @@
+Sweet spot for the batch size is 500 rows.
+
+Below that the overhead dominates and above it the memory ceiling hits.

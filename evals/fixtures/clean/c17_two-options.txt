@@ -1,0 +1,6 @@
+Two options:
+
+- Queue the writes and flush every second.
+- Write through and accept the extra round trip.
+
+The queue is cheaper at this volume.

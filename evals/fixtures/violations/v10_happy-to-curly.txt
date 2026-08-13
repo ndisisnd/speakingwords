@@ -1,0 +1,1 @@
+I’d be happy to explain the retry policy. It backs off exponentially and gives up after five attempts.

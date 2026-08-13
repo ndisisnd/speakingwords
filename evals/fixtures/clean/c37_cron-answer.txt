@@ -1,0 +1,1 @@
+The cron entry runs at 03:00 UTC daily. It is defined in `deploy/cron.yaml`.

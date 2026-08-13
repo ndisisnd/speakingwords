@@ -1,0 +1,7 @@
+Use the second form:
+
+```js
+const rows = await db.query(sql, [id]);
+```
+
+The first form interpolates the id into the string.

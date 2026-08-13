@@ -1,0 +1,1 @@
+Only the worker reads that env var. The API ignores it entirely.

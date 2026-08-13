@@ -1,0 +1,3 @@
+Here is a deep dive on how the scheduler picks a worker.
+
+It sorts by queue depth and breaks ties on the last heartbeat.

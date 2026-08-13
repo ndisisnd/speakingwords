@@ -1,0 +1,5 @@
+It's worth noting the config is loaded twice.
+
+I will delve into the boot sequence to find the second read.
+
+I hope this helps.

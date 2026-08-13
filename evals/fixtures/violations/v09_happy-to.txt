@@ -1,0 +1,3 @@
+I'd be happy to walk through the schema.
+
+The users table owns the email column and the profiles table joins on user_id.

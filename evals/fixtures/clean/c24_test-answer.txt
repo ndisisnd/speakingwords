@@ -1,0 +1,1 @@
+Twelve tests are skipped. Nine reference a fixture that was deleted in March.

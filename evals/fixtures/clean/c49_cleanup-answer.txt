@@ -1,0 +1,1 @@
+Four call sites still pass the old options object. They are listed in `docs/callsites.md`.

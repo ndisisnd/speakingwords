@@ -1,0 +1,6 @@
+| Env | Timeout |
+|-----|---------|
+| dev | 60s |
+| prod | 30s |
+
+Prod is the one that matters here.

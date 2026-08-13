@@ -1,0 +1,3 @@
+We swept the floor of the test directory and removed two stale snapshots.
+
+Both were written by a runner that no longer exists.

@@ -1,0 +1,3 @@
+The socket closes when the client stops sending pings for thirty seconds.
+
+I hope this helps!

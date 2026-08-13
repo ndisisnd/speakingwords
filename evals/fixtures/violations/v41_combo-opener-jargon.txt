@@ -1,0 +1,3 @@
+Great question! Let me dive into the caching layer.
+
+We leverage an in-memory store for the hot path and fall back to Postgres on a miss.

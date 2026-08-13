@@ -1,0 +1,1 @@
+Absolutely! The flag is read once at boot and cached for the life of the process.

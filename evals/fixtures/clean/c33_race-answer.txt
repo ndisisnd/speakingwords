@@ -1,0 +1,1 @@
+The reducer runs before the middleware, so the state you read is one tick behind.

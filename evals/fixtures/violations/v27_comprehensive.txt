@@ -1,0 +1,3 @@
+Here is a comprehensive summary of the changes in this branch.
+
+Six files moved and two were deleted.

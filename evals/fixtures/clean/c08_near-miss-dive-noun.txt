@@ -1,0 +1,1 @@
+The dive team logged four hours of footage, and the encoder handled it without dropping frames.

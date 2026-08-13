@@ -1,0 +1,1 @@
+Great question. The token expires after fifteen minutes and the refresh call is issued at the twelve minute mark.

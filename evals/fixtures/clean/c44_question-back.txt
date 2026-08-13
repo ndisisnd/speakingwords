@@ -1,0 +1,1 @@
+Which environment do you mean? The staging and production configs differ on the pool size.

@@ -1,0 +1,1 @@
+I cannot run the deploy from here. The command is `make deploy staging` and it needs the ops role.

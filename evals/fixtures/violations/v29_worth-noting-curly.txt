@@ -1,0 +1,1 @@
+It’s worth noting the queue drains in reverse insertion order after a restart.

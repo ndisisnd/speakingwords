@@ -1,0 +1,1 @@
+Write-through costs an extra round trip per write. Queuing risks losing up to one second of data.

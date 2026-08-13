@@ -1,0 +1,3 @@
+The new adapter is robust and integrates seamlessly with the existing queue.
+
+It will supercharge the ingest path.

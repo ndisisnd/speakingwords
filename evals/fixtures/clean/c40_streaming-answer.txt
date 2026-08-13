@@ -1,0 +1,1 @@
+Streaming cuts time-to-first-byte from 1.8s to 200 ms. Total time is unchanged.

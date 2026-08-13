@@ -1,0 +1,3 @@
+This is a comprehensive rewrite of the importer.
+
+It will utilize streaming rather than reading the whole file into memory.

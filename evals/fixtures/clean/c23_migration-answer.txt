@@ -1,0 +1,3 @@
+The migration backfilled 412 rows and took nine seconds on staging.
+
+Production has 1.2 million rows, so plan for roughly four minutes.

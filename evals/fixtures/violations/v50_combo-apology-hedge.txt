@@ -1,0 +1,3 @@
+I apologize for the earlier answer.
+
+That is a great point and the correct answer is that the worker restarts on SIGTERM.

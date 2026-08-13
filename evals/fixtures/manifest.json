@@ -1,0 +1,220 @@
+{
+  "clean": [
+    "c01_near-miss-plane.txt",
+    "c02_near-miss-swept.txt",
+    "c03_near-miss-pointer.txt",
+    "c04_near-miss-elevator.txt",
+    "c05_near-miss-perfect-square.txt",
+    "c06_near-miss-certainly-mid.txt",
+    "c07_near-miss-absolutely-mid.txt",
+    "c08_near-miss-dive-noun.txt",
+    "c09_near-miss-conclusion-mid.txt",
+    "c10_near-miss-sweet.txt",
+    "c11_answer-first-timeout.txt",
+    "c12_bullets-build-failure.txt",
+    "c13_code-answer.txt",
+    "c14_short-fact.txt",
+    "c15_path-answer.txt",
+    "c16_numbers-answer.txt",
+    "c17_two-options.txt",
+    "c18_refusal-plain.txt",
+    "c19_correction-plain.txt",
+    "c20_table-answer.txt",
+    "c21_cause-and-fix.txt",
+    "c22_scope-answer.txt",
+    "c23_migration-answer.txt",
+    "c24_test-answer.txt",
+    "c25_config-answer.txt",
+    "c26_dependency-answer.txt",
+    "c27_api-answer.txt",
+    "c28_cache-answer.txt",
+    "c29_queue-answer.txt",
+    "c30_auth-answer.txt",
+    "c31_logging-answer.txt",
+    "c32_schema-answer.txt",
+    "c33_race-answer.txt",
+    "c34_memory-answer.txt",
+    "c35_index-answer.txt",
+    "c36_rollback-answer.txt",
+    "c37_cron-answer.txt",
+    "c38_error-answer.txt",
+    "c39_perf-answer.txt",
+    "c40_streaming-answer.txt",
+    "c41_bullets-review.txt",
+    "c42_bullets-risks.txt",
+    "c43_heading-and-bullets.txt",
+    "c44_question-back.txt",
+    "c45_uncertainty-plain.txt",
+    "c46_tradeoff-answer.txt",
+    "c47_security-answer.txt",
+    "c48_versioning-answer.txt",
+    "c49_cleanup-answer.txt",
+    "c50_summary-answer.txt"
+  ],
+  "perf": "perf_4000_clean.txt",
+  "violations": {
+    "v01_landed.txt": [
+      "strip-landed"
+    ],
+    "v02_landed-heading.txt": [
+      "strip-landed"
+    ],
+    "v03_sweep.txt": [
+      "strip-sweep"
+    ],
+    "v04_swept.txt": [
+      "strip-sweep"
+    ],
+    "v05_great-point.txt": [
+      "strip-great-point"
+    ],
+    "v06_great-question.txt": [
+      "strip-great-question"
+    ],
+    "v07_excellent-question.txt": [
+      "strip-excellent-question"
+    ],
+    "v08_certainly.txt": [
+      "strip-certainly"
+    ],
+    "v09_happy-to.txt": [
+      "strip-happy-to"
+    ],
+    "v10_happy-to-curly.txt": [
+      "strip-happy-to"
+    ],
+    "v11_absolutely.txt": [
+      "strip-absolutely-opener"
+    ],
+    "v12_youre-right.txt": [
+      "strip-youre-absolutely-right"
+    ],
+    "v13_youre-right-curly.txt": [
+      "strip-youre-absolutely-right"
+    ],
+    "v14_let-me-know.txt": [
+      "strip-let-me-know"
+    ],
+    "v15_hope-helps.txt": [
+      "strip-hope-this-helps"
+    ],
+    "v16_dive-into.txt": [
+      "strip-dive-into"
+    ],
+    "v17_deep-dive.txt": [
+      "strip-deep-dive"
+    ],
+    "v18_delve.txt": [
+      "strip-delve"
+    ],
+    "v19_delving.txt": [
+      "strip-delve"
+    ],
+    "v20_leverage.txt": [
+      "strip-leverage"
+    ],
+    "v21_leveraging.txt": [
+      "strip-leverage"
+    ],
+    "v22_utilize.txt": [
+      "strip-utilize"
+    ],
+    "v23_utilization.txt": [
+      "strip-utilize"
+    ],
+    "v24_seamless.txt": [
+      "strip-seamless"
+    ],
+    "v25_seamlessly.txt": [
+      "strip-seamless"
+    ],
+    "v26_robust.txt": [
+      "strip-robust"
+    ],
+    "v27_comprehensive.txt": [
+      "strip-comprehensive"
+    ],
+    "v28_worth-noting.txt": [
+      "strip-worth-noting"
+    ],
+    "v29_worth-noting-curly.txt": [
+      "strip-worth-noting"
+    ],
+    "v30_as-an-ai.txt": [
+      "strip-as-an-ai"
+    ],
+    "v31_elevate.txt": [
+      "strip-elevate"
+    ],
+    "v32_supercharge.txt": [
+      "strip-supercharge"
+    ],
+    "v33_game-changer.txt": [
+      "strip-game-changer"
+    ],
+    "v34_game-changer-space.txt": [
+      "strip-game-changer"
+    ],
+    "v35_game-changing.txt": [
+      "strip-game-changer"
+    ],
+    "v36_perfect.txt": [
+      "strip-perfect-opener"
+    ],
+    "v37_testament.txt": [
+      "strip-testament"
+    ],
+    "v38_in-conclusion.txt": [
+      "strip-in-conclusion"
+    ],
+    "v39_apologize.txt": [
+      "strip-i-apologize"
+    ],
+    "v40_apologise-british.txt": [
+      "strip-i-apologize"
+    ],
+    "v41_combo-opener-jargon.txt": [
+      "strip-great-question",
+      "strip-dive-into",
+      "strip-leverage"
+    ],
+    "v42_combo-sycophancy-close.txt": [
+      "strip-youre-absolutely-right",
+      "strip-let-me-know"
+    ],
+    "v43_combo-marketing.txt": [
+      "strip-seamless",
+      "strip-robust",
+      "strip-supercharge"
+    ],
+    "v44_combo-stock-report.txt": [
+      "strip-landed",
+      "strip-sweep"
+    ],
+    "v45_combo-narration.txt": [
+      "strip-worth-noting",
+      "strip-delve",
+      "strip-hope-this-helps"
+    ],
+    "v46_combo-filler-pair.txt": [
+      "strip-comprehensive",
+      "strip-utilize"
+    ],
+    "v47_combo-openers.txt": [
+      "strip-certainly",
+      "strip-happy-to"
+    ],
+    "v48_combo-perfect-elevate.txt": [
+      "strip-perfect-opener",
+      "strip-elevate"
+    ],
+    "v49_combo-deepdive-testament.txt": [
+      "strip-deep-dive",
+      "strip-testament"
+    ],
+    "v50_combo-apology-hedge.txt": [
+      "strip-i-apologize",
+      "strip-great-point"
+    ]
+  }
+}

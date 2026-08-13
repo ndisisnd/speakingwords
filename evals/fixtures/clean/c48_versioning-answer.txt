@@ -1,0 +1,1 @@
+Pin the engine field to `>=20`. That turns the Node 18 failure into an install-time error.

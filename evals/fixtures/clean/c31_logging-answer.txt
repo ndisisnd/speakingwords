@@ -1,0 +1,1 @@
+Debug logging on the payment path is off in production. Turn it on with `LOG_LEVEL=debug`.

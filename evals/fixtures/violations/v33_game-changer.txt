@@ -1,0 +1,1 @@
+Moving the parser into a worker thread is a game-changer for throughput.

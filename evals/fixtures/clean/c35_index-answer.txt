@@ -1,0 +1,1 @@
+Adding an index on `created_at` is enough. The composite index is not needed for this query.

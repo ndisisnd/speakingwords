@@ -1,0 +1,3 @@
+I apologize for the confusion in the last message.
+
+The correct path is lib/config/index.ts.

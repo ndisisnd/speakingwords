@@ -1,0 +1,3 @@
+Swept the test suite for skipped cases.
+
+Twelve tests are skipped and nine of them reference a fixture that no longer exists.

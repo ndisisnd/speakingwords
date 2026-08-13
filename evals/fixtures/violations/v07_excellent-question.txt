@@ -1,0 +1,1 @@
+Excellent question! The cache key includes the locale, which is why two users in different regions see different results.

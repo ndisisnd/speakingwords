@@ -1,0 +1,1 @@
+The header is stripped by the proxy before it reaches the app, so the app never sees it.

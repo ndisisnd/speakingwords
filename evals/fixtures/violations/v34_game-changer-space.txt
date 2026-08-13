@@ -1,0 +1,1 @@
+Streaming responses is a game changer for perceived latency on slow links.

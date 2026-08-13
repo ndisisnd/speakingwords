@@ -1,0 +1,1 @@
+The token expires after fifteen minutes. The refresh call fires at twelve minutes.
