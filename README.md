@@ -56,22 +56,14 @@ npm i -g speakingwords
 **cURL** — for people who do not want a global npm install
 
 ```sh
-curl -fsSL <install-url> | sh
+curl -fsSL https://raw.githubusercontent.com/ndisisnd/speakingwords/main/install.sh | sh
 ```
 
-Both paths install the same files. The cURL script downloads the release tarball, checks
-its SHA-256, unpacks it to `~/.speakingwords/app`, and symlinks `speakingwords` into
-`~/.local/bin` (telling you if that is not on your PATH).
-
-> **v0.1.0 note.** There is no published release endpoint yet, so `install.sh` ships with
-> no baked-in URL. Pass one:
->
-> ```sh
-> SPEAKINGWORDS_URL=<tarball-url> SPEAKINGWORDS_SHA256=<sum> sh install.sh
-> ```
->
-> It **refuses to install without a checksum** unless you pass `--insecure` deliberately.
-> Removing it again: `sh install.sh --uninstall`.
+Both paths install the same files. The cURL script downloads the published npm tarball,
+verifies its SHA-256, unpacks it to `~/.speakingwords/app`, and symlinks `speakingwords`
+into `~/.local/bin` (telling you if that is not on your PATH). It **refuses to install
+without a checksum** unless you pass `--insecure`. Remove it again with
+`sh install.sh --uninstall`.
 
 Then:
 

@@ -15,11 +15,10 @@
 #      install without one unless --insecure is passed explicitly.
 #   4. Extracts to ~/.speakingwords/app and symlinks the CLI into ~/.local/bin.
 #
-# There is no default download URL. v0.1.0 has no published release endpoint, so
-# inventing one would produce an installer that fails in a confusing way. The
-# maintainer sets SPEAKINGWORDS_URL (and SPEAKINGWORDS_SHA256) at release time —
-# either in the published one-liner or by baking the values into the two
-# assignments below.
+# The default download URL is the published npm tarball for this version, with
+# its SHA-256 baked in below. The maintainer refreshes both on every release.
+# SPEAKINGWORDS_URL / SPEAKINGWORDS_SHA256 still override them for testing or for
+# installing a different build.
 #
 # POSIX sh only. No bashisms, no arrays, no [[ ]], no local.
 
@@ -27,9 +26,10 @@ set -eu
 
 VERSION_HINT="0.1.0"
 
-# Set by the maintainer at release time. Empty here on purpose.
-DEFAULT_URL=""
-DEFAULT_SHA256=""
+# Set by the maintainer at release time — the published npm tarball for this
+# version, and its SHA-256.
+DEFAULT_URL="https://registry.npmjs.org/speakingwords/-/speakingwords-0.1.0.tgz"
+DEFAULT_SHA256="10a84bcf99ce07f666130be4cef8982036cfecb4fb9f109ad89659c7fa85a6c7"
 
 URL="${SPEAKINGWORDS_URL:-$DEFAULT_URL}"
 SHA256="${SPEAKINGWORDS_SHA256:-$DEFAULT_SHA256}"
