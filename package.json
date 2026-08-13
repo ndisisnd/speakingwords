@@ -39,9 +39,12 @@
     "stop-hook",
     "cli"
   ],
-  "repository": "TODO-set-repository-url-before-publishing",
-  "homepage": "TODO-set-homepage-url-before-publishing",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ndisisnd/speakingwords.git"
+  },
+  "homepage": "https://github.com/ndisisnd/speakingwords#readme",
   "bugs": {
-    "url": "TODO-set-issue-tracker-url-before-publishing"
+    "url": "https://github.com/ndisisnd/speakingwords/issues"
   }
 }

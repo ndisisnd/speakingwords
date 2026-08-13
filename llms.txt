@@ -1,0 +1,22 @@
+# speakingwords
+
+> A CLI that installs a style contract so a coding agent's replies keep the voice you picked, without you restating it every session.
+
+speakingwords is a Node CLI with a Python linter. It targets Claude Code and OpenAI Codex CLI, in one of two modes: **memory** (rule lines written into the agent's memory file — suggestive) or **hook** (a Stop hook that lints every finished reply and bounces violations — enforcing). The single source of truth for what gets flagged is `skill/refs/lexicon.md`; nothing is hardcoded in the linter.
+
+## Docs
+
+- [README](https://raw.githubusercontent.com/ndisisnd/speakingwords/main/README.md): what it is, install, the mode/voice/scope decisions, how enforcement works, every command
+- [Rewrite skill](https://raw.githubusercontent.com/ndisisnd/speakingwords/main/skill/SKILL.md): the voice contract and language rules the agent applies when a reply is bounced — start here to change how rewrites behave
+
+## Reference
+
+- [Lexicon](https://raw.githubusercontent.com/ndisisnd/speakingwords/main/skill/refs/lexicon.md): strip rules + language rules — the file the linter reads and `update` edits; edit this to change what's flagged
+- [CLI entry](https://raw.githubusercontent.com/ndisisnd/speakingwords/main/bin/speakingwords.js): dispatches init / status / update / unhook / version
+- [Linter](https://raw.githubusercontent.com/ndisisnd/speakingwords/main/skill/scripts/lint.py): the deterministic pass; exits 0 on clean, 2 on violations, runs standalone
+- [Installer](https://raw.githubusercontent.com/ndisisnd/speakingwords/main/install.sh): cURL install path — tarball download, SHA-256 check, symlink into ~/.local/bin
+
+## Optional
+
+- [License](https://raw.githubusercontent.com/ndisisnd/speakingwords/main/LICENSE): MIT
+- [Security policy](https://raw.githubusercontent.com/ndisisnd/speakingwords/main/SECURITY.md): how to report a vulnerability

@@ -1,7 +1,38 @@
-# speakingwords
+<div align="center"><pre>
+███████╗██████╗ ███████╗ █████╗ ██╗  ██╗
+██╔════╝██╔══██╗██╔════╝██╔══██╗██║ ██╔╝
+███████╗██████╔╝█████╗  ███████║█████╔╝ 
+╚════██║██╔═══╝ ██╔══╝  ██╔══██║██╔═██╗ 
+███████║██║     ███████╗██║  ██║██║  ██╗
+╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝
+</pre></div>
 
-**An output parser for agent replies.** You pick how your agent should sound, once, and
-it keeps sounding that way — without you restating it every session.
+<p align="center"><strong>An output parser for agent replies. Pick how your coding agent sounds once, and it keeps sounding that way.</strong></p>
+
+<p align="center">
+<a href="LICENSE"><img src="https://badgen.net/badge/license/MIT/blue" alt="License"></a>
+<img src="https://badgen.net/badge/node/%3E=18/green" alt="Node >= 18">
+<a href="https://github.com/ndisisnd/speakingwords/commits/main"><img src="https://badgen.net/github/last-commit/ndisisnd/speakingwords" alt="Last commit"></a>
+<a href="https://github.com/ndisisnd/speakingwords/stargazers"><img src="https://badgen.net/github/stars/ndisisnd/speakingwords" alt="Stars"></a>
+</p>
+
+<p align="center">
+<a href="#install">Install</a> ·
+<a href="#the-two-decisions">Decisions</a> ·
+<a href="#how-enforcement-works">How it works</a> ·
+<a href="#commands">Commands</a> ·
+<a href="#faq">FAQ</a> ·
+<a href="llms.txt">llms.txt</a>
+</p>
+
+<p align="center"><sub>
+<b>AI agents / LLMs:</b> read <a href="llms.txt"><code>llms.txt</code></a>.
+</sub></p>
+
+---
+
+You pick how your agent should sound, once, and it keeps sounding that way — without you
+restating it every session.
 
 Agent output drifts. It leans on stock vocabulary ("Landed", "Sweep", "Great point"), it
 narrates instead of answering, and it slides back to its default voice no matter how many
@@ -46,6 +77,13 @@ Then:
 
 ```sh
 speakingwords init
+```
+
+To verify it worked:
+
+```sh
+speakingwords version     # prints the installed version
+speakingwords status      # shows what the linter has caught (hook mode)
 ```
 
 ---
@@ -98,6 +136,19 @@ behaviour on both.
 
 A rendered reply cannot be silently rewritten after the fact, so hook mode does not try.
 It **lints and bounces**:
+
+```mermaid
+flowchart TD
+  reply["Agent finishes a reply"] --> hook["Stop hook fires"]
+  hook --> lint["lint.py — deterministic pass"]
+  lint -->|clean| pass["Exit silently, nothing logged"]
+  lint -->|violation| bounce["Return block + list of what tripped"]
+  bounce --> log["Append violation to hits.jsonl"]
+  bounce --> rewrite["Agent reads SKILL.md, rewrites its reply"]
+  rewrite --> guard{"Already bounced once?"}
+  guard -->|"yes"| approve["Approve as-is — no lint loop"]
+  guard -->|"no"| lint
+```
 
 1. The agent finishes a reply. The **Stop hook** fires.
 2. `lint.py` runs the **deterministic pass**: every strip rule (a regex from the lexicon)
@@ -273,6 +324,58 @@ The evals are fixture-driven and touch nothing outside a temp tree:
 `SPEAKINGWORDS_HOME` fakes the home directory and `SPEAKINGWORDS_CODEX_VERSION` fakes the
 installed Codex, so every path runs on a machine that has neither agent installed.
 
+---
+
+## FAQ
+
+**Why lint the reply after the fact instead of steering the model up front?**
+A rendered reply can't be silently rewritten, and asking the model nicely is exactly the
+approach that keeps drifting. Hook mode lets the reply happen, checks it deterministically,
+and bounces it back once for a rewrite. Memory mode is the up-front nudge — useful, but
+suggestive, and the agent can ignore it.
+
+**memory or hook — which should I pick?**
+Pick memory if you want a lightweight suggestion and no scripts in your config. Pick hook if
+you want the rules to actually hold, and you're fine with a Stop hook, a Python linter, and a
+telemetry log being installed. Hook is the one that enforces.
+
+**Can it get stuck bouncing a reply forever?**
+No. The hook reads the host's `stop_hook_active` flag, so a reply that has already been
+bounced once is approved whatever it says. There is one bounce, maximum.
+
+**What happens if the linter breaks, or my transcript is missing?**
+It fails open. Malformed input, an unreadable lexicon, a bug in the linter — every one of
+them approves the reply and exits 0. A broken install can let a bad reply through; it can
+never eat a good reply or wedge your session.
+
+**Does this touch my prompts?**
+No. speakingwords parses the agent's output only. What you type is never read or changed.
+
+**I'm on Codex and nothing is being blocked.**
+Two likely causes. Codex won't run a hook until you grant it trust once. And Codex below
+v0.124.0 has no stable hooks engine, so the installer falls back to audit-only `notify` —
+replies are logged but not blocked. Upgrade Codex and re-run `init` for real enforcement.
+
+---
+
+## Security
+
+Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY.md). Don't
+open a public issue for a security problem.
+
+---
+
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[MIT](LICENSE)
+
+---
+
+## Acknowledgments
+
+This README was generated with [mkpub](https://github.com/ndisisnd/mkpub).
+Dedicated to JC who got just as frustrated like me with Opus's rambling.
+
+<!-- mkpub: not generatable — who or what actually helped. People, prior art,
+     libraries you leaned on, a README whose structure you copied.
+     Delete this section if there's nothing honest to put here. -->
