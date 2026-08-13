@@ -3,7 +3,8 @@
 
 // speakingwords CLI — thin dispatcher.
 //
-// Phase 2 ships `init` in memory mode; phase 3 adds hook mode for Claude Code.
+// Phase 2 ships `init` in memory mode; phase 3 adds hook mode for Claude Code;
+// phase 4 adds hook mode for Codex CLI, including the both-agents install.
 // `status`, `update` and `unhook`/`unset` are declared here so the command
 // surface is stable, but they exit 1 until their phase lands. No runtime
 // dependencies anywhere.
@@ -34,7 +35,7 @@ Usage
 
 init flags (skip the questions, for scripts and CI)
   --memory                       memory mode: write rules into the memory file
-  --hook                         hook mode: lint every reply     (Claude Code)
+  --hook                         hook mode: lint and bounce every reply
   --agent claude|codex|both      which agent to install for
   --scope local|global           this project only, or everywhere
   --voice terse|convo            point form only, or prose retained
@@ -126,13 +127,13 @@ async function cmdInit(flags) {
     const candidates = detected.length === 2 ? ['claude', 'codex', 'both'] : detected;
     for (const candidate of candidates) {
       for (const candidateScope of ['local', 'global']) {
-        const targets = mode === 'hook'
-          ? (candidate === 'claude'
-            ? hooks.settingsPath(candidateScope, cwd)
-            : 'Codex hook wiring lands in phase 4')
-          : agentsFor(candidate)
-            .map((id) => adapters.memoryTarget(id, candidateScope, cwd))
-            .join(' + ');
+        const targets = agentsFor(candidate)
+          .map((id) => (mode === 'hook'
+            ? (id === 'claude'
+              ? hooks.settingsPath(candidateScope, cwd)
+              : hooks.codexHooksPath(candidateScope, cwd))
+            : adapters.memoryTarget(id, candidateScope, cwd)))
+          .join(' + ');
         const name = candidate === 'both'
           ? 'Both agents'
           : adapters.getAdapter(candidate).label;
@@ -167,22 +168,7 @@ async function cmdInit(flags) {
   const agentIds = agentsFor(agentSel);
 
   if (mode === 'hook') {
-    // Codex hook wiring (hooks.json, trust step, notify fallback) is phase 4.
-    // Refuse loudly rather than half-install across two agents.
-    if (agentIds.includes('codex')) {
-      process.stderr.write(
-        [
-          'Hook mode is Claude Code only for now.',
-          '',
-          'The Codex adapter (hooks.json wiring, the trust step, and the notify audit',
-          'fallback on versions below v0.124.0) lands in phase 4.',
-          'Run `speakingwords init --hook --agent claude`, or use --memory for Codex.',
-          '',
-        ].join('\n')
-      );
-      process.exit(1);
-    }
-    return installHookMode({ scope, voice, version, cwd });
+    return installHookMode({ agentIds, scope, voice, version, cwd });
   }
 
   const block = memory.renderBlock({ voice, version });
@@ -209,24 +195,134 @@ async function cmdInit(flags) {
 }
 
 // Hook mode installs two things and nothing else: the skill core at the
-// installed root, and one Stop-hook entry in settings.json. No memory block is
+// installed root, and one Stop-hook entry per agent. No memory block is
 // written — hook mode enforces the rules, so restating them as suggestions in
 // CLAUDE.md would only duplicate the contract in a second place.
-function installHookMode({ scope, voice, version, cwd }) {
-  const { skillRoot } = hooks.installSkillCore('claude');
-  const result = hooks.installClaudeHook({ scope, cwd, skillRoot });
-  const prefFile = pref.writePref({ agents: ['claude'], mode: 'hook', scope, voice, version });
+//
+// A both-agents install ships ONE core (plan §7) at the Claude Code root, and
+// points the Codex wiring back at it. That is what makes a later `update` edit
+// one lexicon and change behaviour on both agents at once.
+function installHookMode({ agentIds, scope, voice, version, cwd }) {
+  const wantsCodex = agentIds.includes('codex');
 
-  const lines = ['', `speakingwords ${version} installed — hook mode, ${voice} voice.`, ''];
-  lines.push(`  hook entry   ${result.path}`);
-  lines.push(`               Stop → ${result.command}`);
-  lines.push(`  skill root   ${skillRoot}`);
-  lines.push(`  preferences  ${prefFile}`);
+  // Decide the Codex story before writing anything. If config.toml already has
+  // someone else's notify program we must refuse, and refusing after wiring
+  // Claude Code would leave a half-install behind.
+  const codex = wantsCodex ? hooks.codexCapability() : null;
+  if (codex && !codex.supportsHooks) {
+    const conflict = hooks.codexNotifyConflict();
+    if (conflict) {
+      process.stderr.write(
+        [
+          `Codex ${codex.version} predates the stable hooks engine (v${codex.minVersion}), so`,
+          'speakingwords would fall back to the config.toml `notify` audit path — but that',
+          'key is already taken:',
+          `  ${conflict}`,
+          '',
+          'Codex allows only one notify program, and yours will not be overwritten. Either',
+          'upgrade Codex to get real hook enforcement, remove that line, or call',
+          `${hooks.codexNotifyScript(hooks.coreRoot(agentIds))} from your own notify program.`,
+          '',
+        ].join('\n')
+      );
+      process.exit(1);
+    }
+  }
+
+  const skillRoot = hooks.coreRoot(agentIds);
+  hooks.installSkillCore(agentIds, skillRoot);
+
+  const wirings = [];
+  if (agentIds.includes('claude')) {
+    wirings.push({ agent: 'claude', kind: 'hook', ...hooks.installClaudeHook({ scope, cwd, skillRoot }) });
+  }
+  if (wantsCodex) {
+    wirings.push(codex.supportsHooks
+      ? { agent: 'codex', kind: 'hook', ...hooks.installCodexHook({ scope, cwd, skillRoot }) }
+      : { agent: 'codex', kind: 'notify', ...hooks.installCodexNotify({ skillRoot }) });
+  }
+
+  const prefFile = pref.writePref({ agents: agentIds, mode: 'hook', scope, voice, version });
+
+  // --- Summary: say exactly what was wired where, per agent ---
+  const label = agentIds.map((id) => adapters.getAdapter(id).label).join(' + ');
+  const lines = ['', `speakingwords ${version} installed — hook mode, ${voice} voice, ${label}.`, ''];
+
+  for (const wiring of wirings) {
+    const name = adapters.getAdapter(wiring.agent).label;
+    if (wiring.kind === 'hook') {
+      lines.push(`  ${name}`);
+      lines.push(`    hook entry   ${wiring.path}`);
+      lines.push(`                 Stop → ${wiring.command}`);
+    } else {
+      lines.push(`  ${name}  (audit-only — see the downgrade note below)`);
+      lines.push(`    notify       ${wiring.path}`);
+      lines.push(`                 ${wiring.value}`);
+    }
+  }
+  lines.push(`  skill root     ${skillRoot}`);
+  lines.push(`  preferences    ${prefFile}`);
   lines.push('');
-  lines.push('  Every reply is linted when the agent finishes. A clean reply passes silently;');
-  lines.push('  a violating one is bounced once, rewritten against the voice contract, and');
-  lines.push('  logged to hits.jsonl. One bounce maximum — the second pass never blocks.');
+
+  if (agentIds.length > 1) {
+    lines.push('  Both agents share one core at that skill root — one lexicon, one linter, one');
+    lines.push('  hits.jsonl. Editing the rules once changes behaviour on both.');
+    lines.push('');
+  }
+
+  // What actually happens next depends on whether anything can block. On an
+  // all-audit install, describing a bounce would be a lie.
+  const enforcing = wirings.filter((w) => w.kind === 'hook');
+  if (enforcing.length > 0) {
+    const only = enforcing.length < wirings.length
+      ? ` on ${adapters.getAdapter(enforcing[0].agent).label}`
+      : '';
+    lines.push(`  Every reply is linted when the agent finishes${only}. A clean reply passes`);
+    lines.push('  silently; a violating one is bounced once, rewritten against the voice');
+    lines.push('  contract, and logged to hits.jsonl. One bounce maximum — the second pass');
+    lines.push('  never blocks.');
+  } else {
+    lines.push('  Every reply is linted after the agent finishes, and every violation is logged');
+    lines.push('  to hits.jsonl for `status` — but nothing is blocked or rewritten. This install');
+    lines.push('  can only tell you what hook mode would have caught.');
+  }
   lines.push('');
+
+  // --- Trust step: the one thing the installer cannot do for the user ---
+  const codexHook = wirings.find((w) => w.agent === 'codex' && w.kind === 'hook');
+  if (codexHook) {
+    lines.push('  ONE STEP LEFT, on Codex only:');
+    lines.push('    Codex will not run a hook until you trust it, once. On your next Codex run it');
+    lines.push('    will ask; answer yes. You can also grant it up front with `/hooks` inside');
+    lines.push('    Codex. Until you do, Codex replies pass unlinted — nothing is enforced.');
+    lines.push('');
+  }
+
+  // --- A13: the downgrade must be stated plainly, not buried ---
+  const codexNotify = wirings.find((w) => w.agent === 'codex' && w.kind === 'notify');
+  if (codexNotify) {
+    lines.push(`  DOWNGRADED on Codex: you are on ${codex.version}, and the hooks engine is only`);
+    lines.push(`  stable from v${codex.minVersion}. There is no Stop hook to wire, so Codex got the`);
+    lines.push('  audit-only fallback instead: replies are linted after the turn is already');
+    lines.push('  delivered, and every violation is logged, but nothing can be blocked or');
+    lines.push('  rewritten. Upgrade Codex and re-run init to get real enforcement.');
+    if (scope === 'local') {
+      lines.push('  Note: `notify` is user-level only in Codex — there is no per-project config to');
+      lines.push('  write it to — so the audit pass applies everywhere, not just to this project.');
+      if (agentIds.includes('claude')) {
+        lines.push('  The local scope you chose still applies to Claude Code.');
+      }
+    }
+    lines.push('');
+  }
+
+  if (wantsCodex && codex.version === null) {
+    lines.push('  Could not read a Codex version (`codex --version` did not answer), so hook');
+    lines.push('  wiring was written on the assumption it is current. If Codex ignores it, you');
+    lines.push(`  are below v${codex.minVersion}; upgrade, or re-run with SPEAKINGWORDS_CODEX_VERSION set.`);
+    lines.push('');
+  }
+
   lines.push('  No memory block was written. Hook mode enforces the rules directly.');
   lines.push('');
   process.stdout.write(lines.join('\n'));

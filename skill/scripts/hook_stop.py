@@ -24,6 +24,15 @@ good reply is lost.
 Telemetry: one JSON line per violation is appended to <skill root>/hits.jsonl,
 but only on a bounce that actually fired. Suppressed second passes are not
 counted twice, so `status` counts bounces, not lint passes.
+
+Shared with Codex
+-----------------
+`decide()` is the whole verdict — payload in, block-dict or None out. Codex
+mirrors Claude Code's event names, payload shape and decision contract, so
+scripts/hook_codex.py imports this module and calls `decide()` rather than
+carrying a second copy of the logic. That import is what makes plan eval E7
+(cross-agent parity) true by construction instead of by coincidence: there is
+only one linter, one loop guard, and one telemetry writer for both agents.
 """
 
 import datetime
@@ -45,6 +54,15 @@ EXIT_OK = 0
 # context. lint.py already caps each match at 120 chars.
 MAX_REPORTED_VIOLATIONS = 12
 MAX_REASON_CHARS = 4000
+
+# Payload key aliases. Claude Code sends the snake_case form; Codex mirrors it,
+# but a host that renames or drops a key must degrade to fail-open rather than
+# throw, so every lookup goes through these lists.
+TRANSCRIPT_KEYS = ("transcript_path", "transcriptPath", "transcript-path", "transcript")
+GUARD_KEYS = ("stop_hook_active", "stopHookActive", "stop-hook-active")
+# Last resort when no transcript is reachable: some hosts (and the Codex
+# `notify` fallback) hand over the finished reply text directly.
+MESSAGE_KEYS = ("last_assistant_message", "lastAssistantMessage", "last-assistant-message")
 
 
 def load_lint():
@@ -171,11 +189,15 @@ def build_reason(violations, voice):
     return reason
 
 
-def log_hits(violations, voice):
+def log_hits(violations, voice, extra=None):
     """Append one single-line JSON record per violation (plan A9).
 
     Best effort: telemetry is never allowed to break enforcement, so any
     failure here is swallowed.
+
+    `extra` merges extra fields into every record. The Codex audit fallback
+    uses it to mark records it could observe but not block, so `status` can
+    tell an enforced bounce from a downgraded one.
     """
     try:
         stamp = (
@@ -186,51 +208,94 @@ def log_hits(violations, voice):
         )
         with open(HITS_PATH, "a", encoding="utf-8") as fh:
             for item in violations:
-                fh.write(
-                    json.dumps(
-                        {
-                            "ts": stamp,
-                            "rule": item.get("rule"),
-                            "match": item.get("match", ""),
-                            "severity": item.get("severity", "warn"),
-                            "voice": voice,
-                        },
-                        ensure_ascii=False,
-                    )
-                    + "\n"
-                )
+                record = {
+                    "ts": stamp,
+                    "rule": item.get("rule"),
+                    "match": item.get("match", ""),
+                    "severity": item.get("severity", "warn"),
+                    "voice": voice,
+                }
+                if extra:
+                    record.update(extra)
+                fh.write(json.dumps(record, ensure_ascii=False) + "\n")
     except Exception:
         pass
 
 
-def run():
-    payload = read_payload()
+def first_string(payload, keys):
+    """First key in `keys` holding a non-blank string, else None."""
+    for key in keys:
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value
+    return None
 
-    transcript_path = payload.get("transcript_path")
-    if not transcript_path or not os.path.isfile(transcript_path):
-        return EXIT_OK  # nothing to lint — approve
 
-    text = last_assistant_text(transcript_path)
+def loop_guard(payload):
+    """True when a Stop hook already bounced this reply (plan A5)."""
+    return any(bool(payload.get(key)) for key in GUARD_KEYS)
+
+
+def reply_text(payload):
+    """The text the user actually read, or "" when it cannot be recovered.
+
+    Preferred source is the transcript, because it is the reply verbatim.
+    When the transcript key is named differently, missing, or unreadable, the
+    payload's own copy of the last assistant message is used instead. Both
+    routes failing means nothing to lint, which means approve.
+    """
+    path = first_string(payload, TRANSCRIPT_KEYS)
+    if path and os.path.isfile(path):
+        try:
+            text = last_assistant_text(path)
+        except Exception:
+            text = ""  # unreadable transcript falls through to the message key
+        if text.strip():
+            return text
+    return first_string(payload, MESSAGE_KEYS) or ""
+
+
+def decide(payload):
+    """The whole verdict: payload in, block-dict or None out.
+
+    None means approve — that covers a clean reply, an unrecoverable reply,
+    and a suppressed second pass alike, because all three end the same way:
+    the hook stays silent and the reply stands.
+
+    Shared verbatim with the Codex entry point, so both agents log the same
+    rule ids and reach the same verdict on the same text (plan E7).
+    """
+    if not isinstance(payload, dict):
+        return None
+
+    text = reply_text(payload)
     if not text.strip():
-        return EXIT_OK
+        return None
 
     voice = read_voice()
     lint = load_lint()
     violations = lint.lint(text, voice, lint.read_rules())
     if not violations:
-        return EXIT_OK
+        return None
 
     # A5 — one bounce maximum. A second Stop hook on the same reply reports
     # nothing and blocks nothing, so the rewrite always gets to land.
-    if payload.get("stop_hook_active"):
-        return EXIT_OK
+    if loop_guard(payload):
+        return None
 
     log_hits(violations, voice)
-    sys.stdout.write(
-        json.dumps({"decision": "block", "reason": build_reason(violations, voice)})
-        + "\n"
-    )
+    return {"decision": "block", "reason": build_reason(violations, voice)}
+
+
+def emit(decision):
+    """Write the decision contract to stdout. Silence approves."""
+    if decision is not None:
+        sys.stdout.write(json.dumps(decision) + "\n")
     return EXIT_OK
+
+
+def run():
+    return emit(decide(read_payload()))
 
 
 def main():

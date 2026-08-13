@@ -38,7 +38,9 @@ function mkTemp(label) {
 function runInit(home, cwd, args) {
   return execFileSync(process.execPath, [CLI, 'init', ...args], {
     cwd,
-    env: { ...process.env, SPEAKINGWORDS_HOME: home },
+    // Pin the Codex version too: hook mode branches on it, and the eval must
+    // not depend on whether this machine happens to have Codex installed.
+    env: { ...process.env, SPEAKINGWORDS_HOME: home, SPEAKINGWORDS_CODEX_VERSION: '0.124.0' },
     encoding: 'utf8',
     stdio: 'pipe', // keep child stderr out of the runner's own report
   });
@@ -238,7 +240,9 @@ function evalCli() {
     try {
       out = execFileSync(process.execPath, [CLI, 'init'], {
         cwd: project,
-        env: { ...process.env, SPEAKINGWORDS_HOME: home },
+        // Pin the Codex version too: hook mode branches on it, and the eval must
+    // not depend on whether this machine happens to have Codex installed.
+    env: { ...process.env, SPEAKINGWORDS_HOME: home, SPEAKINGWORDS_CODEX_VERSION: '0.124.0' },
         input: '1\n5\n2\n', // memory -> both agents, local -> convo
         encoding: 'utf8',
         stdio: 'pipe',
@@ -255,24 +259,18 @@ function evalCli() {
     fs.rmSync(project, { recursive: true, force: true });
   }
 
-  // Hook mode on an agent that has no wiring yet must refuse loudly rather
-  // than half-install. Claude hook mode landed in phase 3 (see run_p3.py);
-  // Codex hook wiring is still phase 4.
+  // Hook mode is wired for both agents as of phase 4 (see run_p4.py). What
+  // phase 2 still owns is the boundary between the modes: choosing hook mode
+  // must never leave a memory block behind, on either agent.
   const home = mkTemp('home');
   const project = mkTemp('project');
   fs.mkdirSync(path.join(home, '.claude'), { recursive: true });
   fs.mkdirSync(path.join(home, '.codex'), { recursive: true });
-  let hookCode = 0;
-  let hookErr = '';
-  try {
-    runInit(home, project, ['--hook', '--agent', 'codex', '--scope', 'local', '--voice', 'terse']);
-  } catch (err) {
-    hookCode = err.status;
-    hookErr = String(err.stderr || '');
-  }
-  check('P2', 'codex hook mode exits 1 and says which phase installs it',
-    hookCode === 1 && /phase 4/.test(hookErr));
-  check('P2', 'refused hook mode wrote nothing',
+  runInit(home, project, ['--hook', '--agent', 'codex', '--scope', 'local', '--voice', 'terse']);
+  check('P2', 'codex hook mode writes no memory block',
+    !fs.existsSync(path.join(project, 'AGENTS.md'))
+    && !fs.existsSync(path.join(home, '.codex', 'AGENTS.md')));
+  check('P2', 'codex hook mode writes no Claude Code wiring',
     !fs.existsSync(path.join(project, 'CLAUDE.local.md'))
     && !fs.existsSync(path.join(project, '.claude', 'settings.json')));
   fs.rmSync(home, { recursive: true, force: true });
