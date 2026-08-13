@@ -4,10 +4,10 @@
 // speakingwords CLI — thin dispatcher.
 //
 // Phase 2 ships `init` in memory mode; phase 3 adds hook mode for Claude Code;
-// phase 4 adds hook mode for Codex CLI, including the both-agents install.
-// `status`, `update` and `unhook`/`unset` are declared here so the command
-// surface is stable, but they exit 1 until their phase lands. No runtime
-// dependencies anywhere.
+// phase 4 adds hook mode for Codex CLI, including the both-agents install;
+// phase 5 adds the utils — `status`, `update`, `version` and `unhook`/`unset`.
+// Every command's logic lives in lib/; this file only parses argv and picks
+// one. No runtime dependencies anywhere.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -17,6 +17,9 @@ const hooks = require('../lib/hooks');
 const memory = require('../lib/memory');
 const pref = require('../lib/pref');
 const prompts = require('../lib/prompts');
+const status = require('../lib/status');
+const unhook = require('../lib/unhook');
+const update = require('../lib/update');
 
 const PKG_PATH = path.join(__dirname, '..', 'package.json');
 
@@ -27,11 +30,11 @@ function readVersion() {
 const USAGE = `speakingwords — keep agent replies in the shape you asked for.
 
 Usage
-  speakingwords init [flags]     install a style contract (memory mode)
+  speakingwords init [flags]     install a style contract
   speakingwords version          print the installed version
-  speakingwords status           show what the linter caught          (phase 5)
-  speakingwords update "<hint>"  tune the rules                        (phase 5)
-  speakingwords unhook           remove hook wiring (alias: unset)     (phase 5)
+  speakingwords status           show what the linter caught (hook mode)
+  speakingwords update "<hint>"  tune the rules from one line of English
+  speakingwords unhook [--yes]   remove hook wiring (alias: unset)
 
 init flags (skip the questions, for scripts and CI)
   --memory                       memory mode: write rules into the memory file
@@ -40,6 +43,15 @@ init flags (skip the questions, for scripts and CI)
   --scope local|global           this project only, or everywhere
   --voice terse|convo            point form only, or prose retained
   -h, --help                     this text
+
+update hints say what you want less of, or more of:
+  speakingwords update "less emoji"
+  speakingwords update "no game-changer, stop saying dive into"
+  speakingwords update "more robust"     allow a word again
+Every file it edits gets a .bak beside it first.
+
+unhook flags
+  -y, --yes                      skip the confirmation prompt
 
 Without flags, init asks three questions: mode, agent + scope, voice.`;
 
@@ -58,6 +70,9 @@ function parseArgs(argv) {
       flags.mode = 'memory';
     } else if (arg === '--hook') {
       flags.mode = 'hook';
+    } else if (arg === '-y' || arg === '--yes') {
+      // Boolean, so it must not swallow the next argument as its value.
+      flags.yes = true;
     } else if (arg.startsWith('--')) {
       const eq = arg.indexOf('=');
       const key = (eq === -1 ? arg.slice(2) : arg.slice(2, eq)).replace(/-/g, '');
@@ -330,11 +345,6 @@ function installHookMode({ agentIds, scope, voice, version, cwd }) {
 
 // ------------------------------------------------------------------ dispatch
 
-function notYet(command, phase) {
-  process.stderr.write(`\`speakingwords ${command}\` is not yet implemented (phase ${phase}).\n`);
-  process.exit(1);
-}
-
 async function main() {
   const { flags, positional } = parseArgs(process.argv.slice(2));
   const command = positional[0];
@@ -362,16 +372,21 @@ async function main() {
       process.stdout.write(`${readVersion()}\n`);
       break;
     case 'status':
-      notYet('status', 5);
+      process.exitCode = status.run();
       break;
     case 'update':
-      notYet('update', 5);
+      // The hint is free text, so everything after the verb is the hint.
+      process.exitCode = update.run(positional.slice(1).join(' '));
       break;
     case 'unhook':
-      notYet('unhook', 5);
-      break;
     case 'unset':
-      notYet('unset', 5);
+      // `unset` is the alias, and behaves identically — same code path, so it
+      // cannot drift.
+      try {
+        process.exitCode = await unhook.run({ yes: Boolean(flags.yes) });
+      } finally {
+        prompts.close();
+      }
       break;
     default:
       process.stderr.write(`Unknown command: ${command}\n\n${USAGE}\n`);

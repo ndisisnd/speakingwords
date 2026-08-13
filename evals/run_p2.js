@@ -214,18 +214,28 @@ function evalCli() {
   check('P2', '--help lists every command',
     ['init', 'version', 'status', 'update', 'unhook'].every((c) => help.includes(c)));
 
-  for (const [command, phase] of [['status', 5], ['update', 5], ['unhook', 5], ['unset', 5]]) {
-    let code = 0;
+  // Phase 5 replaced the stubs. What P2 still owns is the command *surface*:
+  // every verb resolves to real code, on a home with nothing installed in it,
+  // without a stack trace. Their behaviour is gated by evals/run_p5.py.
+  const surfaceHome = fs.mkdtempSync(path.join(os.tmpdir(), 'speakingwords-surface-'));
+  for (const command of ['status', 'update', 'unhook', 'unset']) {
     let stderr = '';
+    let stdout = '';
     try {
-      execFileSync(process.execPath, [CLI, command], { encoding: 'utf8', stdio: 'pipe' });
+      stdout = execFileSync(process.execPath, [CLI, command], {
+        encoding: 'utf8',
+        stdio: 'pipe',
+        env: { ...process.env, SPEAKINGWORDS_HOME: surfaceHome },
+      });
     } catch (err) {
-      code = err.status;
+      stdout = String(err.stdout || '');
       stderr = String(err.stderr || '');
     }
-    check('P2', `${command} stub exits 1 and names its phase`,
-      code === 1 && stderr.includes(`phase ${phase}`), stderr.trim());
+    check('P2', `${command} is implemented, not a stub`,
+      !stderr.includes('not yet implemented') && !/^\s*at /m.test(stderr),
+      `${stdout.trim()} ${stderr.trim()}`);
   }
+  fs.rmSync(surfaceHome, { recursive: true, force: true });
 
   // Interactive path: three questions, answered over a pipe. This guards the
   // buffered-stdin regression where later answers were dropped and the flow
