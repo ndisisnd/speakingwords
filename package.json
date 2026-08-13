@@ -13,7 +13,8 @@
     "bin/",
     "lib/",
     "skill/",
-    "install.sh"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "eval:p1": "python3 evals/run_deterministic.py",
@@ -21,15 +22,26 @@
     "eval:p3": "python3 evals/run_p3.py",
     "eval:p4": "python3 evals/run_p4.py",
     "eval:p5": "python3 evals/run_p5.py",
-    "eval:deterministic": "npm run eval:p1 && npm run eval:p2 && npm run eval:p3 && npm run eval:p4 && npm run eval:p5",
+    "eval:p6": "python3 evals/run_p6.py",
+    "eval:deterministic": "npm run eval:p1 && npm run eval:p2 && npm run eval:p3 && npm run eval:p4 && npm run eval:p5 && npm run eval:p6",
     "eval": "npm run eval:deterministic"
   },
   "keywords": [
     "claude-code",
     "codex",
+    "codex-cli",
     "agent",
     "style",
+    "output-style",
     "linter",
-    "hooks"
-  ]
+    "lexicon",
+    "hooks",
+    "stop-hook",
+    "cli"
+  ],
+  "repository": "TODO-set-repository-url-before-publishing",
+  "homepage": "TODO-set-homepage-url-before-publishing",
+  "bugs": {
+    "url": "TODO-set-issue-tracker-url-before-publishing"
+  }
 }
