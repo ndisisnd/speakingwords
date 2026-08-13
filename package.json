@@ -1,0 +1,29 @@
+{
+  "name": "speakingwords",
+  "version": "0.1.0",
+  "description": "An output parser for agent replies. Installs a style contract as configuration, in memory mode or hook mode, in a terse or conversational voice.",
+  "license": "MIT",
+  "bin": {
+    "speakingwords": "bin/speakingwords.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "skill/",
+    "install.sh"
+  ],
+  "scripts": {
+    "eval:p2": "node evals/run_p2.js"
+  },
+  "keywords": [
+    "claude-code",
+    "codex",
+    "agent",
+    "style",
+    "linter",
+    "hooks"
+  ]
+}
