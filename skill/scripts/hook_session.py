@@ -76,12 +76,16 @@ SOURCE_KEYS = ("source", "trigger")
 # The register is one line because it is one rule, the same at every voice and
 # every level (plan §2 W3). It goes first: the linter can catch a banned word
 # after the fact, but sentence construction is the part that is cheapest to get
-# right before the reply is written, not after it bounces.
+# right before the reply is written, not after it bounces. The three report-
+# grammar tells are the ones E9 actually caught (patch1 §2 W7), named here in the
+# same words SKILL.md uses, so prevention and enforcement cannot drift apart.
 REGISTER_RULE = (
     "Register: write like a colleague in a Slack DM. Short sentences, everyday "
     "words, contractions where they read naturally. Technical terms stay — it is "
     "the grammar around them that stays simple, not the vocabulary of the domain. "
-    "No essay connectives (furthermore, moreover, thus, hence, whilst, prior to)."
+    "No essay connectives (furthermore, moreover, thus, hence, whilst, prior to). "
+    "No report grammar: no bolded section headers, no labelled bullets "
+    "(Cause: / Fix:), no roll-call lists."
 )
 
 VOICE_RULES = {

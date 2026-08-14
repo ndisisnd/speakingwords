@@ -749,8 +749,11 @@ def eval_e8_scaffold():
             "%s %.1f%%" % (l, medians[l] * 100) for l in LEVELS))
 
     # The convo guardrail the bands must not break: `high` is not permission to
-    # collapse convo into terse. Checked here on the linter, which is the part
-    # that can be checked without a model — E4 re-runs the judged half.
+    # collapse convo into terse. This checks the linter's half only — that a
+    # convo reply is not bounced for being prose. It is *not* the guardrail
+    # itself, and the v0.2.0 driver's mistake was treating it as if it were:
+    # `terse-prose-block` cannot fire on a bullet list, so it can never catch a
+    # flattened convo reply. The real comparison is A27, in run_p13.py.
     prose = "\n".join([
         "The retry budget is three attempts.",
         "A fourth failure parks the job in the dead-letter queue.",
@@ -768,9 +771,15 @@ def e8_report():
     Deliberately not run here: it costs model calls, and this file is part of
     `eval:deterministic`. The recorded run is:
 
+      0. Import the deterministic half from evals/harness_checks.py. The driver
+         lives outside this repo; the checks it makes do not, so they can be
+         gated here (run_p13.py) instead of being re-invented per recording.
       1. For each of the 20 fixtures in `manifest["e8"]`, and each level, ask the
          installed agent to rewrite the fixture under skill/SKILL.md at that
-         level. That is the `rewrite` callable e8_measure() takes.
+         level. That is the `rewrite` callable e8_measure() takes. Step 1 of the
+         rewrite procedure is a word budget, so a median outside the band is now
+         a contract failure, not a taste difference — and so is a median under
+         the floor.
       2. Feed the results to e8_measure() and check every median with in_band().
       3. Send the same before/after pairs to an LLM judge asking one question per
          pair: does every fact, number, path and code block in the original still
@@ -779,9 +788,16 @@ def e8_report():
          judge is told so: an enumeration the reader can retrieve elsewhere (the
          files in a diff, the rules in a lexicon table) collapsed to its function,
          its count and a pointer. Dropping the count or the pointer is a loss, and
-         so is dropping anything the pointer does not carry. See "What counts as a
+         so is dropping anything the pointer does not carry. A causal or purpose
+         link is a fact too, and dropping the why while keeping the what is a
+         loss — all five losses the v0.2.0 run recorded were that shape, and they
+         are replayed as fixtures in run_p13.py (A29). See "What counts as a
          fact" in skill/SKILL.md.
-      4. Re-run the E4 "convo never collapses into terse" gate at every level.
+      4. Re-run the "convo never collapses into terse" gate at every level, by
+         calling harness_checks.convo_prose_gate() on the pairs. Not by asking
+         lint.py whether `terse-prose-block` fired: that rule cannot fire on a
+         bullet list, so the v0.2.0 run passed this gate vacuously while the
+         rewriter was flattening convo into bullets (A27, patch1 §1).
       5. Paste medians, the judge's verdict and the model id into the release
          notes, as E2-E5 are recorded.
 

@@ -1,0 +1,57 @@
+{
+  "source": "evals/records/e8-e9-v0.2.0.json — e8.losses, recorded read-only",
+  "note": "The five fact losses the v0.2.0 run produced. Each entry names the clause the rewrite dropped, in the words the judge used to rule it a loss, and the SKILL.md rubric clause that now covers it. Nothing here is re-judged: A29 asks only whether the contract we ship states the rule the judge applied.",
+  "cases": [
+    {
+      "pair": "e01_retry-budget.txt|high",
+      "fixture": "e01_retry-budget.txt",
+      "level": "high",
+      "kind": "causal",
+      "rubric_clause": "causal-link",
+      "dropped_clause": "the job waits in the dead-letter queue because a human has to review it",
+      "kept_instead": "the job is parked in the dead-letter queue",
+      "judge_reason": "The original states parked jobs wait for a human to review them, but the rewrite only says the job is 'parked in queue/dead' without stating that human review is the reason it's waiting there — that fact is dropped, not just compressed."
+    },
+    {
+      "pair": "e13_memory-growth.txt|med",
+      "fixture": "e13_memory-growth.txt",
+      "level": "med",
+      "kind": "mechanism",
+      "rubric_clause": "causal-link",
+      "dropped_clause": "the cache grows because each distinct requested URL adds an entry",
+      "kept_instead": "entries pile up forever",
+      "judge_reason": "The original states each distinct requested URL adds a cache entry; the rewrite only says 'entries pile up forever' without mentioning that URLs are the specific mechanism/key driving growth, dropping that detail."
+    },
+    {
+      "pair": "e16_error-shape.txt|med",
+      "fixture": "e16_error-shape.txt",
+      "level": "med",
+      "kind": "consequence",
+      "rubric_clause": "causal-link",
+      "dropped_clause": "the error shape is inconsistent, which is why client code has to branch so much",
+      "kept_instead": "a bullet list of the error shapes",
+      "judge_reason": "The rewrite drops the original's causal claim that the inconsistent error shape is why client code has to do so much branching — that consequence/reason is not retrievable from the bullet list."
+    },
+    {
+      "pair": "e17_perf-regression.txt|high",
+      "fixture": "e17_perf-regression.txt",
+      "level": "high",
+      "kind": "purpose",
+      "rubric_clause": "causal-link",
+      "dropped_clause": "the switch buffers so that the flow is simpler to reason about",
+      "kept_instead": "buffering holds the rows in memory",
+      "judge_reason": "The original notes buffering is 'simpler to reason about' as the tradeoff motivating the switch; the rewrite drops this characterization entirely, keeping only the memory-holding fact."
+    },
+    {
+      "pair": "e19_dependency-pin.txt|med",
+      "fixture": "e19_dependency-pin.txt",
+      "level": "med",
+      "kind": "qualifying",
+      "rubric_clause": "cannot-re-derive",
+      "dropped_clause": "the dependency is pinned to an exact version, not to a version range",
+      "kept_instead": "the pin is deliberate",
+      "judge_reason": "The rewrite drops the specific detail that the dependency is pinned to an exact version rather than a version range, only saying 'Pin is deliberate' without that distinction.",
+      "coverage_note": "Not a causal link — the plan groups it with the qualifying clauses (patch1 §1). The pre-existing 'any claim the reader cannot re-derive' clause is what rules it a loss, and A29 checks that clause is still there."
+    }
+  ]
+}

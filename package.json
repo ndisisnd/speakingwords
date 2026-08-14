@@ -27,7 +27,8 @@
     "eval:p8": "python3 evals/run_p8.py",
     "eval:p9": "python3 evals/run_p9.py",
     "eval:p10": "python3 evals/run_p10.py",
-    "eval:deterministic": "npm run eval:p1 && npm run eval:p2 && npm run eval:p3 && npm run eval:p4 && npm run eval:p5 && npm run eval:p6 && npm run eval:p7 && npm run eval:p8 && npm run eval:p9 && npm run eval:p10",
+    "eval:p13": "python3 evals/run_p13.py",
+    "eval:deterministic": "npm run eval:p1 && npm run eval:p2 && npm run eval:p3 && npm run eval:p4 && npm run eval:p5 && npm run eval:p6 && npm run eval:p7 && npm run eval:p8 && npm run eval:p9 && npm run eval:p10 && npm run eval:p13",
     "eval": "npm run eval:deterministic"
   },
   "keywords": [
