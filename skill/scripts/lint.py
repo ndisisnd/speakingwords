@@ -32,6 +32,13 @@ MAX_MATCHES_PER_RULE = 20
 MAX_TOTAL_MATCHES = 200
 MATCH_SNIPPET_CHARS = 120
 
+# Sidecar cache of the compiled-rule listing, written beside the lexicon and
+# keyed by its mtime and size (plan §2 W4.1). It is a latency device, never a
+# source of truth: a missing, stale, corrupt or unreadable cache falls straight
+# back to a full reparse, so no cache state can change a verdict (A21, E10).
+CACHE_SUFFIX = ".cache.json"
+CACHE_VERSION = 1
+
 STRIP_HEADING = re.compile(r"^##\s+Strip rules\s*$", re.MULTILINE)
 NEXT_HEADING = re.compile(r"^##\s+", re.MULTILINE)
 
@@ -51,7 +58,7 @@ class LexiconError(Exception):
     pass
 
 
-def read_rules(path=LEXICON_PATH):
+def parse_rules(path=LEXICON_PATH):
     """Parse the strip-rule table out of lexicon.md.
 
     The lexicon is the single source of truth; nothing is hardcoded here.
@@ -110,6 +117,84 @@ def read_rules(path=LEXICON_PATH):
 
     if not rules:
         raise LexiconError("strip-rule table in %s is empty" % path)
+    return rules
+
+
+# ------------------------------------------------------------- rule cache
+
+
+def cache_path(path):
+    """Sidecar cache file for a lexicon, hidden beside the lexicon itself."""
+    directory, name = os.path.split(os.path.abspath(path))
+    return os.path.join(directory, "." + name + CACHE_SUFFIX)
+
+
+def cache_key(path):
+    """What the cache is keyed on: the lexicon's mtime and size."""
+    st = os.stat(path)
+    return {"version": CACHE_VERSION, "mtime_ns": st.st_mtime_ns, "size": st.st_size}
+
+
+def read_cache(path):
+    """Return the cached rule listing, or None when it cannot be trusted.
+
+    Every failure mode — no cache, unreadable cache, garbage bytes, a key that
+    no longer matches the lexicon on disk, a pattern that no longer compiles —
+    returns None, which the caller reads as "reparse from source". The cache is
+    never allowed to be the reason a rule is missing or extra (A21).
+    """
+    try:
+        with open(cache_path(path), "r", encoding="utf-8") as fh:
+            payload = json.load(fh)
+        if not isinstance(payload, dict) or payload.get("key") != cache_key(path):
+            return None
+        rules = []
+        for rule_id, pattern, severity in payload["rules"]:
+            rules.append((rule_id, re.compile(pattern, re.IGNORECASE | re.MULTILINE), severity))
+        return rules or None
+    except Exception:
+        return None
+
+
+def write_cache(path, rules):
+    """Write the compiled-rule listing beside the lexicon, atomically.
+
+    Temp file then rename, so a crash mid-write leaves the old cache or the new
+    one, never a torn one (A22). An unwritable directory is not an error: the
+    linter simply keeps reparsing.
+    """
+    target = cache_path(path)
+    tmp = "%s.%d.tmp" % (target, os.getpid())
+    payload = {
+        "key": cache_key(path),
+        "rules": [[rule_id, pattern.pattern, severity] for rule_id, pattern, severity in rules],
+    }
+    try:
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(payload, fh)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, target)
+    except Exception:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+
+
+def read_rules(path=LEXICON_PATH, use_cache=True):
+    """Rules for a lexicon, from the sidecar cache when it is current.
+
+    Same return value as parse_rules() in every cache state; the cache only
+    decides how much work it took to get there.
+    """
+    if use_cache:
+        cached = read_cache(path)
+        if cached is not None:
+            return cached
+    rules = parse_rules(path)
+    if use_cache:
+        write_cache(path, rules)
     return rules
 
 

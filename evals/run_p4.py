@@ -365,8 +365,11 @@ def eval_shared_core():
         check("A11", "each agent gets its own entry script under that one root",
               claude_cmd.endswith("hook_stop.py") and codex_cmd.endswith("hook_codex.py"),
               "%s | %s" % (claude_cmd, codex_cmd))
+        # `sh <hook_guard.sh> <entry script>`: every token after the shell is a
+        # real file under the shared root.
         check("A11", "both hook commands exist on disk",
-              os.path.isfile(claude_cmd.split(" ", 1)[1]) and os.path.isfile(codex_cmd.split(" ", 1)[1]))
+              all(os.path.isfile(p) for p in claude_cmd.split(" ")[1:])
+              and all(os.path.isfile(p) for p in codex_cmd.split(" ")[1:]))
 
         pref = json.load(open(os.path.join(shared, "pref.json"), "r", encoding="utf-8"))
         check("A11", "pref.json records both agents", pref.get("agents") == ["claude", "codex"], json.dumps(pref))
@@ -438,8 +441,14 @@ def eval_hooks_json(scope, seed_existing):
         if entries:
             command = entries[0]["command"]
             check("A12", "%s: entry is a command hook" % label, entries[0].get("type") == "command")
+            # `sh <hook_guard.sh> <hook_codex.py>` since P8 — same python3 probe
+            # as the Claude Code entry point (A24).
+            parts = command.split(" ")
             check("A12", "%s: command points at an existing hook_codex.py" % label,
-                  command.startswith("python3 ") and os.path.isfile(command.split(" ", 1)[1]), command)
+                  parts[0] == "sh" and len(parts) == 3
+                  and parts[1].endswith("hook_guard.sh")
+                  and parts[2].endswith("hook_codex.py")
+                  and all(os.path.isfile(p) for p in parts[1:]), command)
 
         if seed_existing:
             check("A12", "%s: the user's other event survives" % label,

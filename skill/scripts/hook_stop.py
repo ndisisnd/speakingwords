@@ -46,9 +46,16 @@ SKILL_ROOT = os.path.dirname(HERE)
 LINT_PATH = os.path.join(HERE, "lint.py")
 PREF_PATH = os.path.join(SKILL_ROOT, "pref.json")
 HITS_PATH = os.path.join(SKILL_ROOT, "hits.jsonl")
+HITS_ROTATED_PATH = HITS_PATH + ".1"
 SKILL_MD = os.path.join(SKILL_ROOT, "SKILL.md")
 
 EXIT_OK = 0
+
+# Telemetry rotation (plan §2 W4.3, assertion A23). Unbounded append was fine
+# while the only user wrote the tool; on someone else's machine it is a file
+# that grows for a year. One generation is kept, so the ceiling is 2 MB and
+# `status` still reads the whole history it is allowed to keep.
+HITS_MAX_BYTES = 1024 * 1024
 
 # Keep the feedback string short enough to stay readable in the agent's
 # context. lint.py already caps each match at 120 chars.
@@ -189,6 +196,25 @@ def build_reason(violations, voice):
     return reason
 
 
+def rotate_hits(max_bytes=HITS_MAX_BYTES):
+    """Move hits.jsonl aside once it passes the size ceiling (A23).
+
+    One generation, one rename: hits.jsonl.1 is replaced, hits.jsonl starts
+    empty. `status` reads both, so the totals a user sees do not jump at the
+    rotation boundary — only the oldest generation ever falls off the end.
+
+    Best effort, like every other telemetry path: a failure here must not cost
+    the user their bounce.
+    """
+    try:
+        if os.path.getsize(HITS_PATH) < max_bytes:
+            return False
+        os.replace(HITS_PATH, HITS_ROTATED_PATH)
+        return True
+    except OSError:
+        return False
+
+
 def log_hits(violations, voice, extra=None):
     """Append one single-line JSON record per violation (plan A9).
 
@@ -200,6 +226,7 @@ def log_hits(violations, voice, extra=None):
     tell an enforced bounce from a downgraded one.
     """
     try:
+        rotate_hits()
         stamp = (
             datetime.datetime.now(datetime.timezone.utc)
             .replace(microsecond=0)

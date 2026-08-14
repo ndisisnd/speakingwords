@@ -360,10 +360,18 @@ def eval_settings(scope, seed_existing):
         if entries:
             command = entries[0]["command"]
             check("P3", "%s: entry is a command hook" % label, entries[0].get("type") == "command")
+            # Since P8 the command is `sh <hook_guard.sh> <hook_stop.py>`: the
+            # wrapper probes for python3 so a machine without it exits clean
+            # instead of erroring on every reply (A24).
+            parts = command.split(" ")
             check(
                 "P3",
                 "%s: command points at an existing hook_stop.py" % label,
-                command.startswith("python3 ") and os.path.isfile(command.split(" ", 1)[1]),
+                parts[0] == "sh"
+                and len(parts) == 3
+                and parts[1].endswith("hook_guard.sh")
+                and parts[2].endswith("hook_stop.py")
+                and all(os.path.isfile(p) for p in parts[1:]),
                 command,
             )
             check("P3", "%s: command is findable by the speakingwords tag" % label,

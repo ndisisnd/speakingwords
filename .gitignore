@@ -2,5 +2,7 @@ node_modules/
 *.bak
 .DS_Store
 hits.jsonl
+hits.jsonl.1
+.lexicon.md.cache.json
 .serena/
 .claude/
