@@ -18,6 +18,8 @@ What is gated here
        opens with the word-budget computation. The per-level exemplar is checked
        arithmetically: every level's rewrite lands inside the band computed from
        its own "Before", and the failure case lands under the floor.
+       Two levels ship as of P14: `med`'s band and behaviour were promoted to
+       become `high`, and the old 40-50%% `high` band was dropped.
   A29  The fact definition names causal and purpose links, and the five losses
        the v0.2.0 run recorded are replayed as fixtures: each one's dropped
        clause is classified a loss by the shipped rubric's own wording.
@@ -49,8 +51,8 @@ RECORD = os.path.join(HERE, "records", "e8-e9-v0.2.0.json")
 # Same bands as run_p9.py's E8_BANDS, restated rather than imported: run_p9
 # builds a temp home on import-time paths, and this file must stay cheap. The
 # first check below fails loudly if the two ever disagree.
-E8_BANDS = {"low": (0.10, 0.20), "med": (0.25, 0.35), "high": (0.40, 0.50)}
-LEVELS = ("low", "med", "high")
+E8_BANDS = {"low": (0.10, 0.20), "high": (0.25, 0.35)}
+LEVELS = ("low", "high")
 
 # run_p10 pins this string to appear exactly once in SKILL.md. The register
 # counter-exemplar added in W7 must not restate it — checked below.
@@ -140,7 +142,7 @@ FENCED = "\n".join([
 def eval_a27_helper():
     """The comparison itself, before anything is asserted with it."""
     check("A27", "the runner's bands match run_p9's E8_BANDS",
-          "E8_BANDS = {\"low\": (0.10, 0.20), \"med\": (0.25, 0.35), \"high\": (0.40, 0.50)}"
+          "E8_BANDS = {\"low\": (0.10, 0.20), \"high\": (0.25, 0.35)}"
           in read(os.path.join(HERE, "run_p9.py")))
 
     # The helper must classify a bullet exactly as lint.py already does. If it
@@ -284,7 +286,7 @@ def exemplar_blocks(skill):
     section = skill.split("### Before → after, one paragraph at each level")[1]
     section = section.split("### Guardrails")[0]
     out = {}
-    pattern = r"\*\*(Before|low|med|high|The failure case)\*\*([^\n]*)\n((?:> [^\n]*\n)+)"
+    pattern = r"\*\*(Before|low|high|The failure case)\*\*([^\n]*)\n((?:> [^\n]*\n)+)"
     for match in re.finditer(pattern, section):
         body = " ".join(ln[2:] for ln in match.group(3).strip().split("\n"))
         out[match.group(1)] = (match.group(2).strip(), words(body))
@@ -300,8 +302,8 @@ def eval_a28_exemplar():
     skill = read(SKILL_MD)
     blocks = exemplar_blocks(skill)
 
-    check("A28", "the exemplar ships a Before and all three levels",
-          all(k in blocks for k in ("Before", "low", "med", "high")),
+    check("A28", "the exemplar ships a Before and both shipped levels",
+          all(k in blocks for k in ("Before", "low", "high")),
           ", ".join(sorted(blocks)))
     if "Before" not in blocks:
         return
@@ -481,7 +483,12 @@ def eval_w7_session_block():
 
 
 def render_block():
-    """The block as the hook emits it, for a convo/med install."""
+    """The block as the hook emits it, for a convo install at the legacy `med`.
+
+    The level is deliberately the legacy value rather than `high`: the block it
+    produces has to be the `high` block, so rendering it through the end-to-end
+    hook path proves the normalisation reaches the wire and not just the map.
+    """
     import shutil
     import tempfile
 

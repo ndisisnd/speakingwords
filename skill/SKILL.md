@@ -90,17 +90,18 @@ strip rules and the language rules identically.
 
 ## Conciseness contract
 
-`pref.json` also carries `conciseness: low | med | high`. The level owns *how
+`pref.json` also carries `conciseness: low | high`. The level owns *how
 much* survives; the voice owns *what shape* it takes. Neither borrows the
 other's authority: a voice never licenses a deeper cut, and a level never
 changes the shape. Any voice pairs with any level. A missing key means an
-install from 0.1.0 and behaves as `high`.
+install from 0.1.0 and behaves as `high`, the most aggressive shipped level.
+`med` is a recognised legacy name from 0.2.0 development, not a third position:
+it reads as `high`, the level whose behaviour and band it became.
 
 | Level | Target cut vs. an unstyled reply | What goes |
 |-------|----------------------------------|-----------|
 | `low` | 10–20% | Decoration only: filler, restatement, stacked hedges. The prose stays intact. |
-| `med` | 25–35% | Every sentence earns its place. Explanations stay; elaborations go. |
-| `high` | 40–50% | Load-bearing content only. Every fact, number, path and code block still survives. |
+| `high` | 25–35% | Every sentence earns its place. Explanations stay; elaborations go. |
 
 **The band has two edges, and both are real.** Landing under the floor is the
 same failure as landing over the ceiling. At `low`, cutting 40% is a bug, not
@@ -121,7 +122,7 @@ two edges**.
 > fails four separate times will stop retrying altogether and simply sit there
 > waiting for a human to come and look at it.
 
-64 words in, so the budgets are: `low` 52–57 words, `med` 42–48, `high` 32–38.
+64 words in, so the budgets are: `low` 52–57 words, `high` 42–48.
 
 **low** (budget 52–57 → 53 words, a 17% cut: the opener and the restatement go)
 > The retry budget is set to three attempts. After those three attempts have
@@ -134,24 +135,20 @@ still survives. Eleven words was the whole budget, and the opener and the
 restatement spent it. Reaching in for the rest would put the reply under the
 floor.
 
-**med** (budget 42–48 → 44 words, a 31% cut: the second telling of the same fact goes)
+**high** (budget 42–48 → 44 words, a 31% cut: the second telling of the same fact goes)
 > The retry budget is three attempts. After those three attempts are used up,
 > the job moves into the dead-letter queue. So a job that fails four separate
 > times stops retrying altogether, and sits there waiting for a human to come
 > and look at it.
 
-**high** (budget 32–38 → 35 words, a 45% cut: only the load-bearing content is left)
-> The retry budget is three attempts. Once those three are used up, a fourth
-> failure moves the job into the dead-letter queue, where it stops retrying and
-> waits for a human to look at it.
-
 **The failure case** (12 words, an 81% cut — this is what E8 recorded)
 > Three retries. The fourth failure parks the job in the dead-letter queue.
 
-It fails twice over. It is under the floor at `low` by a mile, and it is still
-under the floor at `high`, where the budget was 32 words. And cutting past the
-floor cost a fact: *why* the job sits there — a human has to look at it — is
-gone. That is the order these two failures usually arrive in.
+It fails twice over. It is under the floor at `low` by a mile — the budget there
+was 52 words — and it is still under the floor at `high`, where the budget was
+42. Neither shipped level asked for this. And cutting past the floor cost a
+fact: *why* the job sits there — a human has to look at it — is gone. That is
+the order these two failures usually arrive in.
 
 Note what survived every level above: the number three, the fourth-failure
 boundary, the dead-letter queue, and both the fact that a human has to
@@ -186,8 +183,8 @@ intervene and the reason the job is waiting. Nothing was traded for brevity.
 
 1. Compute the word budget first. Count the words in the reply that bounced,
    then turn the level's band into a floor and a ceiling in words: keep 80–90%
-   of them at `low`, 65–75% at `med`, 50–60% at `high`. A 200-word reply at
-   `med` is 130–150 words out. Land inside that range. Under the floor is the
+   of them at `low`, 65–75% at `high`. A 200-word reply at
+   `high` is 130–150 words out. Land inside that range. Under the floor is the
    same failure as over the ceiling, so if the rewrite comes in short, you cut
    something you were not asked to cut — put it back.
 2. Remove every strip-rule match. Do not swap in a synonym of the banned phrase —
@@ -195,7 +192,7 @@ intervene and the reason the job is waiting. Nothing was traded for brevity.
 3. Re-lead the reply so the first line is the answer.
 4. Apply the language rules to what is left: the Slack register above, plain
    words, one idea per sentence, no self-narration, no filler close.
-   At `med`, `lang-function-over-inventory` applies as well: report what a change
+   At `high`, `lang-function-over-inventory` applies as well: report what a change
    does, not the parts it is made of.
    Apply the conciseness level here too — this is the step where padding and
    restatement come out, until the budget from step 1 is met.
@@ -250,7 +247,7 @@ is report grammar, and the reader can already see which is which.
 The narration goes, the hedge stack collapses to one concrete claim, and the answer
 leads.
 
-### 4 — a parts list instead of a result (terse, `med`)
+### 4 — a parts list instead of a result (terse, `high`)
 
 **Before**
 > Added strip rules for `furthermore`, `moreover`, `thus`, `hence`,
@@ -265,7 +262,7 @@ leads.
 
 The reader wanted to know what the change does. The eleven names are one lookup
 away in the table, so the count and the pointer carry the fact and the roll call
-goes. This is `lang-function-over-inventory`, and it applies at `med` only — at
+goes. This is `lang-function-over-inventory`, and it applies at `high` only — at
 `low` the list stays as written.
 
 ## Do not

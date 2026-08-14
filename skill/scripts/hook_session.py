@@ -106,23 +106,28 @@ CONCISENESS_RULES = {
         "Conciseness is low: keep the prose, cut the decoration. Filler, "
         "restatement and stacked hedges go; explanations stay."
     ),
-    "med": (
-        "Conciseness is med: every sentence earns its place. Explanations stay, "
-        "elaborations go."
-    ),
     "high": (
-        "Conciseness is high: load-bearing content only. Every fact, number, "
-        "path and code block still survives."
+        "Conciseness is high: every sentence earns its place. Explanations stay, "
+        "elaborations go."
     ),
 }
 
+# Level values the dial no longer offers but a reader still understands, mapped
+# to what they became. `med` was the middle of a three-position dial during
+# 0.2.0 development; the rig2 recording proved its band and promoted it to
+# `high`, so an old pref.json gets the block it was already getting.
+LEGACY_LEVELS = {"med": "high"}
+
 # lang-function-over-inventory, the one level-gated language rule. It is stated
-# only at the level it is active at, so a low or high session never carries an
+# only at the level it is active at, so a `low` session never carries an
 # instruction it is not meant to follow. It sits next to the conciseness line
 # because that is where a reader looks for what a report may leave out, but it is
 # a language rule: it changes what the report says, not how much survives.
+#
+# It moved from `med` to `high` in P14 with the level it was gated to: `med`'s
+# behaviour is what `high` now is, so the rule's reach is unchanged.
 FUNCTION_RULE = {
-    "med": (
+    "high": (
         "Report what a change does, not the parts it is made of. Keep the count "
         "and a pointer — a file, a table, a diff — and drop the roll call. "
         "Numbers, paths, code blocks and caveats always stay."
@@ -153,13 +158,21 @@ def voice_of(pref):
 
 
 def conciseness_of(pref):
-    """The installed level, or `high` when the key is missing.
+    """The installed level, or `high` when the key is missing or legacy.
 
     Same fallback as lint.py and hook_stop.py: only a 0.1.0 install can be
-    missing the key, and 0.1.0 behaviour measured in the `high` band.
+    missing the key, 0.1.0 behaviour measured in the `high` band, and `high` is
+    the most aggressive shipped level. `med` is recognised and normalised to
+    `high` rather than treated as nonsense, so a 0.2.0-dev install gets the
+    block it always got.
     """
     level = pref.get("conciseness")
-    return level if level in CONCISENESS_RULES else "high"
+    if not isinstance(level, str):
+        return "high"
+    candidate = level.strip().lower()
+    if candidate in CONCISENESS_RULES:
+        return candidate
+    return LEGACY_LEVELS.get(candidate, "high")
 
 
 def build_block(pref):

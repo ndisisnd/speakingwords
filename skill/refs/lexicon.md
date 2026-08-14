@@ -71,12 +71,18 @@ table below at runtime; no rule is hardcoded in Python.
   `guidance`. Same pattern dialect as the strip table (backticks, `IGNORECASE`,
   `MULTILINE`, `\|` for a literal pipe).
 - `active at` lists the conciseness levels where the row fires, comma separated,
-  drawn from `low`, `med` and `high`. Membership is literal — a row that omits
-  `low` is silent at `low`, whatever the other levels say.
+  drawn from `low` and `high`. Membership is literal — a row that omits `low` is
+  silent at `low`, whatever the other level says.
+- `med` is a recognised legacy name, not a third level. The dial carried three
+  positions during 0.2.0 development; the recorded run proved `low` and `med`
+  inside their bands and left the old `high` undercutting its own floor, so
+  `med`'s behaviour and band were promoted to become `high`. A cell that still
+  says `med` is read as `high`.
 - `lint.py --conciseness <level>` picks the level. An unknown or missing level
-  behaves as `high`: only an upgrade from 0.1.0 can produce a missing level, and
-  0.1.0 behaviour already measured in the `high` band, so `high` is the value
-  that preserves what the user already had.
+  behaves as `high`: only an upgrade from 0.1.0 can produce a missing level,
+  0.1.0 behaviour already measured in the `high` band, and `high` is the most
+  aggressive shipped level, so it is the value that preserves what the user
+  already had.
 - A row with an unreadable `active at` cell falls back to `high` only. A rule
   nobody can place belongs at the strictest level, not everywhere.
 
@@ -89,10 +95,10 @@ level, which is exactly why the `active at` column exists.
 
 | id | pattern | severity | active at | guidance |
 |----|---------|----------|-----------|----------|
-| conc-in-other-words | `\bin other words\b` | warn | med, high | Restatement. The sentence before it already said this. If that sentence was unclear, fix it; do not say it twice. |
-| conc-another-way | `\bto put it another way\b` | warn | med, high | Same class as above, one clause longer. Rewrite the first attempt instead of appending a second. |
-| conc-as-mentioned-above | `\bas (?:mentioned\|noted\|stated) above\b` | warn | low, med, high | Pure back-reference. The reader has the text above; pointing at it adds nothing at any level, so this row fires even at `low`. |
-| conc-to-summarize | `^\s*To summari[sz]e\b` | warn | med, high | Essay scaffolding. Lead with the summary rather than announcing one. Anchored to line start so "used to summarize the log" is safe. |
+| conc-in-other-words | `\bin other words\b` | warn | high | Restatement. The sentence before it already said this. If that sentence was unclear, fix it; do not say it twice. |
+| conc-another-way | `\bto put it another way\b` | warn | high | Same class as above, one clause longer. Rewrite the first attempt instead of appending a second. |
+| conc-as-mentioned-above | `\bas (?:mentioned\|noted\|stated) above\b` | warn | low, high | Pure back-reference. The reader has the text above; pointing at it adds nothing at any level, so this row fires even at `low`. |
+| conc-to-summarize | `^\s*To summari[sz]e\b` | warn | high | Essay scaffolding. Lead with the summary rather than announcing one. Anchored to line start so "used to summarize the log" is safe. |
 | conc-simply-put | `^\s*Simply put,` | warn | high | Framing phrase that adds no content. Anchored and comma-gated so the instruction "simply put the file in /tmp" is safe. Only `high` cuts this hard. |
 
 ## Language rules
@@ -117,7 +123,7 @@ today.
 | lang-no-filler-close | **No filler close.** End on the last piece of content. <br> Before: "…and that fixes it. Let me know if you need anything else!" <br> After: "…and that fixes it." |
 | lang-concrete-over-vague | **Concrete over vague.** Replace intensifiers with the fact behind them. <br> Before: "This significantly improves performance." <br> After: "This cuts the p95 from 400 ms to 90 ms." |
 | lang-no-hedging-stack | **No stacked hedges.** At most one qualifier per claim. <br> Before: "It might possibly be the case that this could sometimes fail." <br> After: "This fails when the cache is cold." |
-| lang-function-over-inventory | Active at: `med`. **Report what a change does, not the parts it is made of.** A completed-work report names the function, keeps the count, and points at where the parts live — a file, a table, a diff. The roll call goes; the pointer replaces it. This covers enumerations only. Numbers, paths, code blocks, caveats and anything the reader cannot re-derive are never the roll call, and they stay. <br> Before: "Added strip rules for `furthermore`, `moreover`, `thus`, `hence`, `nevertheless`, `aforementioned`, `whilst`…" <br> After: "Formal essay connectives now bounce — 11 rules, each with a near-miss control; see the strip table." |
+| lang-function-over-inventory | Active at: `high`. **Report what a change does, not the parts it is made of.** A completed-work report names the function, keeps the count, and points at where the parts live — a file, a table, a diff. The roll call goes; the pointer replaces it. This covers enumerations only. Numbers, paths, code blocks, caveats and anything the reader cannot re-derive are never the roll call, and they stay. <br> Before: "Added strip rules for `furthermore`, `moreover`, `thus`, `hence`, `nevertheless`, `aforementioned`, `whilst`…" <br> After: "Formal essay connectives now bounce — 11 rules, each with a near-miss control; see the strip table." |
 
 ## Structural rules
 

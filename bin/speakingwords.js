@@ -77,6 +77,25 @@ function oneOf(name, value, allowed) {
   return value;
 }
 
+/**
+ * `--conciseness` gets its own resolver rather than `oneOf`, because it accepts
+ * more values than it ships. Two levels ship — `low` and `high` — and `med`,
+ * the third position the dial carried during 0.2.0 development, is still
+ * accepted and normalised to `high`, which is what it became. A script or a CI
+ * job pinned to `--conciseness med` keeps working and gets the behaviour it
+ * already had; the error message names only the two levels a user should type.
+ */
+function concisenessFlag(value) {
+  if (value === undefined) return undefined;
+  const level = pref.normaliseLevel(value);
+  if (!level) {
+    process.exit(help.run({
+      reason: `--conciseness must be one of: ${pref.LEVELS.join(', ')} (got "${value}")`,
+    }));
+  }
+  return level;
+}
+
 // ------------------------------------------------------------------ init flow
 
 function agentsFor(selection) {
@@ -94,7 +113,7 @@ async function cmdInit(flags) {
   const givenAgent = oneOf('agent', flags.agent, ['claude', 'codex', 'both']);
   const givenScope = oneOf('scope', flags.scope, ['local', 'global']);
   const givenVoice = oneOf('voice', flags.voice, ['terse', 'convo']);
-  const givenConciseness = oneOf('conciseness', flags.conciseness, pref.LEVELS);
+  const givenConciseness = concisenessFlag(flags.conciseness);
 
   // A command line that already answers mode, agent, scope and voice is a
   // script, not a conversation. Asking it a brand-new fourth question would
@@ -182,8 +201,7 @@ async function cmdInit(flags) {
   if (!conciseness) {
     conciseness = scripted ? pref.DEFAULT_LEVEL : await prompts.choose('How concise?', [
       { value: 'low', label: 'low', hint: 'prose intact; only filler and restatement go' },
-      { value: 'med', label: 'med', hint: 'every sentence earns its place; elaborations cut' },
-      { value: 'high', label: 'high', hint: 'load-bearing content only; facts all still survive' },
+      { value: 'high', label: 'high', hint: 'every sentence earns its place; elaborations cut' },
     ], pref.DEFAULT_LEVEL);
   }
 

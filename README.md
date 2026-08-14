@@ -110,17 +110,23 @@ independent axes — any voice pairs with any level.
 | Level | Target cut vs. an unstyled reply | Character |
 |-------|----------------------------------|-----------|
 | **low** | 10–20% | Prose intact; only decoration goes — filler, restatement, hedge stacks. |
-| **med** | 25–35% | Every sentence earns its place. Explanations kept, elaborations cut. |
-| **high** | 40–50% | Only load-bearing content — but every fact, number, path and code block still survives. |
+| **high** | 25–35% | Every sentence earns its place. Explanations kept, elaborations cut. |
 
 The percentages are targets measured across a fixture set, not rules applied to a single
 reply: nothing can measure one reply against the reply you would otherwise have written.
 Two guardrails hold at every level. Losing a fact is always worse than the violation it
 was meant to fix, and `high` never collapses a convo reply into point form.
 
+Two positions ship because two are what the recorded run proved. The dial carried a third,
+`med`, during development; the recording measured `low` and `med` inside their bands and
+found the old 40–50% `high` undercutting its own floor, so `med`'s behaviour and band were
+promoted to become `high` and the old band was dropped. `med` is still accepted everywhere
+a level is read — flag, `pref.json`, lexicon cell — and reads as `high`. Nothing that
+already says `med` breaks.
+
 Upgrading from 0.1.0 keeps the behaviour you already had: a `pref.json` with no
-`conciseness` key reads as `high`, which is the band 0.1.0 already behaved in. New installs
-are offered `med`.
+`conciseness` key reads as `high`, the most aggressive shipped level, which is the band
+0.1.0 already behaved in. New installs are offered `high`.
 
 Both voices obey the same language rules. Switching voice changes the *shape* of a reply,
 never the standard of the language.
@@ -232,7 +238,7 @@ speakingwords unhook [--yes]   remove hook wiring (alias: unset)
 
 ```sh
 speakingwords init                                  # asks four questions
-speakingwords init --hook --agent claude --scope global --voice terse --conciseness med
+speakingwords init --hook --agent claude --scope global --voice terse --conciseness high
 ```
 
 | Flag | Values |
@@ -241,7 +247,7 @@ speakingwords init --hook --agent claude --scope global --voice terse --concisen
 | `--agent` | `claude` · `codex` · `both` |
 | `--scope` | `local` · `global` |
 | `--voice` | `terse` · `convo` |
-| `--conciseness` | `low` · `med` · `high` |
+| `--conciseness` | `low` · `high` (legacy `med` reads as `high`) |
 
 Passing them all skips every question, which is what makes it scriptable. A command line
 that already answers mode, agent, scope and voice is treated as a script and takes the
@@ -322,7 +328,7 @@ Everything the linter knows lives in one file, `refs/lexicon.md`. Nothing is har
 - **Language rules** — 10 shipped. Positive rules a regex cannot judge (write like a
   colleague in a Slack DM, plain words over jargon, no self-narration, lead with the
   answer), each with one before → after exemplar. The rewrite pass applies these by reading.
-  One of them, `lang-function-over-inventory`, is active at `conciseness: med` only: it
+  One of them, `lang-function-over-inventory`, is active at `conciseness: high` only: it
   asks a completed-work report to name what the change does and point at the parts,
   rather than reading the parts out.
 
@@ -352,7 +358,7 @@ needs, like "the aforementioned case law".
 
 ```sh
 python3 lint.py --voice terse reply.txt
-cat reply.txt | python3 lint.py --voice convo --conciseness med
+cat reply.txt | python3 lint.py --voice convo --conciseness high
 ```
 
 It exits `0` on clean input and `2` on violations, and never any other code. The hook
@@ -367,6 +373,29 @@ wiring depends on that contract.
 - No agents beyond Claude Code and Codex CLI.
 - No Codex VS Code extension support — hooks are known not to fire there.
 - No GUI. Terminal only.
+
+### Known gaps
+
+The judged evals are recorded in the open, including the ones that did not go green. Every
+recording lives in [`evals/records/`](evals/records/), measured in a throwaway home
+provisioned by the real installer rather than by pasting the contract into a prompt.
+
+- **The Slack register gates are red.** E9 asks a judge whether replies read like a
+  colleague's DM rather than an organised report, and scores register and factual fidelity
+  separately. The last run came in at 71.8% on both axes against gates of 85% first-reply
+  and 95% after a bounce. Fidelity is not the problem — that axis scored 92.3%. The
+  register axis is, at 74.4%.
+- **Why the release is not blocked on it.** The recording also showed the gates measure
+  something they cannot reach. Register violations are invisible to regex rules, so the
+  Stop hook cannot bounce them, which makes a "after one bounce" gate a gate on a bounce
+  that never fires. The terse voice mandates point form and the judges read bulleted
+  answers as support-doc grammar, so the voice contract and the rubric disagree about what
+  terse Slack looks like. And the prompt set presupposes shared context ("our cache"),
+  which a grounded agent honestly asks about instead of role-playing.
+- **What happens next.** Redefining those gates — a self-contained prompt set, a rubric
+  that agrees with the terse contract, and a post-bounce measure that means something the
+  hook can actually do — is its own piece of work. The deterministic layer, the conciseness
+  bands and the anti-loss gate are all green and are what this release stands on.
 
 ---
 

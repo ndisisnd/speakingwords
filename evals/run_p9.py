@@ -6,12 +6,13 @@ every install path runs inside a throwaway temp tree.
 
 What is gated here
 ------------------
-  A19  `lint.py --conciseness` accepts low|med|high, and any other value — or
-       the flag's absence entirely — behaves as `high`. Exit codes stay inside
-       the A6 contract (0 or 2, never anything else) and the linter never
-       crashes, whatever it is handed. `high` is the fallback because only an
-       upgrade from 0.1.0 can leave the level unset, and 0.1.0 behaviour already
-       measured in the `high` band (plan §8).
+  A19  `lint.py --conciseness` accepts low|high, normalises the legacy `med` to
+       `high`, and any other value — or the flag's absence entirely — behaves as
+       `high` too. One fallback value everywhere. Exit codes stay inside the A6
+       contract (0 or 2, never anything else) and the linter never crashes,
+       whatever it is handed. `high` is the fallback because it is the most
+       aggressive shipped level: only an upgrade from 0.1.0 can leave the level
+       unset, and 0.1.0 behaviour already measured in that band (plan §8).
   A20  Every conciseness row ships at least one planted violation fixture and at
        least one clean control, and an uncovered row fails CI. The control half
        matters most: a false positive bounces a good reply, still the worst
@@ -54,13 +55,13 @@ FIXTURES = os.path.join(HERE, "fixtures")
 MANIFEST = os.path.join(FIXTURES, "manifest.json")
 
 MODERN_CODEX = "0.124.0"
-LEVELS = ("low", "med", "high")
+LEVELS = ("low", "high")
 
 # Plan §2 W2: the target cut against an unstyled reply, per level. These are
 # eval targets measured across a fixture set, never per-reply rules — no linter
 # can measure one reply against the reply that would otherwise have been
 # written, which is exactly why E8 exists and the linter does not try.
-E8_BANDS = {"low": (0.10, 0.20), "med": (0.25, 0.35), "high": (0.40, 0.50)}
+E8_BANDS = {"low": (0.10, 0.20), "high": (0.25, 0.35)}
 E8_MIN_FIXTURES = 20
 E8_MIN_WORDS = 40
 
@@ -69,6 +70,7 @@ E8_MIN_WORDS = 40
 sys.dont_write_bytecode = True
 sys.path.insert(0, SCRIPTS)
 import lint as lint_mod  # noqa: E402
+import hook_stop as stop_mod  # noqa: E402
 
 results = []
 notes = []
@@ -169,7 +171,16 @@ BAD_LEVELS = [
 # arriving from a shell variable or a hand-edited pref.json routinely carries
 # them, and silently reading such a value as `high` would change behaviour the
 # user did choose.
-TOLERATED_LEVELS = {"HIGH": "high", "High": "high", " med ": "med", "high\n": "high"}
+#
+# `med` is here rather than in BAD_LEVELS on purpose. It is not nonsense that
+# happens to land on the fallback — it is the third position the dial carried
+# during 0.2.0 development, and it is recognised and normalised to `high`,
+# which is the level its behaviour and band became (P14). The distinction
+# matters because "medium" below is nonsense and must NOT be read as a level.
+TOLERATED_LEVELS = {
+    "HIGH": "high", "High": "high", "high\n": "high",
+    "med": "high", " med ": "high", "MED": "high", "Med\n": "high",
+}
 
 LEVEL_PROBE = (
     "To summarize, the cache is warm.\n"
@@ -245,6 +256,32 @@ def eval_a19_flag():
         fired.append({v["rule"] for v in payload["violations"]} == {"strip-landed"})
     check("A19", "strip rules fire identically at every level", all(fired), str(fired))
 
+    # The legacy value is not just tolerated at the flag — it produces the same
+    # verdict as the level it normalises to. If it did not, an unupgraded
+    # pref.json would quietly lint against a different rule set.
+    _, med, _ = lint_run(["--conciseness", "med"], LEVEL_PROBE)
+    check("A19", "a legacy `med` run is byte-identical to a `high` run",
+          med == high, json.dumps({"med": med, "high": high})[:300])
+
+    # Every reader of a level agrees on the shipped set and the legacy map.
+    # They restate it rather than import it — lint.py is loaded by the hook
+    # after the preference is read — so the agreement is checked here.
+    check("A19", "lint.py ships exactly the two levels",
+          lint_mod.LEVELS == ("low", "high"), str(lint_mod.LEVELS))
+    check("A19", "lint.py recognises `med` as legacy, not as nonsense",
+          lint_mod.LEGACY_LEVELS == {"med": "high"}, str(lint_mod.LEGACY_LEVELS))
+    check("A19", "hook_stop.py agrees with lint.py on both",
+          tuple(stop_mod.LEVELS) == lint_mod.LEVELS
+          and stop_mod.LEGACY_LEVELS == lint_mod.LEGACY_LEVELS,
+          "%s / %s" % (stop_mod.LEVELS, stop_mod.LEGACY_LEVELS))
+    for value, expected in (("med", "high"), ("MED", "high"), (" med ", "high"),
+                            ("medium", "high"), (None, "high"), ("low", "low")):
+        check("A19", "hook_stop reads %r as %s" % (value, expected),
+              stop_mod.read_conciseness({"conciseness": value}) == expected,
+              stop_mod.read_conciseness({"conciseness": value}))
+    check("A19", "hook_stop reads a missing key as high",
+          stop_mod.read_conciseness({}) == "high")
+
 
 # ------------------------------------------------------- A20: row coverage
 
@@ -309,7 +346,7 @@ def eval_a20_coverage():
             _, payload, _ = lint_run(["--conciseness", level, path], "")
             if payload["violations"]:
                 dirty.append("%s@%s" % (name, level))
-    check("A20", "the whole clean set is clean at all three levels", not dirty,
+    check("A20", "the whole clean set is clean at every level", not dirty,
           ", ".join(dirty[:6]))
 
     # The `active at` column has to mean something: a row silent at every level
@@ -351,7 +388,7 @@ def eval_a26_injection():
     bindir = masked_path()
     try:
         proc = run_cli(["init", "--hook", "--agent", "claude", "--scope", "local",
-                        "--voice", "convo", "--conciseness", "med"], home, project)
+                        "--voice", "convo", "--conciseness", "high"], home, project)
         if proc.returncode != 0:
             check("A26", "hook install succeeds", False, proc.stderr.strip())
             return
@@ -379,7 +416,7 @@ def eval_a26_injection():
               payload["hookSpecificOutput"]["hookEventName"] == "SessionStart",
               json.dumps(payload)[:200])
         check("A26", "the block states the installed voice", "convo" in block, block)
-        check("A26", "the block states the installed conciseness level", "med" in block, block)
+        check("A26", "the block states the installed conciseness level", "high" in block, block)
         check("A26", "the block scopes itself to user-facing prose",
               "user-facing prose only" in block, block)
         check("A26", "the block says content may never be lost",
@@ -473,7 +510,7 @@ def eval_a26_codex():
     home, project = make_home(), make_project()
     try:
         proc = run_cli(["init", "--hook", "--agent", "codex", "--scope", "local",
-                        "--voice", "convo", "--conciseness", "med"], home, project)
+                        "--voice", "convo", "--conciseness", "high"], home, project)
         if proc.returncode != 0:
             check("A26", "codex: hook install succeeds", False, proc.stderr.strip())
             return
@@ -515,7 +552,7 @@ def eval_a26_codex():
               json.dumps(payload)[:200])
         block = payload.get("hookSpecificOutput", {}).get("additionalContext", "")
         check("A26", "codex: the block states the installed voice and level",
-              "convo" in block and "med" in block, block[:200])
+              "convo" in block and "high" in block, block[:200])
 
         # The dedupe keys on session_id, which Codex sends — no special case.
         for source in ("resume", "compact", "startup"):
@@ -590,8 +627,8 @@ def eval_plumbing():
         moved = run_cli(["update", "more concise"], home, project)
         check("P9", "`update \"more concise\"` exits 0", moved.returncode == 0, moved.stderr[:200])
         check("P9", "`update \"more concise\"` raises the level and says so",
-              json.loads(read(pref_path)).get("conciseness") == "med"
-              and "Conciseness is now med" in moved.stdout, moved.stdout[:300])
+              json.loads(read(pref_path)).get("conciseness") == "high"
+              and "Conciseness is now high" in moved.stdout, moved.stdout[:300])
         check("P9", "the level change takes a .bak first (A4)",
               os.path.isfile(pref_path + ".bak"), pref_path)
         check("P9", "the .bak holds the pre-change level",
@@ -606,6 +643,23 @@ def eval_plumbing():
         check("P9", "the level does not fall off the bottom",
               json.loads(read(pref_path)).get("conciseness") == "low"
               and "as loose as it goes" in floor.stdout, floor.stdout[:300])
+
+        # And the same at the other end. With two positions the ceiling is one
+        # step away, so the "already as tight as it goes" path is reachable in
+        # ordinary use, not just by a user hammering the command.
+        run_cli(["update", "more concise"], home, project)
+        ceiling = run_cli(["update", "more concise"], home, project)
+        check("P9", "the level does not run off the top",
+              json.loads(read(pref_path)).get("conciseness") == "high"
+              and "as tight as it goes" in ceiling.stdout, ceiling.stdout[:300])
+
+        # A 0.2.0-dev pref.json still saying `med` is read as `high`, and moving
+        # down from it lands on `low` rather than crashing on an unknown level.
+        write(pref_path, json.dumps(dict(pref, conciseness="med"), indent=2) + "\n")
+        legacy_move = run_cli(["update", "less aggressive"], home, project)
+        check("P9", "a legacy `med` pref reads as high and steps down to low",
+              json.loads(read(pref_path)).get("conciseness") == "low"
+              and "was high" in legacy_move.stdout, legacy_move.stdout[:300])
 
         # A level hint must not be mistaken for a rule change. "more concise"
         # reads as an allow clause to the ban/allow parser, and "less verbose"
@@ -736,9 +790,9 @@ def eval_e8_scaffold():
           all(in_band(sum(E8_BANDS[l]) / 2.0, l) for l in LEVELS))
     check("E8", "band arithmetic rejects an out-of-band cut",
           not in_band(0.05, "low") and not in_band(0.60, "high")
-          and not in_band(0.20, "med"))
+          and not in_band(0.20, "high"))
     check("E8", "the bands do not overlap",
-          E8_BANDS["low"][1] < E8_BANDS["med"][0] < E8_BANDS["med"][1] < E8_BANDS["high"][0])
+          E8_BANDS["low"][1] < E8_BANDS["high"][0] < E8_BANDS["high"][1])
 
     if not missing and paths:
         medians = e8_measure(paths, stub_rewriter)

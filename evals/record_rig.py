@@ -193,7 +193,7 @@ E8_PROMPT = ("Rewrite the reply below to follow the installed speakingwords "
              "style contract. Output only the rewritten reply.\n\n"
              "%s")
 
-E9_LEVEL = "med"
+E9_LEVEL = "high"
 
 # Scenario framing only — names the situation, never the contract. Without it,
 # a tool-holding session in an empty project answers as a repo agent ("there's
@@ -207,7 +207,7 @@ E9_PROMPT = ("A colleague DMs you this on Slack. You have no repo or project "
 # ---------------------------------------------------------------- smoke tests
 
 def smoke():
-    home, proj = provision("terse", "med")
+    home, proj = provision("terse", "high")
     before = hits_count(home)
     txt, sid, err = session_call(
         "Repeat this sentence back to me exactly, as your whole reply: "

@@ -531,7 +531,11 @@ def eval_pref_forward_compat():
         root = claude_root(home)
         pref_path = os.path.join(root, "pref.json")
 
-        # A 0.1.0 file, plus a key only a later version would write.
+        # A 0.1.0 file, plus a key only a later version would write, plus the
+        # legacy `med` level a 0.2.0-dev install would have on disk. `med` is
+        # not an unknown *key* — `conciseness` is one this version owns — so it
+        # is the value, not the key, that has to survive a write nobody asked
+        # to change the level in.
         legacy = dict(PREF_010, conciseness="med", future_thing={"nested": [1, 2]})
         write(pref_path, json.dumps(legacy, indent=2) + "\n")
 
@@ -555,15 +559,27 @@ def eval_pref_forward_compat():
                 home, project)
         after = json.loads(read(pref_path))
         check("A25", "a rewrite preserves keys this version does not know",
-              after.get("conciseness") == "med" and after.get("future_thing") == {"nested": [1, 2]},
-              json.dumps(after))
+              after.get("future_thing") == {"nested": [1, 2]}, json.dumps(after))
+        # `conciseness` is a key init owns, so a re-run writes it rather than
+        # preserving it — with no flag, that is the suggested default. This is
+        # not the forward-compat path; it is the line either side of it, pinned
+        # so the two cannot be confused for one another.
+        check("A25", "a rewrite writes the keys init owns, level included",
+              after.get("conciseness") == "high", json.dumps(after))
         check("A25", "a rewrite still updates the keys it does own",
               after.get("voice") == "convo" and after.get("mode") == "hook", json.dumps(after))
         check("A25", "known keys keep their order at the front of the file",
               list(after.keys())[:5] == ["agents", "mode", "scope", "voice", "version"],
               json.dumps(list(after.keys())))
 
-        # And the writer itself, called directly, behaves the same way.
+        # And the writer itself, called directly, behaves the same way. The
+        # legacy level is planted again first: writePref is handed no
+        # conciseness, so it must leave the value exactly as it found it. Files
+        # are never rewritten to normalise a level — readers normalise at read
+        # time (`med` reads as `high`), and a util that has no opinion about the
+        # level does not get to have one.
+        write(pref_path, json.dumps(dict(json.loads(read(pref_path)),
+                                         conciseness="med"), indent=2) + "\n")
         direct = subprocess.run(
             ["node", "-e",
              "const p=require(%s);p.writePref({agents:['claude'],mode:'hook',scope:'local',"
@@ -573,7 +589,7 @@ def eval_pref_forward_compat():
             env=dict(os.environ, SPEAKINGWORDS_HOME=home), capture_output=True, text=True,
         )
         written = json.loads(direct.stdout or "{}")
-        check("A25", "writePref preserves unknown keys it never wrote",
+        check("A25", "writePref preserves a value it was not handed, legacy or not",
               written.get("conciseness") == "med" and written.get("version") == "0.2.0",
               direct.stdout + direct.stderr)
     finally:

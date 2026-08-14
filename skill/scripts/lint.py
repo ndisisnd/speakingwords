@@ -12,12 +12,15 @@ crash is reported on stderr and reported as clean with a "lint_error" field.
 
 Usage:
     python3 lint.py --voice terse reply.txt
-    cat reply.txt | python3 lint.py --voice convo --conciseness med
+    cat reply.txt | python3 lint.py --voice convo --conciseness high
 
---conciseness takes low, med or high. Anything else, and the flag's absence,
-behaves as high (plan assertion A19): only an upgrade from 0.1.0 can leave the
-level unset, and 0.1.0 behaviour already measured in the high band, so high is
-the value that preserves what the user already had.
+--conciseness takes low or high. `med`, the third position the dial carried
+during 0.2.0 development, is still recognised and reads as high — that is the
+level med's behaviour and band became. Anything else, and the flag's absence,
+also behaves as high (plan assertion A19): only an upgrade from 0.1.0 can leave
+the level unset, 0.1.0 behaviour already measured in the high band, and high is
+the most aggressive shipped level, so it is the value that preserves what the
+user already had.
 """
 
 import json
@@ -44,17 +47,26 @@ MATCH_SNIPPET_CHARS = 120
 # back to a full reparse, so no cache state can change a verdict (A21, E10).
 CACHE_SUFFIX = ".cache.json"
 # Bumped to 2 in v0.2.0: rule records grew a level set, so a v1 cache written by
-# an older install describes a different shape. The version rides in the cache
-# key, so an old file simply misses and is reparsed — never misread.
-CACHE_VERSION = 2
+# an older install describes a different shape. Bumped to 3 in P14: the level
+# set itself changed membership when the dial dropped to two positions, so a v2
+# cache describes rows as firing at levels that no longer exist. The version
+# rides in the cache key, so an old file simply misses and is reparsed — never
+# misread.
+CACHE_VERSION = 3
 
 STRIP_HEADING = re.compile(r"^##\s+Strip rules\s*$", re.MULTILINE)
 CONCISENESS_HEADING = re.compile(r"^##\s+Conciseness rules\s*$", re.MULTILINE)
 NEXT_HEADING = re.compile(r"^##\s+", re.MULTILINE)
 
 # The conciseness dial (plan §2 W2). Voice says what shape a reply takes; the
-# level says how much of it survives.
-LEVELS = ("low", "med", "high")
+# level says how much of it survives. Two positions ship: the rig2 recording
+# proved `low` and the old `med`, and `med`'s behaviour and band were promoted
+# to become `high` (P14).
+LEVELS = ("low", "high")
+# Level values a reader still understands but no longer ships, mapped to what
+# they became. A 0.2.0-dev pref.json, an old script or a legacy lexicon cell
+# that says `med` is read as `high` rather than rejected.
+LEGACY_LEVELS = {"med": "high"}
 DEFAULT_LEVEL = "high"
 # Strip rules are level-independent: a banned phrase is banned at every level.
 ALL_LEVELS = frozenset(LEVELS)
@@ -83,26 +95,38 @@ class LexiconError(Exception):
 
 
 def normalise_level(value):
-    """Coerce anything at all into one of the three levels.
+    """Coerce anything at all into one of the two shipped levels.
 
-    Absence and nonsense both land on DEFAULT_LEVEL rather than raising (A19).
-    A bad level is a reason to lint at the level the user already had, never a
-    reason to crash and take the reply down with it.
+    A legacy value normalises to what it became (`med` -> `high`). Absence and
+    nonsense both land on DEFAULT_LEVEL rather than raising (A19) — one fallback
+    value everywhere. A bad level is a reason to lint at the level the user
+    already had, never a reason to crash and take the reply down with it.
     """
     if not isinstance(value, str):
         return DEFAULT_LEVEL
     candidate = value.strip().lower()
-    return candidate if candidate in LEVELS else DEFAULT_LEVEL
+    if candidate in LEVELS:
+        return candidate
+    return LEGACY_LEVELS.get(candidate, DEFAULT_LEVEL)
 
 
 def parse_levels(cell):
     """Read an `active at` cell into the set of levels a row fires at.
 
+    A legacy level name in the cell resolves to the level it became, so a
+    lexicon written against the three-position dial still places its rows where
+    they belong instead of falling through to the default.
+
     An unreadable or empty cell yields {high} only. A rule nobody can place
     belongs at the strictest level, not at every level: silently widening a
     rule's reach is how a false positive reaches a `low` user.
     """
-    found = {token for token in re.split(r"[,\s/]+", (cell or "").lower()) if token in LEVELS}
+    found = set()
+    for token in re.split(r"[,\s/]+", (cell or "").lower()):
+        if token in LEVELS:
+            found.add(token)
+        elif token in LEGACY_LEVELS:
+            found.add(LEGACY_LEVELS[token])
     return frozenset(found) if found else frozenset((DEFAULT_LEVEL,))
 
 
@@ -179,7 +203,7 @@ def parse_rules(path=LEXICON_PATH):
     The lexicon is the single source of truth; nothing is hardcoded here.
     Returns a list of (rule_id, compiled_pattern, severity, levels), where
     `levels` is the frozenset of conciseness levels the row fires at. Strip
-    rules carry all three; conciseness rows carry whatever their `active at`
+    rules carry every level; conciseness rows carry whatever their `active at`
     column says.
 
     The conciseness section is optional. A 0.1.0 lexicon that predates it still
@@ -441,8 +465,8 @@ def lint(text, voice, rules, conciseness=DEFAULT_LEVEL):
     """Every violation in `text` at this voice and this conciseness level.
 
     The level filters the rule set before the scan: a row only fires when its
-    `active at` column names the level in play. Strip rules carry all three
-    levels, so they fire whatever the dial says — the level governs how much
+    `active at` column names the level in play. Strip rules carry every level,
+    so they fire whatever the dial says — the level governs how much
     padding survives, never whether a banned phrase is allowed back in.
     """
     level = normalise_level(conciseness)

@@ -51,6 +51,11 @@ SKILL_MD = os.path.join(SKILL_ROOT, "SKILL.md")
 
 EXIT_OK = 0
 
+# The shipped conciseness levels, and the one legacy value still recognised.
+# Kept in step with lint.py's LEVELS / LEGACY_LEVELS, which run_p9.py checks.
+LEVELS = ("low", "high")
+LEGACY_LEVELS = {"med": "high"}
+
 # Telemetry rotation (plan §2 W4.3, assertion A23). Unbounded append was fine
 # while the only user wrote the tool; on someone else's machine it is a file
 # that grows for a year. One generation is kept, so the ceiling is 2 MB and
@@ -116,12 +121,27 @@ def read_conciseness(pref=None):
     """The installed conciseness level, defaulting to `high`.
 
     A missing key means an install written by 0.1.0, which had no dial at all.
-    0.1.0 behaviour measured in the `high` band, so `high` is what preserves the
-    behaviour that user already chose (plan §8). `init` always writes a level,
-    so only an upgrader can reach this default.
+    0.1.0 behaviour measured in the `high` band, and `high` is the most
+    aggressive shipped level, so `high` is what preserves the behaviour that
+    user already chose (plan §8). `init` always writes a level, so only an
+    upgrader can reach this default.
+
+    The dial ships two positions. `med` — the third it carried during 0.2.0
+    development — is recognised and read as `high`, the level its behaviour and
+    band became, so a 0.2.0-dev pref.json is never a reason to bounce or crash.
+    The map is restated here rather than imported from lint.py: this function
+    runs before the linter module is loaded, and a hook that cannot read a
+    preference because an import failed would be a fail-closed path in a
+    fail-open script. lint.normalise_level() is the same three lines, and
+    evals/run_p9.py checks the two agree.
     """
     level = (pref if pref is not None else read_pref()).get("conciseness")
-    return level if level in ("low", "med", "high") else "high"
+    if not isinstance(level, str):
+        return "high"
+    candidate = level.strip().lower()
+    if candidate in LEVELS:
+        return candidate
+    return LEGACY_LEVELS.get(candidate, "high")
 
 
 def is_assistant(entry):

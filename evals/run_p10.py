@@ -27,7 +27,7 @@ What is gated here
 
   P11  `lang-function-over-inventory`. The rule is stated on all four surfaces
        (lexicon row, SKILL.md, memory template, SessionStart block) in the same
-       words, and it is gated to `med` on every one of them. The re-scoped
+       words, and it is gated to `high` on every one of them. The re-scoped
        anti-loss invariant is checked to still name the things a reader cannot
        re-derive, so the scoping cannot be read as licence to drop real facts.
 
@@ -56,7 +56,7 @@ SKILL_MD = os.path.join(ROOT, "skill", "SKILL.md")
 FIXTURES = os.path.join(HERE, "fixtures")
 MANIFEST = os.path.join(FIXTURES, "manifest.json")
 
-LEVELS = ("low", "med", "high")
+LEVELS = ("low", "high")
 VOICES = ("terse", "convo")
 
 # The rows P10 adds. Listed rather than inferred, because A20 is a claim about
@@ -102,12 +102,14 @@ E9_MIN_PROMPTS = 20
 
 # lang-function-over-inventory is the one language rule that is level-gated, so
 # it is the one place the register axis is not the same question at every level.
-# The addendum is appended to the register question at `med` and nowhere else.
-E9_MED_REGISTER_ADDENDUM = (
-    "At conciseness med the rule lang-function-over-inventory also applies: a "
+# The addendum is appended to the register question at `high` and nowhere else.
+# It moved from `med` with the rule, when `med`'s behaviour and band became
+# `high` (P14) — same reach, one level fewer.
+E9_HIGH_REGISTER_ADDENDUM = (
+    "At conciseness high the rule lang-function-over-inventory also applies: a "
     "completed-work report that reads out its parts instead of naming its "
     "function fails this axis. Function plus count plus a pointer passes; the "
-    "roll call does not. At low and high the roll call is not a register fault."
+    "roll call does not. At low the roll call is not a register fault."
 )
 
 # Keep lint.py importable in-process without leaving __pycache__ in the shipped
@@ -380,7 +382,7 @@ def eval_park_the_rule():
     home, project = make_home(), make_project()
     try:
         proc = run_cli(["init", "--hook", "--agent", "claude", "--scope", "local",
-                        "--voice", "convo", "--conciseness", "med"], home, project)
+                        "--voice", "convo", "--conciseness", "high"], home, project)
         if proc.returncode != 0:
             check("P10", "hook install succeeds", False, proc.stderr.strip()[:200])
             return
@@ -447,7 +449,7 @@ def eval_memory_block():
         home, project = make_home(), make_project()
         try:
             proc = run_cli(["init", "--memory", "--agent", agent, "--scope", scope,
-                            "--voice", "convo", "--conciseness", "med"], home, project)
+                            "--voice", "convo", "--conciseness", "high"], home, project)
             base = project if scope == "local" else home
             target = os.path.join(base, rel)
             label = "%s/%s" % (agent, scope)
@@ -468,8 +470,8 @@ def eval_memory_block():
                   any(ln.startswith("- Voice is ") for ln in bullets), block[:300])
             check("A1", "%s: block still lists the banned phrases" % label,
                   any("Never use these words" in ln for ln in bullets), block[:300])
-            # These installs are `med`, the level lang-function-over-inventory is
-            # active at, so the line has to be here and the block has to still fit.
+            # These installs are `high`, the level lang-function-over-inventory
+            # is active at, so the line has to be here and the block has to fit.
             check("P11", "%s: block states the function-over-inventory rule" % label,
                   any(FUNCTION_PHRASE in ln for ln in bullets), block[:300])
 
@@ -539,7 +541,7 @@ def memory_bullets(voice, level):
 
 
 def eval_function_over_inventory():
-    """The rule is stated on every surface, and gated to `med` on every one."""
+    """The rule is stated on every surface, and gated to `high` on every one."""
     lexicon = read(LEXICON)
     skill = read(SKILL_MD)
 
@@ -553,8 +555,8 @@ def eval_function_over_inventory():
           "Before:" in row and "After:" in row, row[:200])
     check("P11", "the row states the rule in the shared words",
           FUNCTION_PHRASE in row, row[:200])
-    check("P11", "the row names its level, and names only med",
-          "Active at: `med`" in row and "`low`" not in row and "`high`" not in row,
+    check("P11", "the row names its level, and names only high",
+          "Active at: `high`" in row and "`low`" not in row and "`med`" not in row,
           row[:200])
     check("P11", "the row keeps the count and the pointer",
           "count" in row and "pointer" in row, row[:200])
@@ -576,8 +578,8 @@ def eval_function_over_inventory():
           FUNCTION_ROW in skill and FUNCTION_PHRASE in skill)
     check("P11", "SKILL.md ships an inventory-collapsing exemplar",
           "parts list instead of a result" in skill)
-    check("P11", "the exemplar says the rule is med only",
-          "`med` only" in skill or "at `med` only" in skill)
+    check("P11", "the exemplar says the rule is high only",
+          "`high` only" in skill or "at `high` only" in skill)
 
     # --- the memory template, every voice and every level (A1) ---
     for voice in VOICES:
@@ -590,8 +592,8 @@ def eval_function_over_inventory():
             check("A1", "%s: memory block stays inside the 9-line budget" % label,
                   len(bullets) <= 9, "%d lines" % len(bullets))
             stated = any(FUNCTION_PHRASE in ln for ln in bullets)
-            check("P11", "%s: memory block states the rule only at med" % label,
-                  stated == (level == "med"), "\n".join(bullets)[:300])
+            check("P11", "%s: memory block states the rule only at high" % label,
+                  stated == (level == "high"), "\n".join(bullets)[:300])
             if stated:
                 # The template is written in the register it asks for.
                 line = [ln for ln in bullets if FUNCTION_PHRASE in ln][0]
@@ -604,13 +606,19 @@ def eval_function_over_inventory():
     for level in LEVELS:
         block = session_mod.build_block({"voice": "convo", "conciseness": level})
         stated = FUNCTION_PHRASE in block
-        check("P11", "the session block states the rule only at med (%s)" % level,
-              stated == (level == "med"), block[:400])
+        check("P11", "the session block states the rule only at high (%s)" % level,
+              stated == (level == "high"), block[:400])
         check("P11", "the session block keeps the anti-loss line (%s)" % level,
               "Losing content is worse" in block, block[:400])
-    med_block = session_mod.build_block({"voice": "convo", "conciseness": "med"})
+    high_block = session_mod.build_block({"voice": "convo", "conciseness": "high"})
     check("P11", "the session block still scopes itself to prose",
-          "user-facing prose only" in med_block, med_block[:200])
+          "user-facing prose only" in high_block, high_block[:200])
+    # A 0.2.0-dev pref.json still saying `med` gets the `high` block, not a
+    # silently different one: the legacy value normalises, it does not fall
+    # through to a default that happens to match.
+    legacy_block = session_mod.build_block({"voice": "convo", "conciseness": "med"})
+    check("P11", "a legacy `med` session block is identical to the high block",
+          legacy_block == high_block, legacy_block[:200])
 
 
 # --------------------------------------------------------- E9 scaffolding
@@ -633,12 +641,12 @@ def e9_rate(judged):
 def e9_register_question(level):
     """The register question the judge is asked at a given level.
 
-    One question everywhere, plus the med addendum. Written as a function so the
-    level-gating lives in one place and cannot drift between the runner and the
-    recorded run.
+    One question everywhere, plus the high addendum. Written as a function so
+    the level-gating lives in one place and cannot drift between the runner and
+    the recorded run.
     """
-    if level == "med":
-        return E9_RUBRIC["register"] + " " + E9_MED_REGISTER_ADDENDUM
+    if level == "high":
+        return E9_RUBRIC["register"] + " " + E9_HIGH_REGISTER_ADDENDUM
     return E9_RUBRIC["register"]
 
 
@@ -647,14 +655,14 @@ def stub_register_judge(reply, level):
 
     Same role as run_p9's stub_rewriter: it proves the level-gating plumbing, not
     the skill. It recognises exactly one shape — a single sentence reading out a
-    long list of backticked names — and only at `med`.
+    long list of backticked names — and only at `high`.
 
     This heuristic deliberately lives here and nowhere else. It is not a lint
     rule and must never become one: a real reply can list five things for a good
     reason, and a false positive bounces a good reply, which is the worst failure
     this project has.
     """
-    if level != "med":
+    if level != "high":
         return True
     for sentence in reply.replace("\n", " ").split(". "):
         if sentence.count("`") >= 10:
@@ -710,16 +718,15 @@ def eval_e9_scaffold():
           len(fired(report)) >= 3, sorted(fired(report)))
     check("E9", "a message-register reply passes the deterministic half",
           not fired(message), sorted(fired(message)))
-    # The register axis is level-aware in exactly one place: the med addendum for
+    # The register axis is level-aware in exactly one place: the high addendum for
     # lang-function-over-inventory. Everywhere else the question is identical, or
     # the axis would stop measuring one register.
-    check("E9", "the register question gains the med addendum at med",
-          E9_MED_REGISTER_ADDENDUM in e9_register_question("med"))
-    for level in ("low", "high"):
-        check("E9", "the register question is unchanged at %s" % level,
-              e9_register_question(level) == E9_RUBRIC["register"])
-    check("E9", "the med addendum names the rule it comes from",
-          "lang-function-over-inventory" in E9_MED_REGISTER_ADDENDUM)
+    check("E9", "the register question gains the high addendum at high",
+          E9_HIGH_REGISTER_ADDENDUM in e9_register_question("high"))
+    check("E9", "the register question is unchanged at low",
+          e9_register_question("low") == E9_RUBRIC["register"])
+    check("E9", "the high addendum names the rule it comes from",
+          "lang-function-over-inventory" in E9_HIGH_REGISTER_ADDENDUM)
 
     # The fidelity axis has to agree with the re-scoped invariant, or the two
     # halves of the rubric would score the same rewrite in opposite directions.
@@ -730,23 +737,22 @@ def eval_e9_scaffold():
     check("E9", "the fidelity axis still requires the count and the pointer",
           "count" in E9_RUBRIC["fidelity"] and "pointer" in E9_RUBRIC["fidelity"])
 
-    # The gate this phase adds: the same reply is a register failure at med and a
+    # The gate this phase adds: the same reply is a register failure at high and a
     # pass at low, and the function-first version passes at both.
     roll_call = ("Added strip rules for `furthermore`, `moreover`, `thus`, "
                  "`hence`, `nevertheless`, `aforementioned` and `whilst`.")
     function_first = ("Formal essay connectives now bounce. 11 rules, each with a "
                       "near-miss control, in the strip table of "
                       "`skill/refs/lexicon.md`.")
-    check("E9", "a roll-call report fails the register axis at med",
-          not stub_register_judge(roll_call, "med"))
-    for level in ("low", "high"):
-        check("E9", "the same roll-call report passes at %s" % level,
-              stub_register_judge(roll_call, level))
+    check("E9", "a roll-call report fails the register axis at high",
+          not stub_register_judge(roll_call, "high"))
+    check("E9", "the same roll-call report passes at low",
+          stub_register_judge(roll_call, "low"))
     for level in LEVELS:
         check("E9", "the function-first report passes at %s" % level,
               stub_register_judge(function_first, level))
-    check("E9", "a med register failure fails the reply",
-          not e9_pass({"register": stub_register_judge(roll_call, "med"),
+    check("E9", "a high register failure fails the reply",
+          not e9_pass({"register": stub_register_judge(roll_call, "high"),
                        "fidelity": True}))
 
     notes.append("E9 prompt set: %d prompts, judged on %s"
