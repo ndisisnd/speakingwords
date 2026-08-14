@@ -17,8 +17,14 @@ What is gated here
   A12  Codex config edits are idempotent and preserve user content. hooks.json
        and config.toml both survive install -> install with zero diff, and
        install -> uninstall byte-for-byte.
-  A13  On Codex below v0.124.0 the installer never writes a hooks.json entry.
-       It wires the notify audit fallback instead and says so plainly.
+  A13  On Codex below v0.124.0 the installer never writes a hooks.json entry —
+       neither Stop nor SessionStart. It wires the notify audit fallback instead
+       and says so plainly. The version floor gates the injector too, because
+       notify has no channel to inject context through.
+  A26  Codex gets the SessionStart injector as well (plan §8, resolved), from a
+       byte-identical script through the same guard wrapper. It installs and
+       uninstalls alongside the Stop entry and leaves the user's other events
+       alone.
 
 Plus the supporting behaviour those rest on: version detection, the trust-step
 notice, notify's observe-never-block contract, and fail-open on every
@@ -379,6 +385,23 @@ def eval_shared_core():
         # Codex events sit at the ROOT of hooks.json, not under a "hooks" key.
         check("A12", "hooks.json puts Stop at the root, with no wrapping hooks key",
               "Stop" in hooks_json and "hooks" not in hooks_json, json.dumps(hooks_json)[:200])
+        check("A26", "hooks.json puts SessionStart at the root too",
+              "SessionStart" in hooks_json, json.dumps(hooks_json)[:200])
+
+        # A26 parity: one script, two agents. The injector command must be
+        # identical on both sides, which is only true if the shared core really
+        # is shared and nothing agent-specific was substituted into it.
+        claude_session = settings["hooks"]["SessionStart"][0]["hooks"][0]["command"]
+        codex_session = hooks_json["SessionStart"][0]["hooks"][0]["command"]
+        check("A26", "both agents wire the identical injector command",
+              claude_session == codex_session, "%s | %s" % (claude_session, codex_session))
+        check("A26", "the injector command points at the shared root",
+              shared in codex_session and codex_session.endswith("hook_session.py"),
+              codex_session)
+        check("A26", "the injector command exists on disk",
+              all(os.path.isfile(p) for p in codex_session.split(" ")[1:]), codex_session)
+        check("A26", "the install summary names the SessionStart wiring",
+              "SessionStart" in summary, summary[:900])
 
         check("A11", "summary names both agents", "Claude Code" in summary and "Codex" in summary)
         check("A11", "summary states the shared core", "share one core" in summary, summary[-600:])
@@ -403,6 +426,7 @@ PRE_EXISTING_HOOKS = json.dumps(
             {"matcher": "Bash", "hooks": [{"type": "command", "command": "python3 /opt/other.py"}]}
         ],
         "Stop": [{"hooks": [{"type": "command", "command": "python3 /opt/mine.py"}]}],
+        "SessionStart": [{"hooks": [{"type": "command", "command": "python3 /opt/greet.py"}]}],
     },
     indent=2,
 ) + "\n"
@@ -450,14 +474,39 @@ def eval_hooks_json(scope, seed_existing):
                   and parts[2].endswith("hook_codex.py")
                   and all(os.path.isfile(p) for p in parts[1:]), command)
 
+        # A26: the injector is wired on Codex too, at the same root level, from
+        # the same guard wrapper and the same script Claude Code uses.
+        session_entries = [
+            entry
+            for group in data.get("SessionStart", [])
+            for entry in group.get("hooks", [])
+            if "speakingwords" in entry.get("command", "")
+        ]
+        check("A26", "%s: exactly one speakingwords SessionStart entry" % label,
+              len(session_entries) == 1, first)
+        if session_entries:
+            session_command = session_entries[0]["command"]
+            parts = session_command.split(" ")
+            check("A26", "%s: the injector goes through the guard wrapper" % label,
+                  parts[0] == "sh" and len(parts) == 3
+                  and parts[1].endswith("hook_guard.sh")
+                  and parts[2].endswith("hook_session.py")
+                  and all(os.path.isfile(p) for p in parts[1:]), session_command)
+            check("A26", "%s: the injector entry is a command hook" % label,
+                  session_entries[0].get("type") == "command")
+
         if seed_existing:
             check("A12", "%s: the user's other event survives" % label,
                   data["PreToolUse"][0]["hooks"][0]["command"] == "python3 /opt/other.py")
             check("A12", "%s: the user's own Stop hook survives" % label,
                   any(e.get("command") == "python3 /opt/mine.py"
                       for g in data["Stop"] for e in g.get("hooks", [])), first)
+            check("A26", "%s: the user's own SessionStart hook survives" % label,
+                  any(e.get("command") == "python3 /opt/greet.py"
+                      for g in data["SessionStart"] for e in g.get("hooks", [])), first)
             check("A12", "%s: key order preserved" % label,
-                  list(data.keys())[:2] == ["PreToolUse", "Stop"], str(list(data.keys())))
+                  list(data.keys())[:3] == ["PreToolUse", "Stop", "SessionStart"],
+                  str(list(data.keys())))
 
         # Idempotency: install -> install is a zero-diff operation.
         run_cli(args, home, project)
@@ -471,8 +520,9 @@ def eval_hooks_json(scope, seed_existing):
             home,
             project,
         )
-        check("A12", "%s: uninstall reports one hooks.json entry removed" % label,
-              removed.get("hooks", {}).get("removed") == 1, json.dumps(removed))
+        # Two entries since v0.2.0: the Stop hook and the SessionStart injector.
+        check("A26", "%s: uninstall reports both hooks.json entries removed" % label,
+              removed.get("hooks", {}).get("removed") == 2, json.dumps(removed))
         if seed_existing:
             after = open(target, "r", encoding="utf-8").read()
             check("A12", "%s: uninstall restores hooks.json byte-for-byte" % label,
@@ -526,6 +576,12 @@ def eval_downgrade():
               not os.path.exists(os.path.join(project, ".codex", "hooks.json")))
         check("A13", "no global hooks.json is written",
               not os.path.exists(os.path.join(home, ".codex", "hooks.json")))
+        # The version floor gates the injector as well as the Stop hook: notify
+        # is a post-hoc observation channel with nowhere to put context, so an
+        # old Codex gets no SessionStart entry and no half-wired substitute.
+        check("A26", "an old Codex gets no SessionStart entry anywhere",
+              "SessionStart" not in summary and "hook_session.py" not in summary,
+              summary[-900:])
 
         first = open(config, "r", encoding="utf-8").read()
         lines = first.split("\n")
@@ -618,6 +674,13 @@ def eval_mixed_downgrade():
               os.path.isfile(os.path.join(project, ".claude", "settings.json")))
         check("A13", "mixed: no Codex hooks.json on an old Codex",
               not os.path.exists(os.path.join(project, ".codex", "hooks.json")))
+        # Per-agent, injector included: Claude Code keeps its SessionStart entry
+        # while the old Codex gets neither hook nor injector.
+        mixed_settings = json.load(open(os.path.join(project, ".claude", "settings.json"),
+                                        "r", encoding="utf-8"))
+        check("A26", "mixed: Claude Code still gets the SessionStart injector",
+              "SessionStart" in mixed_settings.get("hooks", {}),
+              json.dumps(mixed_settings)[:200])
         check("A13", "mixed: Codex gets the notify fallback",
               os.path.isfile(os.path.join(home, ".codex", "config.toml")))
         check("A11", "mixed: one shared core at the Claude Code root",

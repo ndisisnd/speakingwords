@@ -19,7 +19,9 @@ What is gated here
   A26  The SessionStart injector emits the style block at most once per session,
        scoped to user-facing prose. Hook absence, failure and a masked
        interpreter all change nothing, and the Stop backstop is unaffected
-       either way.
+       either way. Both agents get it (plan §8, resolved): the Codex half runs
+       the byte-identical script against a full Codex payload and proves the
+       once-per-session dedupe holds on Codex's session_id too.
 
   P9   Plumbing: init records a level, the hook passes it to lint.py, the memory
        block states it and stays inside the 9-line budget (A1) in all four
@@ -460,6 +462,79 @@ def eval_a26_injection():
         shutil.rmtree(bindir, ignore_errors=True)
 
 
+def eval_a26_codex():
+    """The injector is wired on Codex too, from the same script (plan §8).
+
+    Codex fires SessionStart with the same lifecycle names and the same stdin
+    fields, so the parity worth proving is behavioural, not structural: the
+    script installed for Codex is byte-identical, and a Codex-shaped payload
+    gets the same block and the same once-per-session silence.
+    """
+    home, project = make_home(), make_project()
+    try:
+        proc = run_cli(["init", "--hook", "--agent", "codex", "--scope", "local",
+                        "--voice", "convo", "--conciseness", "med"], home, project)
+        if proc.returncode != 0:
+            check("A26", "codex: hook install succeeds", False, proc.stderr.strip())
+            return
+        root = os.path.join(home, ".codex", "speakingwords")
+        hooks_json = json.loads(read(os.path.join(project, ".codex", "hooks.json")))
+
+        check("A26", "codex: init wires a SessionStart hook at the hooks.json root",
+              "SessionStart" in hooks_json, json.dumps(hooks_json)[:200])
+        check("A26", "codex: the Stop hook is still wired alongside it",
+              "Stop" in hooks_json, json.dumps(hooks_json)[:200])
+        session_command = hooks_json["SessionStart"][0]["hooks"][0]["command"]
+        check("A26", "codex: the injector goes through the python3 guard wrapper",
+              "hook_guard.sh" in session_command and "hook_session.py" in session_command,
+              session_command)
+
+        installed = os.path.join(root, *SESSION_SCRIPT.split("/"))
+        check("A26", "codex: the injector script is installed",
+              os.path.isfile(installed), installed)
+        check("A26", "codex: the injector script is byte-identical to the repo copy",
+              os.path.isfile(installed)
+              and read(installed) == read(os.path.join(SCRIPTS, "hook_session.py")))
+
+        # A full Codex SessionStart payload, every documented field present.
+        codex_payload = {
+            "source": "startup",
+            "session_id": "codex-1",
+            "transcript_path": os.path.join(project, "rollout.jsonl"),
+            "cwd": project,
+            "hook_event_name": "SessionStart",
+            "model": "gpt-5-codex",
+        }
+        first = session_run(root, codex_payload)
+        check("A26", "codex: the first SessionStart emits a block",
+              first.returncode == 0 and first.stdout.strip() != "",
+              first.stdout[:200] + first.stderr[:200])
+        payload = json.loads(first.stdout) if first.stdout.strip() else {}
+        check("A26", "codex: the output uses the same SessionStart contract",
+              payload.get("hookSpecificOutput", {}).get("hookEventName") == "SessionStart",
+              json.dumps(payload)[:200])
+        block = payload.get("hookSpecificOutput", {}).get("additionalContext", "")
+        check("A26", "codex: the block states the installed voice and level",
+              "convo" in block and "med" in block, block[:200])
+
+        # The dedupe keys on session_id, which Codex sends — no special case.
+        for source in ("resume", "compact", "startup"):
+            again = session_run(root, dict(codex_payload, source=source))
+            check("A26", "codex: a repeat SessionStart (%s) stays silent" % source,
+                  again.returncode == 0 and again.stdout.strip() == "", again.stdout[:120])
+
+        # --- unhook takes the Codex injector out with everything else ---
+        removed = run_cli(["unhook", "--yes"], home, project)
+        check("A26", "codex: unhook exits 0", removed.returncode == 0, removed.stderr[:200])
+        left = os.path.join(project, ".codex", "hooks.json")
+        check("A26", "codex: unhook leaves no SessionStart entry of ours behind",
+              not os.path.exists(left) or "speakingwords" not in read(left),
+              read(left)[:200] if os.path.exists(left) else "file removed")
+    finally:
+        shutil.rmtree(home, ignore_errors=True)
+        shutil.rmtree(project, ignore_errors=True)
+
+
 # ------------------------------------------------------------- P9 plumbing
 
 
@@ -724,6 +799,7 @@ def main():
     eval_a19_flag()
     eval_a20_coverage()
     eval_a26_injection()
+    eval_a26_codex()
     eval_plumbing()
     eval_memory_block()
     eval_e8_scaffold()

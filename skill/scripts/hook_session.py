@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""speakingwords SessionStart injector (Claude Code).
+"""speakingwords SessionStart injector (Claude Code and Codex CLI).
 
 Why this exists
 ---------------
@@ -38,8 +38,20 @@ signal. Session ids seen are recorded in a small capped file beside pref.json;
 a repeat id prints nothing. If that file cannot be read or written, the hook
 prefers to stay silent rather than repeat itself.
 
-Claude Code only. Codex has no confirmed pre-reply context channel, so its
-adapter ships lint-after only (plan §8) and nothing here is wired for it.
+Both agents, one script
+-----------------------
+Codex CLI fires SessionStart with the same lifecycle names, the same stdin
+fields and the same `hookSpecificOutput` reply as Claude Code, so this file is
+installed byte-identically for both and reads nothing agent-specific. The
+once-per-session guard keys on `session_id`, which Codex sends too, so the
+dedupe holds there without a special case. Only the config file naming this
+script differs: settings.json for Claude Code, hooks.json for Codex.
+
+Known gap, and why it costs nothing: on Codex 0.130.0 a bare `codex` launch
+that auto-restores the previous thread emits no SessionStart at all
+(openai/codex#24228). That session simply gets no block and behaves as it did
+before injection existed. It is the fail-open case the A26 rule is written for,
+not a special case for this script to handle.
 """
 
 import json

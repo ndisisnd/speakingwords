@@ -288,8 +288,8 @@ function installHookMode({ agentIds, scope, voice, conciseness, version, cwd }) 
       lines.push(`  ${name}`);
       lines.push(`    hook entry   ${wiring.path}`);
       lines.push(`                 Stop → ${wiring.command}`);
-      // Claude Code only. The injector states the rules up front so fewer
-      // replies need bouncing; it can never block one.
+      // Both agents since v0.2.0. The injector states the rules up front so
+      // fewer replies need bouncing; it can never block one.
       if (wiring.sessionCommand) {
         lines.push(`                 SessionStart → ${wiring.sessionCommand}`);
       }
@@ -327,9 +327,14 @@ function installHookMode({ agentIds, scope, voice, conciseness, version, cwd }) 
   }
   lines.push('');
 
-  if (agentIds.includes('claude')) {
-    lines.push('  On Claude Code, the SessionStart hook also states the voice and conciseness');
-    lines.push('  rules once at the top of each session, so fewer replies need bouncing at all.');
+  // The injector rides along with every real hook wiring, on both agents. An
+  // audit-only install has no context channel to inject into, so it gets none.
+  if (enforcing.length > 0) {
+    const lead = enforcing.length < wirings.length
+      ? `On ${adapters.getAdapter(enforcing[0].agent).label}, the`
+      : 'The';
+    lines.push(`  ${lead} SessionStart hook also states the voice and conciseness rules`);
+    lines.push('  once at the top of each session, so fewer replies need bouncing at all.');
     lines.push('  It can never block a reply; if it fails or is masked, nothing changes.');
     lines.push('');
   }
