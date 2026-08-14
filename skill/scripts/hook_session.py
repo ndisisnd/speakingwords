@@ -100,6 +100,19 @@ CONCISENESS_RULES = {
     ),
 }
 
+# lang-function-over-inventory, the one level-gated language rule. It is stated
+# only at the level it is active at, so a low or high session never carries an
+# instruction it is not meant to follow. It sits next to the conciseness line
+# because that is where a reader looks for what a report may leave out, but it is
+# a language rule: it changes what the report says, not how much survives.
+FUNCTION_RULE = {
+    "med": (
+        "Report what a change does, not the parts it is made of. Keep the count "
+        "and a pointer — a file, a table, a diff — and drop the roll call. "
+        "Numbers, paths, code blocks and caveats always stay."
+    ),
+}
+
 
 def first_string(payload, keys):
     for key in keys:
@@ -143,17 +156,18 @@ def build_block(pref):
     """
     voice = voice_of(pref)
     level = conciseness_of(pref)
+    rules = [REGISTER_RULE, VOICE_RULES[voice], CONCISENESS_RULES[level]]
+    if level in FUNCTION_RULE:
+        rules.append(FUNCTION_RULE[level])
     return "\n".join([
         "speakingwords style rules are installed for this session.",
         "",
         "Scope: these apply to user-facing prose only. They never apply to code, "
         "file paths, command output, quoted text, tool arguments or literal data.",
         "",
-        "- " + REGISTER_RULE,
-        "- " + VOICE_RULES[voice],
-        "- " + CONCISENESS_RULES[level],
-        "- No fact, number, path or code block may be lost to either rule. Losing "
-        "content is worse than the violation it was meant to fix.",
+    ] + ["- " + rule for rule in rules] + [
+        "- No fact, number, path or code block may be lost to any of these rules. "
+        "Losing content is worse than the violation it was meant to fix.",
         "",
         "A reply that breaks these is linted and bounced once, and the rewrite "
         "costs a full regeneration. Writing it this way first is cheaper.",

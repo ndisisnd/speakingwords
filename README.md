@@ -303,9 +303,12 @@ Everything the linter knows lives in one file, `refs/lexicon.md`. Nothing is har
   openers, marketing verbs, and the formal connectives that make a reply read like a
   report ("furthermore", "whilst", "prior to"). Each row is `id`, `pattern`, `severity`,
   `guidance`.
-- **Language rules** — 9 shipped. Positive rules a regex cannot judge (write like a
+- **Language rules** — 10 shipped. Positive rules a regex cannot judge (write like a
   colleague in a Slack DM, plain words over jargon, no self-narration, lead with the
   answer), each with one before → after exemplar. The rewrite pass applies these by reading.
+  One of them, `lang-function-over-inventory`, is active at `conciseness: med` only: it
+  asks a completed-work report to name what the change does and point at the parts,
+  rather than reading the parts out.
 
 To park a rule without deleting it, prefix its id with `#`, or run
 `speakingwords update "more <phrase>"` — the way to keep a word your domain actually

@@ -700,7 +700,12 @@ def e8_report():
       3. Send the same before/after pairs to an LLM judge asking one question per
          pair: does every fact, number, path and code block in the original still
          appear in the rewrite? The gate is zero losses, not a percentage — the
-         anti-loss invariant outranks the bands.
+         anti-loss invariant outranks the bands. One thing is not a loss, and the
+         judge is told so: an enumeration the reader can retrieve elsewhere (the
+         files in a diff, the rules in a lexicon table) collapsed to its function,
+         its count and a pointer. Dropping the count or the pointer is a loss, and
+         so is dropping anything the pointer does not carry. See "What counts as a
+         fact" in skill/SKILL.md.
       4. Re-run the E4 "convo never collapses into terse" gate at every level.
       5. Paste medians, the judge's verdict and the model id into the release
          notes, as E2-E5 are recorded.

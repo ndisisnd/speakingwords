@@ -100,6 +100,12 @@ level, which is exactly why the `active at` column exists.
 Probabilistic. A regex cannot judge these, so the rewrite skill applies them by reading.
 Each rule ships one before → after exemplar.
 
+There is no `active at` column here, because a language rule is the register and
+the register does not move with the conciseness dial. A row that *is* level-gated
+says so in its own first line, in the form `Active at: <levels>.` A row with no
+such line is active at every level. Only `lang-function-over-inventory` is gated
+today.
+
 | id | rule |
 |----|------|
 | lang-slack-register | **Write like a colleague in a Slack DM.** Short sentences, everyday words, contractions where they read naturally. Technical terms are fine — it is the grammar around them that stays simple, never the vocabulary of the domain. <br> Before: "Prior to the deployment it should be noted that the aforementioned migration must be applied, whilst the read replicas remain in a lagging state." <br> After: "Run the migration before you deploy. The read replicas are still lagging." |
@@ -111,6 +117,7 @@ Each rule ships one before → after exemplar.
 | lang-no-filler-close | **No filler close.** End on the last piece of content. <br> Before: "…and that fixes it. Let me know if you need anything else!" <br> After: "…and that fixes it." |
 | lang-concrete-over-vague | **Concrete over vague.** Replace intensifiers with the fact behind them. <br> Before: "This significantly improves performance." <br> After: "This cuts the p95 from 400 ms to 90 ms." |
 | lang-no-hedging-stack | **No stacked hedges.** At most one qualifier per claim. <br> Before: "It might possibly be the case that this could sometimes fail." <br> After: "This fails when the cache is cold." |
+| lang-function-over-inventory | Active at: `med`. **Report what a change does, not the parts it is made of.** A completed-work report names the function, keeps the count, and points at where the parts live — a file, a table, a diff. The roll call goes; the pointer replaces it. This covers enumerations only. Numbers, paths, code blocks, caveats and anything the reader cannot re-derive are never the roll call, and they stay. <br> Before: "Added strip rules for `furthermore`, `moreover`, `thus`, `hence`, `nevertheless`, `aforementioned`, `whilst`…" <br> After: "Formal essay connectives now bounce — 11 rules, each with a near-miss control; see the strip table." |
 
 ## Structural rules
 

@@ -116,6 +116,16 @@ traded for brevity.
 - **The anti-loss invariant outranks every level.** Losing a fact is worse than
   the original violation. If `high` cannot be reached without dropping a number,
   a path, a caveat or a code block, do not reach it. Write the longer reply.
+- **What counts as a fact.** A fact is anything that answers the question or
+  changes what the reader does next. Numbers, file paths, commands, code blocks,
+  caveats and any claim the reader cannot re-derive are facts, and they survive
+  exactly as before — this scoping is not a licence to drop them. What it settles
+  is lists: an enumeration whose members are all retrievable somewhere the reader
+  already has, such as the files in a diff or the rules in a lexicon table, is one
+  fact about a change, not one fact per member. Reporting its function, its count
+  and where it lives keeps that fact. Losing the count or the pointer is still a
+  loss, and a member that carries something the pointer does not — a number, a
+  caveat, a surprise — stays named.
 - **`high` + `convo` stays prose.** A high level is not permission to collapse
   convo into terse. Cut words, not paragraph form — the E4 gate that says
   "convo never collapses into terse" runs at every level.
@@ -130,11 +140,15 @@ traded for brevity.
 2. Re-lead the reply so the first line is the answer.
 3. Apply the language rules to what is left: the Slack register above, plain
    words, one idea per sentence, no self-narration, no filler close.
+   At `med`, `lang-function-over-inventory` applies as well: report what a change
+   does, not the parts it is made of.
    Apply the conciseness level here too — this is the step where padding and
    restatement come out.
 4. Reshape to the voice contract above.
 5. Preserve meaning. Every fact, caveat, file path, number and code block in the
    original must survive. Losing content is worse than the original violation.
+   The one thing that may collapse is a retrievable enumeration, down to its
+   function, its count and a pointer — see "What counts as a fact" above.
 
 ## Exemplars
 
@@ -178,6 +192,24 @@ and the fix both survived — brevity never means dropping a fact.
 
 The narration goes, the hedge stack collapses to one concrete claim, and the answer
 leads.
+
+### 4 — a parts list instead of a result (terse, `med`)
+
+**Before**
+> Added strip rules for `furthermore`, `moreover`, `thus`, `hence`,
+> `nevertheless`, `aforementioned`, `whilst`, `it should be noted`,
+> `in order to`, `prior to` and `subsequent to`, each with a planted fixture and
+> a clean control.
+
+**After**
+> - Formal essay connectives now bounce. 11 rules, each with a planted fixture
+>   and a near-miss control.
+> - Rows are in the strip table of `skill/refs/lexicon.md`.
+
+The reader wanted to know what the change does. The eleven names are one lookup
+away in the table, so the count and the pointer carry the fact and the roll call
+goes. This is `lang-function-over-inventory`, and it applies at `med` only — at
+`low` the list stays as written.
 
 ## Do not
 
