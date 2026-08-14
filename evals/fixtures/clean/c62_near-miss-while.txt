@@ -1,0 +1,2 @@
+The cache warms at boot while the replicas catch up, so the first minute of
+reads is slower.

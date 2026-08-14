@@ -1,0 +1,19 @@
+The pipeline gate is one line. Here is the shape of it:
+
+```yaml
+deploy:
+  needs: [migrate]
+  # this comment is long on purpose and runs well past thirty five words so that the fixture proves a fenced block is never counted as a prose sentence by the register check in lint.py at all
+  script: bin/deploy --wait-for migrate --timeout 600 --and-a-long-tail-of-flags --that-keeps-going --past-the-threshold --so-the-line-is-clearly-long-enough
+```
+
+| field | meaning |
+|-------|---------|
+| needs | the job that has to finish first, which in this case is the migration job that applies the schema change before any pod that reads the new column layout is allowed to start serving traffic |
+| timeout | how long the gate waits before it gives up, measured in seconds, and set high enough that a slow migration on a large table does not fail the deploy for no good reason at all |
+
+> The gate waits on the migration job and nothing else, so a slow image build
+> does not hold it up, and a failed migration stops the deploy before any pod
+> comes up against a schema that it has never seen and cannot read correctly.
+
+That is the whole change.

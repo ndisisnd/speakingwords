@@ -1,0 +1,2 @@
+The counters reset subsequent to the nightly rollup, so a morning read never
+covers the previous day.

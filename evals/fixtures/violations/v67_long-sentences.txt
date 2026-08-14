@@ -1,0 +1,9 @@
+The deploy failed because the release job pushed the new image before the schema
+migration had finished, and the pods that came up first read a table that still
+had the old column layout on it, which is why the error pages showed up. The
+rollback put the previous image back within about ninety seconds, but the queue
+kept the failed jobs around and they were replayed against the half-migrated
+schema a second time, so the counters are wrong for that window. The fix is to
+gate the image push on the migration job reporting success, which is a one-line
+change in the pipeline file and costs about forty seconds of extra wall clock on
+every deploy from now on.

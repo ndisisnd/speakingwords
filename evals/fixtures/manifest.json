@@ -54,7 +54,20 @@
     "c52_near-miss-another-way.txt",
     "c53_near-miss-noted-above.txt",
     "c54_near-miss-summarize-midline.txt",
-    "c55_near-miss-simply-put.txt"
+    "c55_near-miss-simply-put.txt",
+    "c56_near-miss-further.txt",
+    "c57_near-miss-more-override.txt",
+    "c58_near-miss-thus-far.txt",
+    "c59_near-miss-henceforth.txt",
+    "c60_near-miss-never-less.txt",
+    "c61_near-miss-mentioned-earlier.txt",
+    "c62_near-miss-while.txt",
+    "c63_near-miss-should-be-noted.txt",
+    "c64_near-miss-in-order.txt",
+    "c65_near-miss-prior-run.txt",
+    "c66_near-miss-subsequent-runs.txt",
+    "c67_one-long-sentence.txt",
+    "c68_long-in-fence-table-quote.txt"
   ],
   "perf": "perf_4000_clean.txt",
   "violations": {
@@ -235,6 +248,42 @@
     ],
     "v55_simply-put.txt": [
       "conc-simply-put"
+    ],
+    "v56_furthermore.txt": [
+      "strip-furthermore"
+    ],
+    "v57_moreover.txt": [
+      "strip-moreover"
+    ],
+    "v58_thus.txt": [
+      "strip-thus"
+    ],
+    "v59_hence.txt": [
+      "strip-hence"
+    ],
+    "v60_nevertheless.txt": [
+      "strip-nevertheless"
+    ],
+    "v61_aforementioned.txt": [
+      "strip-aforementioned"
+    ],
+    "v62_whilst.txt": [
+      "strip-whilst"
+    ],
+    "v63_it-should-be-noted.txt": [
+      "strip-it-should-be-noted"
+    ],
+    "v64_in-order-to.txt": [
+      "strip-in-order-to"
+    ],
+    "v65_prior-to.txt": [
+      "strip-prior-to"
+    ],
+    "v66_subsequent-to.txt": [
+      "strip-subsequent-to"
+    ],
+    "v67_long-sentences.txt": [
+      "long-sentence"
     ]
   },
   "controls": {
@@ -252,6 +301,43 @@
     ],
     "conc-simply-put": [
       "c55_near-miss-simply-put.txt"
+    ],
+    "strip-furthermore": [
+      "c56_near-miss-further.txt"
+    ],
+    "strip-moreover": [
+      "c57_near-miss-more-override.txt"
+    ],
+    "strip-thus": [
+      "c58_near-miss-thus-far.txt"
+    ],
+    "strip-hence": [
+      "c59_near-miss-henceforth.txt"
+    ],
+    "strip-nevertheless": [
+      "c60_near-miss-never-less.txt"
+    ],
+    "strip-aforementioned": [
+      "c61_near-miss-mentioned-earlier.txt"
+    ],
+    "strip-whilst": [
+      "c62_near-miss-while.txt"
+    ],
+    "strip-it-should-be-noted": [
+      "c63_near-miss-should-be-noted.txt"
+    ],
+    "strip-in-order-to": [
+      "c64_near-miss-in-order.txt"
+    ],
+    "strip-prior-to": [
+      "c65_near-miss-prior-run.txt"
+    ],
+    "strip-subsequent-to": [
+      "c66_near-miss-subsequent-runs.txt"
+    ],
+    "long-sentence": [
+      "c67_one-long-sentence.txt",
+      "c68_long-in-fence-table-quote.txt"
     ]
   },
   "e8": [
@@ -275,5 +361,27 @@
     "e18_flag-rollout.txt",
     "e19_dependency-pin.txt",
     "e20_security-header.txt"
+  ],
+  "e9_prompts": [
+    "How many times does a failed job retry before it is parked?",
+    "Why did my API token stop working an hour after I logged in?",
+    "When is it safe to run the schema migration against production?",
+    "The build fails on a stale lockfile. What do I do?",
+    "What goes into the cache key for a rendered page?",
+    "The upstream call times out at 5 seconds. Should I raise it?",
+    "Which index should this query be using?",
+    "The queue keeps backing up at peak. What are my options?",
+    "How does the auth refresh work when two tabs refresh at once?",
+    "Our log volume tripled last week. Where do I start?",
+    "The staging schema has drifted from production. How do I tell what changed?",
+    "Is there a race between the writer and the reaper?",
+    "Memory grows over a day and drops on restart. What is holding it?",
+    "What is the rollback path if the deploy goes wrong?",
+    "Two cron runs overlapped last night. How do I stop that?",
+    "What shape should the error response be?",
+    "The p95 regressed after yesterday's release. What changed?",
+    "How should I roll this flag out to 10% of traffic?",
+    "Should this dependency be pinned or floated?",
+    "Which security headers are missing from the responses?"
   ]
 }

@@ -1,0 +1,2 @@
+The retry budget is three attempts. Nevertheless, a job that fails on a 500 is
+parked straight away without using the budget.

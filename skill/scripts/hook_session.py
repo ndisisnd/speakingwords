@@ -61,6 +61,17 @@ MAX_REMEMBERED = 200
 SESSION_KEYS = ("session_id", "sessionId", "session-id")
 SOURCE_KEYS = ("source", "trigger")
 
+# The register is one line because it is one rule, the same at every voice and
+# every level (plan §2 W3). It goes first: the linter can catch a banned word
+# after the fact, but sentence construction is the part that is cheapest to get
+# right before the reply is written, not after it bounces.
+REGISTER_RULE = (
+    "Register: write like a colleague in a Slack DM. Short sentences, everyday "
+    "words, contractions where they read naturally. Technical terms stay — it is "
+    "the grammar around them that stays simple, not the vocabulary of the domain. "
+    "No essay connectives (furthermore, moreover, thus, hence, whilst, prior to)."
+)
+
 VOICE_RULES = {
     "terse": (
         "Voice is terse: point form only. Bullets, short headed lists, tables and "
@@ -138,6 +149,7 @@ def build_block(pref):
         "Scope: these apply to user-facing prose only. They never apply to code, "
         "file paths, command output, quoted text, tool arguments or literal data.",
         "",
+        "- " + REGISTER_RULE,
         "- " + VOICE_RULES[voice],
         "- " + CONCISENESS_RULES[level],
         "- No fact, number, path or code block may be lost to either rule. Losing "

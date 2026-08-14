@@ -1,0 +1,1 @@
+The rebuild has moved 400k rows thus far and is running at about 9k a second.

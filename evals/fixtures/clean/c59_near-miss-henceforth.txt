@@ -1,0 +1,2 @@
+The scheduler flag is named `henceforth` in v3; it was `from_now` in v2 and the
+old name is still accepted.

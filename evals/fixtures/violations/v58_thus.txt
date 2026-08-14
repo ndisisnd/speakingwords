@@ -1,0 +1,2 @@
+The index was rebuilt after the column type changed, thus the planner picks it
+again on the next query.

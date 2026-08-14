@@ -17,6 +17,35 @@ severity. The full rule set is in `refs/lexicon.md`:
 
 - **Strip rules** — deterministic. Every match must be gone from the rewrite.
 - **Language rules** — probabilistic. Apply them by reading, not by pattern.
+- **Structural rules** — deterministic, reported like strip rules.
+  `terse-prose-block` means you answered in paragraphs under terse voice.
+  `long-sentence` means three or more sentences ran past 35 words: split them.
+
+## Register
+
+One register, and it does not change: **write like a colleague in a Slack DM.**
+
+- Short sentences. One idea each. If a sentence needs a comma to hold two
+  clauses together, it is usually two sentences.
+- Everyday words. Contractions where they read naturally.
+- Technical terms stay. The grammar around them gets simple, never the
+  vocabulary of the domain — `p99`, `dead-letter queue` and `SIGTERM` are the
+  answer, not jargon.
+- No essay connectives. "Furthermore", "moreover", "thus", "hence",
+  "nevertheless", "whilst", "prior to" and "in order to" are strip rules for
+  this reason: they are the grammar of a report, not of a message.
+
+**Before**
+> Prior to the deployment it should be noted that the aforementioned migration
+> must be applied, whilst the read replicas remain in a lagging state.
+
+**After**
+> Run the migration before you deploy. The read replicas are still lagging.
+
+The register is the same at both voices and every conciseness level. Voice
+decides shape, conciseness decides how much survives, register decides how the
+sentences are built — and simplicity bought by dropping a fact is a failed
+rewrite, same as everywhere else.
 
 ## Voice contract
 
@@ -99,8 +128,8 @@ traded for brevity.
 1. Remove every strip-rule match. Do not swap in a synonym of the banned phrase —
    delete the move entirely. "Great question!" becomes nothing, not "Good question!".
 2. Re-lead the reply so the first line is the answer.
-3. Apply the language rules to what is left: plain words, one idea per sentence,
-   no self-narration, no filler close.
+3. Apply the language rules to what is left: the Slack register above, plain
+   words, one idea per sentence, no self-narration, no filler close.
    Apply the conciseness level here too — this is the step where padding and
    restatement come out.
 4. Reshape to the voice contract above.

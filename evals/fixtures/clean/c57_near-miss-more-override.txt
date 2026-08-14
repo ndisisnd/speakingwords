@@ -1,0 +1,2 @@
+There is one more override in `config/local.json`, and it wins over the value in
+the shared file.

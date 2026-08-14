@@ -1,0 +1,2 @@
+The rollback script restores the previous schema in about 40 seconds. It should
+be noted that the write path stays read-only for that window.

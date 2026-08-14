@@ -299,13 +299,17 @@ recognise.
 
 Everything the linter knows lives in one file, `refs/lexicon.md`. Nothing is hardcoded.
 
-- **Strip rules** — 28 shipped by default. Deterministic regex: banned vocabulary, stock
-  openers, marketing verbs. Each row is `id`, `pattern`, `severity`, `guidance`.
-- **Language rules** — 8 shipped. Positive rules a regex cannot judge (plain words over
-  jargon, no self-narration, no sycophantic openers, lead with the answer), each with one
-  before → after exemplar. The rewrite pass applies these by reading.
+- **Strip rules** — 39 shipped by default. Deterministic regex: banned vocabulary, stock
+  openers, marketing verbs, and the formal connectives that make a reply read like a
+  report ("furthermore", "whilst", "prior to"). Each row is `id`, `pattern`, `severity`,
+  `guidance`.
+- **Language rules** — 9 shipped. Positive rules a regex cannot judge (write like a
+  colleague in a Slack DM, plain words over jargon, no self-narration, lead with the
+  answer), each with one before → after exemplar. The rewrite pass applies these by reading.
 
-To park a rule without deleting it, prefix its id with `#`.
+To park a rule without deleting it, prefix its id with `#`, or run
+`speakingwords update "more <phrase>"` — the way to keep a word your domain actually
+needs, like "the aforementioned case law".
 
 ---
 

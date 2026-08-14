@@ -1,0 +1,2 @@
+The timeout mentioned earlier lives in `config/http.json`, and the retry count
+sits next to it.

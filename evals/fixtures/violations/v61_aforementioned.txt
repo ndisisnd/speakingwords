@@ -1,0 +1,2 @@
+The aforementioned timeout is set in `config/http.json` and applies to every
+outbound call.

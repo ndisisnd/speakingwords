@@ -1,0 +1,2 @@
+The read-only window should be noted in the change log; it lasts about 40
+seconds.

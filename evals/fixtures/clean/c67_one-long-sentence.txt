@@ -1,0 +1,5 @@
+The deploy failed because the release job pushed the new image before the schema
+migration had finished, and the pods that came up first read a table that still
+had the old column layout on it.
+
+The rollback took ninety seconds. Gate the image push on the migration job.

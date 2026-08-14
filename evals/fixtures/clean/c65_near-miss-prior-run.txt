@@ -1,0 +1,2 @@
+The prior run left a lock file in `/tmp/reindex.lock`. Delete it and start
+again.

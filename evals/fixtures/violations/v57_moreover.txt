@@ -1,0 +1,2 @@
+The token cache is keyed on the user id, so a re-login reuses the same entry.
+Moreover, the entry is dropped on password change.

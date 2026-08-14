@@ -1,0 +1,2 @@
+Take a snapshot prior to running the migration; the script drops the old column
+without a copy.

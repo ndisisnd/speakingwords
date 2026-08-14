@@ -1,0 +1,2 @@
+The migration runs inside one transaction, hence a failure halfway leaves the
+schema untouched.

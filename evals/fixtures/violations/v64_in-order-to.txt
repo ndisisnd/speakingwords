@@ -1,0 +1,1 @@
+Run `bin/reindex --full` in order to pick up the new analyser settings.

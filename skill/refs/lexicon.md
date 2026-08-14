@@ -16,6 +16,9 @@ table below at runtime; no rule is hardcoded in Python.
   severity only shapes how `status` reports and how loudly the rewrite skill treats it.
 - Rows whose `id` starts with `#` are ignored (that is how you park a rule without
   deleting it).
+- `speakingwords update "more <phrase>"` takes a row out for you — it is the
+  supported way to park a rule whose phrase is normal in your domain, and the
+  rows that expect it say so in their guidance.
 
 ## Strip rules
 
@@ -49,6 +52,17 @@ table below at runtime; no rule is hardcoded in Python.
 | strip-testament | `\ba testament to\b` | error | Stock flourish. |
 | strip-in-conclusion | `^\s*In conclusion\b` | warn | Essay scaffolding. Lead with the conclusion instead of announcing it. |
 | strip-i-apologize | `^\s*I apologi[sz]e\b` | warn | Apology opener. State the correction, not the contrition. |
+| strip-furthermore | `\bfurthermore\b` | warn | Essay connective. Start a new sentence, or use "also". No everyday sentence needs it. |
+| strip-moreover | `\bmoreover\b` | warn | Essay connective, same class as `furthermore`. "And" or a full stop does the job. |
+| strip-thus | `\bthus\b(?!\s+far)` | warn | Formal connective. Say "so". The lookahead keeps "thus far" out of it, which is the one phrase where the word is idiomatic. |
+| strip-hence | `\bhence\b` | warn | Formal connective. Say "so" or "that is why". `\b` means "henceforth" and "whence" never match. |
+| strip-nevertheless | `\bnevertheless\b` | warn | Essay connective. Say "still" or "even so". |
+| strip-aforementioned | `\baforementioned\b` | warn | Legal-register adjective. Name the thing again instead. It is genuinely correct in law, contract and standards text ("the aforementioned case law"), so it is `warn`, and anyone writing in those domains should park it: `speakingwords update "more aforementioned"` removes the row, or prefix the id with `#` by hand. |
+| strip-whilst | `\bwhilst\b` | warn | Formal variant of "while". "While" is the everyday word and means the same thing. |
+| strip-it-should-be-noted | `\bit\s+should\s+be\s+noted\b` | warn | Self-narration in the passive. If it should be noted, note it. |
+| strip-in-order-to | `\bin\s+order\s+to\b` | warn | Three words for one. Say "to". Gated on the whole phrase, so "the rows come back in order" is safe. |
+| strip-prior-to | `\bprior\s+to\b` | warn | Say "before". Gated on the whole phrase, so "the prior run" and "prior art" are safe. |
+| strip-subsequent-to | `\bsubsequent\s+to\b` | warn | Say "after". Gated on the whole phrase, so "subsequent runs" is safe. |
 
 ## How the conciseness table is read
 
@@ -88,6 +102,7 @@ Each rule ships one before → after exemplar.
 
 | id | rule |
 |----|------|
+| lang-slack-register | **Write like a colleague in a Slack DM.** Short sentences, everyday words, contractions where they read naturally. Technical terms are fine — it is the grammar around them that stays simple, never the vocabulary of the domain. <br> Before: "Prior to the deployment it should be noted that the aforementioned migration must be applied, whilst the read replicas remain in a lagging state." <br> After: "Run the migration before you deploy. The read replicas are still lagging." |
 | lang-plain-words | **Plain words over jargon.** Use the shortest word that carries the meaning. <br> Before: "We leveraged a robust caching layer to optimise throughput." <br> After: "We added a cache. Requests got faster." |
 | lang-answer-first | **Lead with the answer.** The first sentence resolves the question; reasoning follows. <br> Before: "There are a few things to consider here. First, the config loads at boot… so yes, it is cached." <br> After: "Yes, it is cached. The config loads once at boot." |
 | lang-no-self-narration | **No self-narration.** Do not describe what you are about to do, are doing, or have decided to do. <br> Before: "Let me take a look at the file to understand the structure." <br> After: (read the file, then) "The file defines three exports." |
@@ -97,10 +112,11 @@ Each rule ships one before → after exemplar.
 | lang-concrete-over-vague | **Concrete over vague.** Replace intensifiers with the fact behind them. <br> Before: "This significantly improves performance." <br> After: "This cuts the p95 from 400 ms to 90 ms." |
 | lang-no-hedging-stack | **No stacked hedges.** At most one qualifier per claim. <br> Before: "It might possibly be the case that this could sometimes fail." <br> After: "This fails when the cache is cold." |
 
-## Structural rules (voice-dependent)
+## Structural rules
 
-Applied by `lint.py`, not by the tables above.
+Applied by `lint.py`, not by the tables above. One is voice-dependent, one is not.
 
 | id | applies to | rule |
 |----|-----------|------|
 | terse-prose-block | terse voice only | A paragraph of more than two consecutive non-bullet sentences is a prose block. Terse voice is point-form only, so rewrite it as bullets. Code fences, headings, tables and bullet lists are exempt. Convo voice never triggers this rule — prose is retained and brevity is not forced. |
+| long-sentence | both voices | Three or more prose sentences of over 35 words each. One long sentence is style; three is essay grammar, which is what the Slack register rules out. The threshold is deliberately high — a false positive bounces a good reply. Exempt through the same path as `terse-prose-block`: code fences, tables, quotes, headings and bullets are not counted. |

@@ -1,0 +1,2 @@
+The worker pool is capped at 8 processes in `config/pool.json`.
+Furthermore, the queue drains at roughly 200 jobs a minute once the cap is lifted.

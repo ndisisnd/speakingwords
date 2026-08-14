@@ -1,0 +1,2 @@
+The cache is warmed at boot, whilst the read replicas catch up in the
+background.

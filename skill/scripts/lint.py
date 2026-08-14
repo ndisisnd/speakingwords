@@ -2,8 +2,9 @@
 """speakingwords deterministic lint pass.
 
 Reads an agent reply from stdin or a file argument, scans it against the strip
-rules in ../refs/lexicon.md, adds one voice-dependent structural check, and
-prints a single JSON object on stdout.
+rules in ../refs/lexicon.md, adds two structural checks — one voice-dependent
+(terse-prose-block), one not (long-sentence) — and prints a single JSON object
+on stdout.
 
 Contract (plan assertion A6): exit 0 on clean, exit 2 on violations, never any
 other code. An internal error is never allowed to block a user's reply, so a
@@ -68,6 +69,13 @@ FENCE = re.compile(r"^\s*(?:```|~~~)")
 # counts as a paragraph-form answer. Two is enough for a one-line lead-in plus a
 # qualifier; three or more is prose.
 TERSE_SENTENCE_ALLOWANCE = 2
+
+# Register check (plan §2 W3). A sentence over LONG_SENTENCE_WORDS words is long;
+# LONG_SENTENCE_ALLOWANCE of them is still style, and the third one is the drift.
+# Both numbers are deliberately generous: one long sentence is how people write,
+# a pattern of them is essay grammar, and a false positive bounces a good reply.
+LONG_SENTENCE_WORDS = 35
+LONG_SENTENCE_ALLOWANCE = 2
 
 
 class LexiconError(Exception):
@@ -328,16 +336,7 @@ def check_terse_structure(text):
     rambling one, only that point-form was not used where the voice demands it.
     """
     violations = []
-    body = strip_code_fences(text)
-    for block in re.split(r"\n\s*\n", body):
-        prose_lines = [
-            ln.strip()
-            for ln in block.splitlines()
-            if ln.strip() and not NON_PROSE_LINE.match(ln)
-        ]
-        if not prose_lines:
-            continue
-        joined = " ".join(prose_lines)
+    for joined in prose_blocks(text):
         sentences = [s for s in SENTENCE_SPLIT.split(joined) if s.strip()]
         if len(sentences) > TERSE_SENTENCE_ALLOWANCE:
             violations.append(
@@ -348,6 +347,57 @@ def check_terse_structure(text):
                 }
             )
     return violations
+
+
+def prose_blocks(text):
+    """Blank-line-separated blocks, reduced to their prose lines only.
+
+    The exemption path both structural checks share: fenced code is blanked
+    out first, then every line that is structurally not prose (bullet, number,
+    heading, quote, table row) is dropped. What comes back is the running text
+    a reader actually reads as sentences.
+    """
+    for block in re.split(r"\n\s*\n", strip_code_fences(text)):
+        prose_lines = [
+            ln.strip()
+            for ln in block.splitlines()
+            if ln.strip() and not NON_PROSE_LINE.match(ln)
+        ]
+        if prose_lines:
+            yield " ".join(prose_lines)
+
+
+def check_long_sentences(text):
+    """Flag essay grammar: three or more very long sentences in one reply.
+
+    Voice-independent, unlike check_terse_structure — the Slack register is the
+    same in terse and convo, because it is about sentence construction, not
+    about whether the answer is shaped as bullets.
+
+    The count is taken across the whole reply, not per block: three long
+    sentences spread over three paragraphs is the same drift as three in a row.
+    Nothing is reported below the threshold, so a reply with one or two long
+    sentences comes back clean.
+    """
+    long_sentences = []
+    for joined in prose_blocks(text):
+        for sentence in SENTENCE_SPLIT.split(joined):
+            sentence = sentence.strip()
+            if len(sentence.split()) > LONG_SENTENCE_WORDS:
+                long_sentences.append(sentence)
+
+    if len(long_sentences) <= LONG_SENTENCE_ALLOWANCE:
+        return []
+    # Every offending sentence is listed, capped like a strip rule, so the
+    # rewrite pass knows which ones to split rather than guessing.
+    return [
+        {
+            "rule": "long-sentence",
+            "match": sentence[:MATCH_SNIPPET_CHARS],
+            "severity": "warn",
+        }
+        for sentence in long_sentences[:MAX_MATCHES_PER_RULE]
+    ]
 
 
 def read_input(argv_path):
@@ -398,6 +448,10 @@ def lint(text, voice, rules, conciseness=DEFAULT_LEVEL):
     level = normalise_level(conciseness)
     active = [rule for rule in rules if level in rule[3]]
     violations = scan_strip_rules(text, active)
+    # Register is voice-independent and level-independent: a colleague in a DM
+    # writes short sentences whatever shape the answer takes and however much
+    # of it survives.
+    violations.extend(check_long_sentences(text))
     if voice == "terse":
         violations.extend(check_terse_structure(text))
     return violations
