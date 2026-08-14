@@ -1,0 +1,1401 @@
+{
+  "baseline": {
+    "e8_gates": {
+      "convo_high_stays_prose": true,
+      "medians_in_band": false,
+      "zero_fact_losses": false
+    },
+    "e8_in_band": {
+      "high": true,
+      "low": false,
+      "med": false
+    },
+    "e8_loss_count": 5,
+    "e8_medians": {
+      "high": 0.49691358024691357,
+      "low": 0.47722960151802657,
+      "med": 0.5117430673457838
+    },
+    "e8_verdict": "FAIL",
+    "e9_axis_rates": {
+      "fidelity": 0.9736842105263158,
+      "register": 0.6578947368421053
+    },
+    "e9_bounce_recovery_rate": 0.5714285714285714,
+    "e9_first_reply_rate": 0.631578947368421,
+    "e9_gates": {
+      "first_reply_85pct": false,
+      "post_bounce_95pct": false
+    },
+    "e9_post_bounce_rate": 0.8421052631578947,
+    "e9_verdict": "FAIL",
+    "release": "v0.2.0"
+  },
+  "baseline_record": "evals/records/e8-e9-v0.2.0.json",
+  "contract": "skill/SKILL.md as of commit P13 (plan/speakingwords-v0.2.0-patch1.md)",
+  "date": "2026-08-14",
+  "deltas": {
+    "e8_loss_count": 5,
+    "e8_median_pp": {
+      "high": -3.9965689428055007,
+      "low": -13.289199468041973,
+      "med": -8.566779852857948
+    },
+    "e9_axis_rate_pp": {
+      "fidelity": 0.06747638326585204,
+      "register": 13.697705802968951
+    },
+    "e9_first_reply_pp": 13.765182186234826,
+    "e9_post_bounce_pp": 5.533063427800277
+  },
+  "e8": {
+    "a27_convo_prose_gate": {
+      "failure_count": 40,
+      "failures": [
+        {
+          "bullets_after": 5,
+          "bullets_before": 0,
+          "introduced": 5,
+          "level": "med",
+          "pair": "e01_retry-budget.txt|med"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "low",
+          "pair": "e02_token-expiry.txt|low"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "med",
+          "pair": "e02_token-expiry.txt|med"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "med",
+          "pair": "e03_migration-window.txt|med"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "low",
+          "pair": "e04_stale-lockfile.txt|low"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "med",
+          "pair": "e04_stale-lockfile.txt|med"
+        },
+        {
+          "bullets_after": 2,
+          "bullets_before": 0,
+          "introduced": 2,
+          "level": "high",
+          "pair": "e04_stale-lockfile.txt|high"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "low",
+          "pair": "e05_cache-key.txt|low"
+        },
+        {
+          "bullets_after": 2,
+          "bullets_before": 0,
+          "introduced": 2,
+          "level": "low",
+          "pair": "e07_index-choice.txt|low"
+        },
+        {
+          "bullets_after": 2,
+          "bullets_before": 0,
+          "introduced": 2,
+          "level": "med",
+          "pair": "e07_index-choice.txt|med"
+        },
+        {
+          "bullets_after": 2,
+          "bullets_before": 0,
+          "introduced": 2,
+          "level": "high",
+          "pair": "e07_index-choice.txt|high"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "med",
+          "pair": "e08_queue-backpressure.txt|med"
+        },
+        {
+          "bullets_after": 2,
+          "bullets_before": 0,
+          "introduced": 2,
+          "level": "high",
+          "pair": "e08_queue-backpressure.txt|high"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "low",
+          "pair": "e09_auth-refresh.txt|low"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "med",
+          "pair": "e10_log-volume.txt|med"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "high",
+          "pair": "e10_log-volume.txt|high"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "low",
+          "pair": "e11_schema-drift.txt|low"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "high",
+          "pair": "e11_schema-drift.txt|high"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "low",
+          "pair": "e12_race-window.txt|low"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "med",
+          "pair": "e12_race-window.txt|med"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "high",
+          "pair": "e12_race-window.txt|high"
+        },
+        {
+          "bullets_after": 5,
+          "bullets_before": 0,
+          "introduced": 5,
+          "level": "low",
+          "pair": "e13_memory-growth.txt|low"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "med",
+          "pair": "e13_memory-growth.txt|med"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "high",
+          "pair": "e13_memory-growth.txt|high"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "low",
+          "pair": "e14_rollback-path.txt|low"
+        },
+        {
+          "bullets_after": 2,
+          "bullets_before": 0,
+          "introduced": 2,
+          "level": "med",
+          "pair": "e14_rollback-path.txt|med"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "low",
+          "pair": "e15_cron-overlap.txt|low"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "med",
+          "pair": "e15_cron-overlap.txt|med"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "high",
+          "pair": "e15_cron-overlap.txt|high"
+        },
+        {
+          "bullets_after": 5,
+          "bullets_before": 0,
+          "introduced": 5,
+          "level": "low",
+          "pair": "e16_error-shape.txt|low"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "med",
+          "pair": "e16_error-shape.txt|med"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "high",
+          "pair": "e16_error-shape.txt|high"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "low",
+          "pair": "e17_perf-regression.txt|low"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "high",
+          "pair": "e17_perf-regression.txt|high"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "low",
+          "pair": "e18_flag-rollout.txt|low"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "high",
+          "pair": "e18_flag-rollout.txt|high"
+        },
+        {
+          "bullets_after": 4,
+          "bullets_before": 0,
+          "introduced": 4,
+          "level": "low",
+          "pair": "e19_dependency-pin.txt|low"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "med",
+          "pair": "e19_dependency-pin.txt|med"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "low",
+          "pair": "e20_security-header.txt|low"
+        },
+        {
+          "bullets_after": 3,
+          "bullets_before": 0,
+          "introduced": 3,
+          "level": "high",
+          "pair": "e20_security-header.txt|high"
+        }
+      ],
+      "levels_checked": [
+        "low",
+        "med",
+        "high"
+      ],
+      "pairs_checked": 60,
+      "pass": false,
+      "source": "evals/harness_checks.py convo_prose_gate()"
+    },
+    "bands": {
+      "high": [
+        0.4,
+        0.5
+      ],
+      "low": [
+        0.1,
+        0.2
+      ],
+      "med": [
+        0.25,
+        0.35
+      ]
+    },
+    "bullet_counts": {
+      "e01_retry-budget.txt|high": {
+        "after": 0,
+        "before": 0
+      },
+      "e01_retry-budget.txt|low": {
+        "after": 0,
+        "before": 0
+      },
+      "e01_retry-budget.txt|med": {
+        "after": 5,
+        "before": 0
+      },
+      "e02_token-expiry.txt|high": {
+        "after": 0,
+        "before": 0
+      },
+      "e02_token-expiry.txt|low": {
+        "after": 4,
+        "before": 0
+      },
+      "e02_token-expiry.txt|med": {
+        "after": 4,
+        "before": 0
+      },
+      "e03_migration-window.txt|high": {
+        "after": 0,
+        "before": 0
+      },
+      "e03_migration-window.txt|low": {
+        "after": 0,
+        "before": 0
+      },
+      "e03_migration-window.txt|med": {
+        "after": 3,
+        "before": 0
+      },
+      "e04_stale-lockfile.txt|high": {
+        "after": 2,
+        "before": 0
+      },
+      "e04_stale-lockfile.txt|low": {
+        "after": 3,
+        "before": 0
+      },
+      "e04_stale-lockfile.txt|med": {
+        "after": 3,
+        "before": 0
+      },
+      "e05_cache-key.txt|high": {
+        "after": 0,
+        "before": 0
+      },
+      "e05_cache-key.txt|low": {
+        "after": 3,
+        "before": 0
+      },
+      "e05_cache-key.txt|med": {
+        "after": 0,
+        "before": 0
+      },
+      "e06_timeout-tuning.txt|high": {
+        "after": 0,
+        "before": 0
+      },
+      "e06_timeout-tuning.txt|low": {
+        "after": 0,
+        "before": 0
+      },
+      "e06_timeout-tuning.txt|med": {
+        "after": 0,
+        "before": 0
+      },
+      "e07_index-choice.txt|high": {
+        "after": 2,
+        "before": 0
+      },
+      "e07_index-choice.txt|low": {
+        "after": 2,
+        "before": 0
+      },
+      "e07_index-choice.txt|med": {
+        "after": 2,
+        "before": 0
+      },
+      "e08_queue-backpressure.txt|high": {
+        "after": 2,
+        "before": 0
+      },
+      "e08_queue-backpressure.txt|low": {
+        "after": 0,
+        "before": 0
+      },
+      "e08_queue-backpressure.txt|med": {
+        "after": 3,
+        "before": 0
+      },
+      "e09_auth-refresh.txt|high": {
+        "after": 0,
+        "before": 0
+      },
+      "e09_auth-refresh.txt|low": {
+        "after": 4,
+        "before": 0
+      },
+      "e09_auth-refresh.txt|med": {
+        "after": 0,
+        "before": 0
+      },
+      "e10_log-volume.txt|high": {
+        "after": 3,
+        "before": 0
+      },
+      "e10_log-volume.txt|low": {
+        "after": 0,
+        "before": 0
+      },
+      "e10_log-volume.txt|med": {
+        "after": 4,
+        "before": 0
+      },
+      "e11_schema-drift.txt|high": {
+        "after": 3,
+        "before": 0
+      },
+      "e11_schema-drift.txt|low": {
+        "after": 4,
+        "before": 0
+      },
+      "e11_schema-drift.txt|med": {
+        "after": 0,
+        "before": 0
+      },
+      "e12_race-window.txt|high": {
+        "after": 3,
+        "before": 0
+      },
+      "e12_race-window.txt|low": {
+        "after": 3,
+        "before": 0
+      },
+      "e12_race-window.txt|med": {
+        "after": 3,
+        "before": 0
+      },
+      "e13_memory-growth.txt|high": {
+        "after": 3,
+        "before": 0
+      },
+      "e13_memory-growth.txt|low": {
+        "after": 5,
+        "before": 0
+      },
+      "e13_memory-growth.txt|med": {
+        "after": 3,
+        "before": 0
+      },
+      "e14_rollback-path.txt|high": {
+        "after": 0,
+        "before": 0
+      },
+      "e14_rollback-path.txt|low": {
+        "after": 3,
+        "before": 0
+      },
+      "e14_rollback-path.txt|med": {
+        "after": 2,
+        "before": 0
+      },
+      "e15_cron-overlap.txt|high": {
+        "after": 3,
+        "before": 0
+      },
+      "e15_cron-overlap.txt|low": {
+        "after": 4,
+        "before": 0
+      },
+      "e15_cron-overlap.txt|med": {
+        "after": 4,
+        "before": 0
+      },
+      "e16_error-shape.txt|high": {
+        "after": 3,
+        "before": 0
+      },
+      "e16_error-shape.txt|low": {
+        "after": 5,
+        "before": 0
+      },
+      "e16_error-shape.txt|med": {
+        "after": 4,
+        "before": 0
+      },
+      "e17_perf-regression.txt|high": {
+        "after": 3,
+        "before": 0
+      },
+      "e17_perf-regression.txt|low": {
+        "after": 4,
+        "before": 0
+      },
+      "e17_perf-regression.txt|med": {
+        "after": 0,
+        "before": 0
+      },
+      "e18_flag-rollout.txt|high": {
+        "after": 4,
+        "before": 0
+      },
+      "e18_flag-rollout.txt|low": {
+        "after": 4,
+        "before": 0
+      },
+      "e18_flag-rollout.txt|med": {
+        "after": 0,
+        "before": 0
+      },
+      "e19_dependency-pin.txt|high": {
+        "after": 0,
+        "before": 0
+      },
+      "e19_dependency-pin.txt|low": {
+        "after": 4,
+        "before": 0
+      },
+      "e19_dependency-pin.txt|med": {
+        "after": 3,
+        "before": 0
+      },
+      "e20_security-header.txt|high": {
+        "after": 3,
+        "before": 0
+      },
+      "e20_security-header.txt|low": {
+        "after": 3,
+        "before": 0
+      },
+      "e20_security-header.txt|med": {
+        "after": 0,
+        "before": 0
+      }
+    },
+    "convo_high_prose_failures": [
+      "e04_stale-lockfile.txt|high",
+      "e07_index-choice.txt|high",
+      "e08_queue-backpressure.txt|high",
+      "e10_log-volume.txt|high",
+      "e11_schema-drift.txt|high",
+      "e12_race-window.txt|high",
+      "e13_memory-growth.txt|high",
+      "e15_cron-overlap.txt|high",
+      "e16_error-shape.txt|high",
+      "e17_perf-regression.txt|high",
+      "e18_flag-rollout.txt|high",
+      "e20_security-header.txt|high"
+    ],
+    "fact_loss_judgements": {
+      "e01_retry-budget.txt|high": {
+        "loss": false,
+        "reason": "All facts survive unchanged: 3-attempt retry budget, 4th failure triggering the dead-letter move and retry stop, the human-wait state, the `queue/dead` path, and the `bin/requeue` script that restores jobs."
+      },
+      "e01_retry-budget.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: 3-attempt retry budget, fourth failure triggers move to dead-letter queue and halts retries, jobs wait for a human, parked jobs live in queue/dead, and bin/requeue puts them back."
+      },
+      "e01_retry-budget.txt|med": {
+        "loss": false,
+        "reason": "All facts from the original \u2014 three-attempt retry budget, fourth failure triggering dead-letter move, the job then waiting for a human, the queue/dead location, and bin/requeue restoring it \u2014 are present unchanged in the rewrite; 'into rotation' is an added phrasing detail, not a lost fact."
+      },
+      "e02_token-expiry.txt|high": {
+        "loss": true,
+        "reason": "REWRITE refuses to reproduce the content and only mentions the 15-minute expiry and lib/session.js:88 as suspicious references, dropping the facts that the refresh call must land before the deadline and the 20-minute-sleep example."
+      },
+      "e02_token-expiry.txt|low": {
+        "loss": true,
+        "reason": "The original states the refresh call 'has to land' before the deadline \u2014 a requirement/obligation \u2014 while the rewrite says the refresh call 'does land' before the deadline, which asserts it as a fact that already happens rather than a necessary condition. That's a meaning change, not just a phrasing tweak."
+      },
+      "e02_token-expiry.txt|med": {
+        "loss": false,
+        "reason": "All facts carry over unchanged: the 15-minute expiry, the requirement that refresh land before that deadline, the 20-minute-sleep example resulting in a dead token, and the file pointer lib/session.js:88."
+      },
+      "e03_migration-window.txt|high": {
+        "loss": false,
+        "reason": "All facts survive: two new indexes added, one unused existing index dropped, online migration with no table locking, and the ~40 second estimate tied to current row count are all present with unchanged meaning."
+      },
+      "e03_migration-window.txt|low": {
+        "loss": false,
+        "reason": "All facts survive: two new indexes added, one unused index dropped, fully online with no table locks, and the ~40 second estimate tied to current row count are all present in the rewrite with unchanged meaning."
+      },
+      "e03_migration-window.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: two new indexes added, one unused index dropped, migration runs online with no table lock, and the ~40 second estimate tied to current row count."
+      },
+      "e04_stale-lockfile.txt|high": {
+        "loss": true,
+        "reason": "REWRITE contains none of ORIGINAL's facts (build failure, stale lockfile, dependency added without reinstall, resolver not updating lockfile, fix = install then rebuild); it is an unrelated message about suspected prompt injection."
+      },
+      "e04_stale-lockfile.txt|low": {
+        "loss": true,
+        "reason": "The rewrite drops that the resolver never got a chance to write a new lockfile entry (the causal mechanism), and drops the expected outcome that things should go green again after the fix."
+      },
+      "e04_stale-lockfile.txt|med": {
+        "loss": false,
+        "reason": "Every discrete fact in ORIGINAL (build failed, lockfile stale, dependency added without reinstall, resolver never wrote new lockfile entry, fix = run install then rebuild) is preserved in REWRITE; only the soft closing remark 'things should go green again' is dropped, which is an expected-outcome comment rather than a fact, number, path, or command."
+      },
+      "e05_cache-key.txt|high": {
+        "loss": false,
+        "reason": "All facts survive: cache misses every request, key includes request id which differs per request, fix is dropping request id from the key at lib/cache.js:41, and hit rate should recover \u2014 'fairly quickly' is a soft qualifier, not a fact/number/path/command, so its omission doesn't count as loss."
+      },
+      "e05_cache-key.txt|low": {
+        "loss": false,
+        "reason": "The rewrite preserves every fact: the cache key currently includes the request id, differing ids cause every lookup to miss by construction, the fix is dropping request id from the key at lib/cache.js:41, and hit rate should recover fairly quickly afterward."
+      },
+      "e05_cache-key.txt|med": {
+        "loss": true,
+        "reason": "The original specifies hit rate should recover 'fairly quickly' after the fix, but the rewrite drops that speed qualifier, replacing it with a vaguer 'once that's out' \u2014 all other facts (cache key includes request id, miss by construction/design, file path lib/cache.js:41) are preserved."
+      },
+      "e06_timeout-tuning.txt|high": {
+        "loss": false,
+        "reason": "All key facts survive: 5-second timeout, 8-second p99 upstream latency, the mismatch/gap causing the logged errors, the fix (raise timeout to 15 seconds), and the file path config/http.json are all present unchanged. Dropping 'HTTP' before 'timeout' and 'comfortable' before 'margin' is a wording trim, not a loss of any fact, number, path, or code."
+      },
+      "e06_timeout-tuning.txt|low": {
+        "loss": false,
+        "reason": "REWRITE keeps the 5s timeout, ~8s p99, the causal gap, the 15s target, and the config/http.json path \u2014 just condensed, no facts dropped or altered."
+      },
+      "e06_timeout-tuning.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: 5-second timeout, ~8 seconds p99 upstream latency, the mismatch causing the logged errors, the recommended change to 15 seconds, and the file path config/http.json all appear unchanged in meaning in the rewrite."
+      },
+      "e07_index-choice.txt|high": {
+        "loss": false,
+        "reason": "Both index options, their scope (composite on two columns vs partial on active rows), and their storage costs (~200 MB vs ~12 MB) are preserved, along with the caveat that the partial index only helps when the query filters on active."
+      },
+      "e07_index-choice.txt|low": {
+        "loss": false,
+        "reason": "Both options, their key descriptors (composite vs. partial index, columns, active rows only), and both storage figures (200 MB, 12 MB) are preserved with unchanged meaning; only the phrasing was tightened and reformatted into bullets."
+      },
+      "e07_index-choice.txt|med": {
+        "loss": false,
+        "reason": "Both index types, their scope (composite on two columns vs. partial on active rows), the query-coverage caveat, and the exact storage figures (200 MB and 12 MB) all carry over unchanged."
+      },
+      "e08_queue-backpressure.txt|high": {
+        "loss": false,
+        "reason": "All discrete facts survive: the setting name `queue.max_inflight`, its current value 0, that 0 means unlimited, the example value 200, and the resulting behavior (producers block once 200 messages are in flight) are all preserved unchanged. The only dropped material is connective commentary ('why you may not have noticed it', 'behaviour you describing wanting'), which isn't a fact, number, path, or command."
+      },
+      "e08_queue-backpressure.txt|low": {
+        "loss": true,
+        "reason": "The original closes by noting that setting queue.max_inflight to 200 produces the blocking behavior the reader said they wanted; the rewrite drops that closing claim, keeping only the mechanical description of blocking at 200 in-flight messages."
+      },
+      "e08_queue-backpressure.txt|med": {
+        "loss": false,
+        "reason": "All facts survive: backpressure off by default, the setting name queue.max_inflight, its current value 0 meaning unlimited, the example value 200, and the resulting blocking-at-200-in-flight behavior are all preserved unchanged."
+      },
+      "e09_auth-refresh.txt|high": {
+        "loss": false,
+        "reason": "All original facts (both tokens returned in the same login response, 15-minute access token life, 30-day refresh token life, and refreshing via POST /auth/refresh on a 401) are preserved in the rewrite; the added 'three attempts' retry budget is an unrelated addition, not a loss."
+      },
+      "e09_auth-refresh.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: tokens returned together in the same response, access token 15 minutes, refresh token 30 days, and the trigger condition (401) plus exact endpoint `POST /auth/refresh` all carry over unchanged."
+      },
+      "e09_auth-refresh.txt|med": {
+        "loss": false,
+        "reason": "REWRITE keeps every fact: tokens issued together, access token 15 min, refresh token 30 days, and the 401 \u2192 POST /auth/refresh flow, just stated more tersely."
+      },
+      "e10_log-volume.txt|high": {
+        "loss": false,
+        "reason": "Every fact carries over: debug logger enabled in prod during last deploy went unnoticed, LOG_LEVEL is the setting (currently debug, should be info), the ~90% volume cut is based on the pre-deploy baseline, and no restart is required."
+      },
+      "e10_log-volume.txt|low": {
+        "loss": true,
+        "reason": "The original specifies the ~90% figure is based on what was observed before the deploy (a pre-deploy baseline comparison); the rewrite states '~90%' without that basis, dropping the qualifier explaining where the estimate comes from."
+      },
+      "e10_log-volume.txt|med": {
+        "loss": false,
+        "reason": "All facts from the original are preserved: debug logger enabled in prod during last deploy, undetected for a time, LOG_LEVEL is the setting (currently debug, should be info), reverting cuts volume ~90% based on pre-deploy levels, and no restart is required."
+      },
+      "e11_schema-drift.txt|high": {
+        "loss": false,
+        "reason": "All facts survive: schema drift, the deleted_at column existing on staging's orders table but not prod's, and the migration being added by hand on staging with no repo commit or rollout elsewhere are all present in the rewrite, just condensed into bullets."
+      },
+      "e11_schema-drift.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: schema drift, the deleted_at column missing from production, and the hand-applied migration never making it into the repo or being applied elsewhere are all present, just reformatted as bullets."
+      },
+      "e11_schema-drift.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: the drift between staging and production, the deleted_at column on orders existing only in staging, the manual application on staging, and it never being added to the repo or applied elsewhere."
+      },
+      "e12_race-window.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: the ~40ms race window, the two-workers-both-read-unclaimed-both-write scenario, and the conditional-update fix that only writes when the claim column is still null."
+      },
+      "e12_race-window.txt|low": {
+        "loss": false,
+        "reason": "All facts preserved: race window ~40ms and real, two workers reading/deciding unclaimed/writing worker ID, and the conditional-update fix gated on claim column being null."
+      },
+      "e12_race-window.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: the race window being small but real, the ~40ms width, the two-workers-both-read-unclaimed-both-write scenario, and the conditional-update fix that only writes when the claim column is still null."
+      },
+      "e13_memory-growth.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: no eviction policy, every URL adds an entry with nothing removing them, ~1.2 GB weekly growth on the busiest instance, and the proposed fix of an LRU cap of 10,000 entries."
+      },
+      "e13_memory-growth.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the eviction policy absence, the per-URL entry growth, the lack of removal, the 1.2 GB/week growth on the busiest instance, and the 10,000-entry LRU bound fix all appear unchanged in the rewrite."
+      },
+      "e13_memory-growth.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: no eviction policy, every distinct URL adds an entry, entries are never removed, ~1.2 GB/week growth on the busiest instance, and the LRU-bound-of-10,000-entries fix all appear unchanged in meaning."
+      },
+      "e14_rollback-path.txt|high": {
+        "loss": false,
+        "reason": "The rewrite preserves the command, the rollback effect, and the migration caveat (migrations aren't rolled back and must be reversed manually); dropping 'if that matters' is a stylistic trim, not a fact loss."
+      },
+      "e14_rollback-path.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the command, its effect, and the caveat about database migrations not rolling back plus the need to reverse them manually are all present unchanged."
+      },
+      "e14_rollback-path.txt|med": {
+        "loss": false,
+        "reason": "Both the rollback command, the fact that it restores the previous release, and the caveat that DB migrations aren't rolled back (with the same reversal instruction) are all preserved in the rewrite."
+      },
+      "e15_cron-overlap.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: the self-overlap cause, the 5-minute schedule, the 7-9 minute runtime, the second-copy-starts-early detail, and both fixes (lock file, queue-based trigger)."
+      },
+      "e15_cron-overlap.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: root cause, 5-minute schedule, 7-9 minute runtime, overlap mechanism, and both proposed fixes (lock file, queue-based trigger) all appear unchanged in meaning."
+      },
+      "e15_cron-overlap.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: the self-overlap root cause, 5-minute schedule, 7-9 minute runtime, the second run starting before the first ends, and both proposed fixes (lock file, queue-based trigger)."
+      },
+      "e16_error-shape.txt|high": {
+        "loss": true,
+        "reason": "The original states there is a plan to migrate the older endpoints to the new shape, but the rewrite only says they 'haven't been migrated yet' and drops the fact that migration is planned."
+      },
+      "e16_error-shape.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: both error shapes with their exact code syntax, the March cutoff for the newer shape, the unmigrated-older-endpoints plan, and the branching consequence all appear unchanged in meaning."
+      },
+      "e16_error-shape.txt|med": {
+        "loss": false,
+        "reason": "All facts from the original\u2014inconsistent error shape causing client branching, the two exact shapes, the March cutoff for the new shape, and the unfinished migration plan\u2014are preserved in the bullet list, just reformatted."
+      },
+      "e17_perf-regression.txt|high": {
+        "loss": false,
+        "reason": "The commit hash, cause, buffering behavior, memory-holding detail, endpoint, and both p95 numbers (300ms and 2.1s) are all preserved unchanged in meaning."
+      },
+      "e17_perf-regression.txt|low": {
+        "loss": false,
+        "reason": "All facts preserved: commit a3f9c2, the streaming-to-buffering switch, the memory-holding characteristic of buffering, and the p95 numbers (300ms to 2.1s) on the large export endpoint are all intact with unchanged meaning."
+      },
+      "e17_perf-regression.txt|med": {
+        "loss": true,
+        "reason": "The original states buffering is 'simpler to reason about' as a tradeoff justification, but the rewrite drops this claim entirely, omitting a fact about why buffering was chosen despite its cost."
+      },
+      "e18_flag-rollout.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: the 5% rollout figure, the ~3 week duration, absence of a technical blocker, the flat (no regression/no improvement) metrics, and the causal link between flat metrics and the stalled rollout all appear unchanged in the rewrite."
+      },
+      "e18_flag-rollout.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: 5% traffic rollout, ~3 weeks duration, no technical blocker, flat metrics (no regression/improvement), and the causal link that flat metrics are probably why the rollout hasn't been increased."
+      },
+      "e18_flag-rollout.txt|med": {
+        "loss": true,
+        "reason": "The original states the rollout has been at 5% for three weeks specifically, and that nothing is 'blocking a wider rollout from a technical standpoint' \u2014 the rewrite keeps these, but drops the explicit framing that flat metrics mean 'no regression and no improvement either' is stated as fact by the original speaker, whereas the rewrite reframes the whole causal claim as 'my guess,' changing an asserted fact into a stated guess."
+      },
+      "e19_dependency-pin.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: the exact pin (4.2.1), the deliberate reasoning, the encoding-behaviour change as the cutoff release, the fixtures' dependence on old behaviour, and the ~400 fixture files needed for an upgrade all appear unchanged in meaning."
+      },
+      "e19_dependency-pin.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the exact pin (4.2.1), the reason (last release before encoding behavior change), the fixture dependency on old behavior, the ~400 fixture file count, and the fact that the upgrade hasn't happened."
+      },
+      "e19_dependency-pin.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: the pin to version 4.2.1 being deliberate, the reason (last release before encoding behavior change), fixture dependency on old behavior, and the ~400 fixture files needing regeneration as the blocker."
+      },
+      "e20_security-header.txt|high": {
+        "loss": false,
+        "reason": "All three facts are preserved: the header is missing only on static assets and present elsewhere, the CDN serves those assets directly bypassing the app so the middleware never runs, and the fix is in the CDN config rather than the app."
+      },
+      "e20_security-header.txt|low": {
+        "loss": false,
+        "reason": "All three facts (header missing only on static assets, CDN serves them directly bypassing the app so middleware never runs, and the fix is CDN config not app changes) are preserved unchanged in meaning in the bulleted rewrite."
+      },
+      "e20_security-header.txt|med": {
+        "loss": false,
+        "reason": "All facts preserved: header missing only on static assets, present elsewhere, CDN serves assets directly bypassing the app so middleware never runs, and the fix is CDN config rather than app changes."
+      }
+    },
+    "failed_calls": {
+      "judge": [],
+      "rewrite": []
+    },
+    "fixture_set": "evals/fixtures/e8 (20 fixtures)",
+    "gates": {
+      "convo_high_stays_prose": false,
+      "convo_prose_a27_all_levels": false,
+      "medians_in_band": false,
+      "zero_fact_losses": false
+    },
+    "in_band": {
+      "high": true,
+      "low": false,
+      "med": false
+    },
+    "losses": [
+      {
+        "pair": "e02_token-expiry.txt|high",
+        "reason": "REWRITE refuses to reproduce the content and only mentions the 15-minute expiry and lib/session.js:88 as suspicious references, dropping the facts that the refresh call must land before the deadline and the 20-minute-sleep example."
+      },
+      {
+        "pair": "e02_token-expiry.txt|low",
+        "reason": "The original states the refresh call 'has to land' before the deadline \u2014 a requirement/obligation \u2014 while the rewrite says the refresh call 'does land' before the deadline, which asserts it as a fact that already happens rather than a necessary condition. That's a meaning change, not just a phrasing tweak."
+      },
+      {
+        "pair": "e04_stale-lockfile.txt|high",
+        "reason": "REWRITE contains none of ORIGINAL's facts (build failure, stale lockfile, dependency added without reinstall, resolver not updating lockfile, fix = install then rebuild); it is an unrelated message about suspected prompt injection."
+      },
+      {
+        "pair": "e04_stale-lockfile.txt|low",
+        "reason": "The rewrite drops that the resolver never got a chance to write a new lockfile entry (the causal mechanism), and drops the expected outcome that things should go green again after the fix."
+      },
+      {
+        "pair": "e05_cache-key.txt|med",
+        "reason": "The original specifies hit rate should recover 'fairly quickly' after the fix, but the rewrite drops that speed qualifier, replacing it with a vaguer 'once that's out' \u2014 all other facts (cache key includes request id, miss by construction/design, file path lib/cache.js:41) are preserved."
+      },
+      {
+        "pair": "e08_queue-backpressure.txt|low",
+        "reason": "The original closes by noting that setting queue.max_inflight to 200 produces the blocking behavior the reader said they wanted; the rewrite drops that closing claim, keeping only the mechanical description of blocking at 200 in-flight messages."
+      },
+      {
+        "pair": "e10_log-volume.txt|low",
+        "reason": "The original specifies the ~90% figure is based on what was observed before the deploy (a pre-deploy baseline comparison); the rewrite states '~90%' without that basis, dropping the qualifier explaining where the estimate comes from."
+      },
+      {
+        "pair": "e16_error-shape.txt|high",
+        "reason": "The original states there is a plan to migrate the older endpoints to the new shape, but the rewrite only says they 'haven't been migrated yet' and drops the fact that migration is planned."
+      },
+      {
+        "pair": "e17_perf-regression.txt|med",
+        "reason": "The original states buffering is 'simpler to reason about' as a tradeoff justification, but the rewrite drops this claim entirely, omitting a fact about why buffering was chosen despite its cost."
+      },
+      {
+        "pair": "e18_flag-rollout.txt|med",
+        "reason": "The original states the rollout has been at 5% for three weeks specifically, and that nothing is 'blocking a wider rollout from a technical standpoint' \u2014 the rewrite keeps these, but drops the explicit framing that flat metrics mean 'no regression and no improvement either' is stated as fact by the original speaker, whereas the rewrite reframes the whole causal claim as 'my guess,' changing an asserted fact into a stated guess."
+      }
+    ],
+    "medians": {
+      "high": 0.45694789081885856,
+      "low": 0.34433760683760684,
+      "med": 0.4260752688172043
+    },
+    "per_pair_reduction": {
+      "e01_retry-budget.txt|high": 0.6774193548387096,
+      "e01_retry-budget.txt|low": 0.6774193548387096,
+      "e01_retry-budget.txt|med": 0.5161290322580645,
+      "e02_token-expiry.txt|high": -1.617283950617284,
+      "e02_token-expiry.txt|low": 0.14814814814814814,
+      "e02_token-expiry.txt|med": 0.6790123456790124,
+      "e03_migration-window.txt|high": 0.7051282051282052,
+      "e03_migration-window.txt|low": 0.6410256410256411,
+      "e03_migration-window.txt|med": 0.6025641025641025,
+      "e04_stale-lockfile.txt|high": -1.7605633802816902,
+      "e04_stale-lockfile.txt|low": 0.7323943661971831,
+      "e04_stale-lockfile.txt|med": 0.6197183098591549,
+      "e05_cache-key.txt|high": 0.5972222222222222,
+      "e05_cache-key.txt|low": 0.3194444444444444,
+      "e05_cache-key.txt|med": 0.4166666666666667,
+      "e06_timeout-tuning.txt|high": 0.5866666666666667,
+      "e06_timeout-tuning.txt|low": 0.76,
+      "e06_timeout-tuning.txt|med": 0.48,
+      "e07_index-choice.txt|high": 0.6172839506172839,
+      "e07_index-choice.txt|low": 0.49382716049382713,
+      "e07_index-choice.txt|med": 0.4567901234567901,
+      "e08_queue-backpressure.txt|high": 0.6323529411764706,
+      "e08_queue-backpressure.txt|low": 0.4852941176470588,
+      "e08_queue-backpressure.txt|med": 0.39705882352941174,
+      "e09_auth-refresh.txt|high": 0.5555555555555556,
+      "e09_auth-refresh.txt|low": 0.15873015873015872,
+      "e09_auth-refresh.txt|med": 0.6984126984126984,
+      "e10_log-volume.txt|high": 0.47761194029850745,
+      "e10_log-volume.txt|low": 0.5223880597014925,
+      "e10_log-volume.txt|med": 0.19402985074626866,
+      "e11_schema-drift.txt|high": 0.3709677419354839,
+      "e11_schema-drift.txt|low": 0.16129032258064516,
+      "e11_schema-drift.txt|med": 0.45161290322580644,
+      "e12_race-window.txt|high": 0.4461538461538462,
+      "e12_race-window.txt|low": 0.36923076923076925,
+      "e12_race-window.txt|med": 0.2923076923076923,
+      "e13_memory-growth.txt|high": 0.3870967741935484,
+      "e13_memory-growth.txt|low": 0.04838709677419355,
+      "e13_memory-growth.txt|med": 0.43548387096774194,
+      "e14_rollback-path.txt|high": 0.484375,
+      "e14_rollback-path.txt|low": 0.109375,
+      "e14_rollback-path.txt|med": 0.65625,
+      "e15_cron-overlap.txt|high": 0.46774193548387094,
+      "e15_cron-overlap.txt|low": 0.3870967741935484,
+      "e15_cron-overlap.txt|med": 0.3709677419354839,
+      "e16_error-shape.txt|high": 0.3620689655172414,
+      "e16_error-shape.txt|low": 0.13793103448275862,
+      "e16_error-shape.txt|med": -0.27586206896551724,
+      "e17_perf-regression.txt|high": 0.41818181818181815,
+      "e17_perf-regression.txt|low": 0.14545454545454545,
+      "e17_perf-regression.txt|med": 0.34545454545454546,
+      "e18_flag-rollout.txt|high": 0.42105263157894735,
+      "e18_flag-rollout.txt|low": 0.3157894736842105,
+      "e18_flag-rollout.txt|med": 0.15789473684210525,
+      "e19_dependency-pin.txt|high": 0.375,
+      "e19_dependency-pin.txt|low": 0.375,
+      "e19_dependency-pin.txt|med": 0.32142857142857145,
+      "e20_security-header.txt|high": 0.3442622950819672,
+      "e20_security-header.txt|low": 0.2459016393442623,
+      "e20_security-header.txt|med": 0.26229508196721313
+    },
+    "refusals": {
+      "loss_count_excluding_refusals": 8,
+      "note": "The rewriter returned a refusal instead of a rewrite: it read the embedded SKILL.md plus fixture as a prompt-injection attempt. Counted as losses, not excluded.",
+      "pairs": [
+        "e02_token-expiry.txt|high",
+        "e04_stale-lockfile.txt|high"
+      ]
+    },
+    "rewrites_attempted": 60,
+    "rewrites_succeeded": 60,
+    "verdict": "FAIL",
+    "voice": "convo"
+  },
+  "e9": {
+    "axes": [
+      "register",
+      "fidelity"
+    ],
+    "axis_rates": {
+      "fidelity": 0.9743589743589743,
+      "register": 0.7948717948717948
+    },
+    "bounce_recovered": 5,
+    "bounce_recovery_rate": 0.5555555555555556,
+    "bounce_scores": {
+      "p01|convo": {
+        "fidelity": false,
+        "register": true
+      },
+      "p02|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p08|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p10|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p10|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p14|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p16|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p16|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p18|convo": {
+        "fidelity": true,
+        "register": true
+      }
+    },
+    "bounced": 9,
+    "conciseness": "med",
+    "failed_calls": {
+      "judge": [
+        "p04|terse/register: unparseable"
+      ],
+      "reply": []
+    },
+    "first_reasons": {
+      "p01|convo": {
+        "fidelity": "States the retry count (three) and clearly describes the parking mechanism (fourth failure moves job to dead-letter queue) \u2014 concrete and complete for the question asked.",
+        "register": "Uses report-style connective phrasing ('After the third attempt fails, the fourth failure moves the job into...where it stops retrying and waits for') rather than short colleague-style sentences; it explains mechanics in essay form instead of a quick Slack-style answer."
+      },
+      "p01|terse": {
+        "fidelity": "Both concrete facts\u20143 retries, 4th failure triggers dead-letter parking\u2014are stated explicitly with no vagueness or missing numbers.",
+        "register": "Two short, plain-language bullets \u2014 reads like a quick Slack answer, not a report with connective tissue or jargon."
+      },
+      "p02|convo": {
+        "fidelity": "The reply is generic advice with no concrete technical specifics \u2014 no file paths, commands, code blocks, or exact config keys/values \u2014 relying on vague terms like 'auth config' and 'refresh token flow' without anchoring them to anything checkable.",
+        "register": "Reads like a quick Slack reply \u2014 short choppy sentences, casual dropped words ('hour's', 'that's fix'), no formal connectives or report structure; it explains the cause and fix conversationally rather than listing parts."
+      },
+      "p02|terse": {
+        "fidelity": "All concrete facts survive intact: TTL/expiry explanation, refresh token mechanism, and the token lifetime config fallback. No numbers, paths, or commands were dropped or altered.",
+        "register": "Short punchy sentences, everyday phrasing, no essay connectives or report headers \u2014 reads like quick Slack notes from a colleague, and it answers the question directly rather than reciting a work log."
+      },
+      "p03|convo": {
+        "fidelity": "All concrete technical content (additive vs structural changes, backward-compatible deploy order, online DDL check, maintenance window, backup/rollback) is preserved without vague hand-waving or dropped specifics.",
+        "register": "Short, direct sentences with everyday phrasing and no formal connectives or report-style framing \u2014 reads like a quick Slack tip from a colleague, not a written document."
+      },
+      "p03|terse": {
+        "fidelity": "All specific technical items (tools gh-ost/pt-online-schema-change, the two-step migration pattern, backup/PITR, replication lag monitoring) are preserved concretely with no vague summarization or lost enumeration.",
+        "register": "It's a terse bullet list of direct, everyday advice with no essay connectives or report-style throat-clearing \u2014 reads like quick Slack tips from a colleague, not a formal document."
+      },
+      "p04|convo": {
+        "fidelity": "The reply gives a concrete, complete procedure (delete lockfile, reinstall to regenerate from package.json, rebuild) with no missing facts, numbers, or paths needed for this generic troubleshooting answer.",
+        "register": "Two short, plain sentences with an em-dash aside, no report grammar or connectives \u2014 reads like a quick Slack tip from a colleague."
+      },
+      "p04|terse": {
+        "fidelity": "The reply gives no concrete commands (e.g., delete lockfile, rerun package manager install, rebuild command) or file paths \u2014 just vague instructions with no actionable specifics."
+      },
+      "p05|convo": {
+        "fidelity": "All five cache-key components (route+query, locale, auth/segment, device type, A/B variant) are stated concretely with brief justification, and the closing rule is a clear principle rather than a vague gesture.",
+        "register": "Short, fragment-like sentences with casual connectives ('since', 'so', 'too') rather than report grammar, and each item carries a quick reason instead of being a bare inventory roll call."
+      },
+      "p05|terse": {
+        "fidelity": "The reply lists concrete, specific cache-key components (URL path/query, named headers like Accept-Language, auth/session state, A/B/feature flag variant, build/deploy version id, and render branch conditions) with no vague hand-waving or missing enumeration details.",
+        "register": "Terse bullet list with short phrases and no report-style connectives \u2014 reads like a quick Slack answer, not an essay."
+      },
+      "p06|convo": {
+        "fidelity": "The reply keeps concrete specifics: the p99 figure (8s), the proposed new value (15s), and the exact file path (config/http.json). No enumeration was collapsed, so nothing needed a count/pointer substitution.",
+        "register": "Short, direct sentences with plain phrasing and a concrete pointer \u2014 reads like a quick Slack reply, not a report."
+      },
+      "p06|terse": {
+        "fidelity": "The reply contains no enumerable facts, file paths, or commands to preserve in the first place \u2014 it's inherently a set of conceptual recommendations (check p99, compare to threshold, add headroom), and all of that reasoning is stated concretely and completely with no vagueness or missing pointers.",
+        "register": "Short, plain-language bullets with direct advice \u2014 reads like a quick Slack tip from a colleague, not a formal report."
+      },
+      "p07|convo": {
+        "fidelity": "The reply contains no factual claims, file paths, or code to preserve\u2014it's a clarifying question asking for the missing query/schema, so there is no technical content to be lost or hand-waved.",
+        "register": "Reads like a quick Slack reply \u2014 short, plain, asks for the missing info directly with no report-style structure or jargon."
+      },
+      "p07|terse": {
+        "fidelity": "The reply contains no technical facts, numbers, paths, or code to lose\u2014it's a clarifying question asking for the missing query text, so there's no substance to be vague about or omit.",
+        "register": "Short, plain, everyday phrasing with no report structure \u2014 reads like a quick Slack reply asking for the missing details before suggesting an index."
+      },
+      "p08|convo": {
+        "fidelity": "All specific technical details from the reply (auto-scaling consumers, batching/increasing per-fetch pull size, rate limiting producers, prioritization, dead-letter queue for stuck retries, sharding by key) are present concretely, not vaguely hand-waved or replaced by a mere count/pointer.",
+        "register": "Reads like a colleague riffing in Slack \u2014 short clauses, plain words, dropped articles ('Few ways attack this'), no essay connectives or report-style structure."
+      },
+      "p08|terse": {
+        "fidelity": "All eight options are concrete, specific tactics (scale, autoscale by depth, profile/reduce per-message time, batch, shed load, priority queues, sharding, root-cause bottleneck check) with no missing facts, numbers, or placeholders needing an external pointer.",
+        "register": "This is a formatted 8-item bulleted list with colon-led labels ('Scale consumers:', 'Autoscale:', etc.) \u2014 it reads like a structured options doc or report, not a quick Slack message a colleague would type."
+      },
+      "p09|convo": {
+        "fidelity": "The reply's technical claims (lock via localStorage/BroadcastChannel, refresh token rotation with reuse detection, grace-window idempotency) are concrete and self-consistent with no missing counts, paths, or dangling pointers to external enumerations.",
+        "register": "Reads like a colleague explaining it in chat: short plain sentences, no headers or report structure, and it names the mechanism (lock/coordination, rotation reuse detection) rather than listing steps taken."
+      },
+      "p09|terse": {
+        "fidelity": "All claims are concrete technical facts about locking mechanisms (Web Locks API, localStorage, BroadcastChannel, storage event) and token rotation behavior, with no vague hand-waving or unresolved enumerations.",
+        "register": "Short, plain-word bullets with no essay connectives or report grammar; it explains mechanism (lock, wait, race, propagate) rather than reciting an inventory of parts, so it reads like a quick colleague explanation, not a status report."
+      },
+      "p10|convo": {
+        "fidelity": "The reply is generic operational advice with no specific facts, numbers, file paths, commands, or code that could be lost or altered; there's no enumeration or technical detail requiring preservation, so it's vacuously intact.",
+        "register": "This reads as structured essay/report prose with topic-sentence paragraphs and connective phrasing ('If volume did legitimately triple, check what shipped...', 'Then break the log volume down by...') rather than short Slack-style lines a colleague would type."
+      },
+      "p10|terse": {
+        "fidelity": "This is an advice reply with no external facts, file paths, or specific numbers to preserve \u2014 every point is a self-contained, concrete diagnostic step (deploy correlation, per-service breakdown, log levels, retry loops, recent deploys) with nothing vague or hand-waved away.",
+        "register": "The five bullets are a roll call of separate checks with no lead-in naming the overall approach; there's no function-plus-count-plus-pointer framing, just a straight inventory of steps despite short, colloquial phrasing per line."
+      },
+      "p11|convo": {
+        "fidelity": "All technical content is concrete and specific: exact tool names (pg_dump --schema-only, migra, skeema) and the specific flag are given, with no vague summarization or missing pointers.",
+        "register": "Bulleted, terse, tool-name-dropping \u2014 reads like a colleague's quick Slack tip, not a report. No roll-call issue since this is advice/instructions, not a completed-work summary."
+      },
+      "p11|terse": {
+        "fidelity": "All commands, tools, and table names (pg_dump, migra, information_schema.columns/tables, schema_migrations) are concrete and specific with no vague filler or unfulfilled pointers.",
+        "register": "Terse bulleted commands with minimal connective text reads like a colleague's Slack tip list; each bullet names an action plus a brief pointer rather than a verbose report."
+      },
+      "p12|convo": {
+        "fidelity": "The reply contains no technical claims, code, paths, or commands to preserve\u2014it's a request for missing context, so there's nothing for the fidelity axis to lose.",
+        "register": "Short, plain-spoken sentences with no report-style roll call; it's a quick colleague-style ask for more info, which fits Slack register."
+      },
+      "p12|terse": {
+        "fidelity": "The reply contains no technical claims, enumerations, or code to lose \u2014 it's a clarifying question with no substantive content to check for fidelity.",
+        "register": "Short, plain, no report grammar \u2014 reads like a quick Slack reply asking for missing info."
+      },
+      "p13|convo": {
+        "fidelity": "The reply keeps concrete technical content: names the specific components ('Window-Scoped Session Summary', 'Lifetime Savings' block), the file it points to (history.db), and the tool (`rtk gain`), with no vague hand-waving or unexplained enumeration collapse.",
+        "register": "Short, plain sentences with a direct colleague-tone opener ('It's headroom's session counter, not RTK'), and the closer names the function (RTK isn't the culprit, reads from disk) rather than reciting steps, so it passes the function-over-inventory check at this length."
+      },
+      "p13|terse": {
+        "fidelity": "Names concrete items (RAM/process, CLAUDE.md, memory/ directory, headroom's learned patterns) and the mechanism (restart kills process) without dropping any specific facts or turning vague.",
+        "register": "Short, plain-word sentences throughout with no essay connectives or report grammar; it's a bullet list of causal facts, not a completed-work roll call of parts, so the function-over-inventory rule doesn't apply here."
+      },
+      "p14|convo": {
+        "fidelity": "The reply contains no rollback steps to omit\u2014it correctly declines to fabricate them and asks a clarifying question instead, so there is no technical content that has been lost or altered.",
+        "register": "Reads like a quick Slack reply asking for clarification\u2014short, plain, no report grammar or roll call of parts."
+      },
+      "p14|terse": {
+        "fidelity": "The reply's technical content (revert to previous build, roll traffic back, check migration backward-compatibility, watch error rate/p99) is concrete and self-consistent with no dropped facts or unfulfilled pointers; it appropriately asks for platform specifics rather than omitting anything already stated.",
+        "register": "The four-item rollback checklist reads out its parts (revert, roll traffic back, check migrations, watch metrics) rather than naming the function with a pointer, so it fails the roll-call rule even though the closing question is conversational."
+      },
+      "p15|convo": {
+        "fidelity": "All concrete technical details\u2014command, path, mechanism explanation\u2014are intact and specific with no missing counts or unresolved pointers.",
+        "register": "Short, plain-word bullets with backtick commands and quick conditionals read like a Slack tip, not a report \u2014 no essay connectives or roll-call recap."
+      },
+      "p15|terse": {
+        "fidelity": "The command, lock path, script placeholder, and the -n flag explanation are all concrete and unchanged; nothing here is an enumeration collapsed to a pointer, so there's no loss to check for.",
+        "register": "Short imperative sentences, plain everyday phrasing ('wrap the command with', 'skip instead of wait'), no essay connectives or report-style scaffolding \u2014 reads like a quick colleague tip with code and a pointer to the real fix."
+      },
+      "p16|convo": {
+        "fidelity": "All technical details are concrete and intact: the JSON envelope structure with exact field names (code, message, details), the sample code block, and the specific HTTP status codes (400, 401/403, 404, 500) mapped to error classes.",
+        "register": "This reads like documentation prose with essay connectives ('so callers only write one parsing path', 'rather than always returning 200') and full explanatory sentences, not a quick Slack-style note from a colleague."
+      },
+      "p16|terse": {
+        "fidelity": "All specific technical content (envelope shape, field names, example code, HTTP status mappings) is concrete and fully present with no vague enumerations or missing pointers.",
+        "register": "This is a bulleted spec list with formal report grammar ('Consistent envelope', 'Match HTTP status to the error class') and no conversational voice \u2014 it reads like documentation, not a Slack message from a colleague."
+      },
+      "p17|convo": {
+        "fidelity": "The reply contains no factual claims, numbers, paths, or commands to preserve\u2014it's purely a request for missing information, so there's nothing for it to lose or hand-wave on this axis.",
+        "register": "Short, plain bullet points with everyday phrasing ('Can't see', 'Send', 'Then I can dig') reads like a quick Slack reply, not a report."
+      },
+      "p17|terse": {
+        "fidelity": "The reply contains no enumerable technical content to lose\u2014no facts, numbers, paths, or commands are claimed or dropped; it plainly states lack of access and asks for the two needed inputs (deploy log/PR list, dashboard link).",
+        "register": "Short, plain sentences with everyday phrasing ('I don't have access to', 'If you can point me at') that read like a quick Slack reply, not a report; it doesn't roll call parts, it just states what's missing and what's needed next."
+      },
+      "p18|convo": {
+        "fidelity": "All content is self-contained, concrete actionable steps (hashing on stable ID, guardrail metrics, full traffic cycle, step ramp 10\u219225\u219250\u2192100, kill switch) with no missing enumerations, counts, or external pointers needed.",
+        "register": "This is a bulleted checklist with parallel imperative structure and clause-heavy sentences (e.g. explaining hashing rationale, guardrail metric selection) \u2014 it reads like a runbook or doc excerpt, not a quick Slack reply from a colleague."
+      },
+      "p18|terse": {
+        "fidelity": "The reply's content is specific and concrete at every point it makes (percentage-based rollout, stable ID keying, named example tools, specific metrics like error rates/latency, excluding internal accounts, kill switch to 0%) with no enumeration collapsed to a vague pointer lacking a count.",
+        "register": "This is advice delivered as short, punchy bullets with everyday phrasing ('watch error rates', 'flip back to 0%'), which reads like a colleague's Slack tips rather than a formal report; the roll-call concern doesn't apply since this is actionable guidance, not a report of completed work."
+      },
+      "p19|convo": {
+        "fidelity": "No enumeration was collapsed; the reply gives concrete, generalizable decision criteria without needing specific file paths or commands since the dependency itself was never named.",
+        "register": "Short bulleted fragments with arrow shorthand and conversational phrasing ('Depends on it'), no essay connectives or report grammar \u2014 reads like a quick Slack reply."
+      },
+      "p19|terse": {
+        "fidelity": "All claims are concrete and specific (pin vs float advice, semver flakiness, security-sensitivity, lockfile behavior, ^/~ notation) with no vague hand-waving or missing enumerations requiring a pointer.",
+        "register": "Short, punchy bullets with contractions, casual phrasing (\"pin it\", \"matters less than you'd think\"), and backtick shorthand \u2014 reads like a Slack message, not a report; the roll-call rule doesn't apply since this is advice, not a completed-work summary."
+      },
+      "p20|convo": {
+        "fidelity": "The reply contains no fabricated findings; it explicitly states it has no data and lists the specific header names it would check (CSP, X-Frame-Options, X-Content-Type-Options, HSTS, Referrer-Policy), which are concrete and unchanged. No technical content is lost since none was claimed.",
+        "register": "Short, plain sentences with no report grammar or roll-call structure; it's a direct ask for missing info plus a quick list of what it'll check, which reads like a Slack reply."
+      },
+      "p20|terse": {
+        "fidelity": "The reply contains no technical content (no facts, headers, paths, or data) since it correctly declines to answer without response data to inspect, so there is nothing concrete that could be lost.",
+        "register": "Short, plain, conversational clarifying question\u2014reads like a quick Slack reply, no report grammar or roll call issue since no work was completed."
+      }
+    },
+    "first_reply_gate": 0.85,
+    "first_reply_rate": 0.7692307692307693,
+    "first_scores": {
+      "p01|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p01|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p02|convo": {
+        "fidelity": false,
+        "register": true
+      },
+      "p02|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p03|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p03|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p04|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p04|terse": null,
+      "p05|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p05|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p06|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p06|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p07|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p07|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p08|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p08|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p09|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p09|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p10|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p10|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p11|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p11|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p12|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p12|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p13|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p13|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p14|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p14|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p15|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p15|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p16|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p16|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p17|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p17|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p18|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p18|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p19|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p19|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p20|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p20|terse": {
+        "fidelity": true,
+        "register": true
+      }
+    },
+    "gates": {
+      "first_reply_85pct": false,
+      "post_bounce_95pct": false
+    },
+    "post_bounce_gate": 0.95,
+    "post_bounce_rate": 0.8974358974358975,
+    "prompt_set": "evals/fixtures/manifest.json e9_prompts (20 prompts)",
+    "refusals": {
+      "replies": []
+    },
+    "replies_attempted": 40,
+    "replies_scored": 39,
+    "replies_succeeded": 40,
+    "verdict": "FAIL",
+    "voices": [
+      "terse",
+      "convo"
+    ]
+  },
+  "eval": "E8+E9",
+  "model": {
+    "invocation": "claude -p --model claude-sonnet-5 --max-turns 6",
+    "judge": "claude-sonnet-5",
+    "note": "Same model id pinned for rewriter and judge, per v0.1.0 \u00a714.",
+    "rewriter": "claude-sonnet-5"
+  },
+  "release": "v0.2.0-patch1"
+}
