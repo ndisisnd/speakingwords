@@ -252,6 +252,23 @@ either state.
 
 `unset` is the same code path, so the two can never drift.
 
+### Getting help
+
+```sh
+speakingwords help              # the overview above, every command
+speakingwords help update       # one command: what it does, its flags, its one gotcha
+speakingwords update --help     # same page, reached from the command itself
+```
+
+Running `speakingwords` with no command, `-h`, and `--help` all print the same overview.
+Topic pages are slices of that same overview plus the command's gotcha — one table renders
+both, so a command can never appear in one and be missing from the other.
+
+Help you asked for exits `0` and goes to stdout, which means `speakingwords help > cheatsheet.txt`
+captures clean help and nothing else. Help you did *not* ask for — after an unknown command,
+a bad flag value, or an unknown topic — goes to stderr and exits `1`, naming what it did not
+recognise.
+
 ---
 
 ## The rules

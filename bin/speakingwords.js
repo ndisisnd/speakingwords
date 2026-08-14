@@ -5,7 +5,9 @@
 //
 // Phase 2 ships `init` in memory mode; phase 3 adds hook mode for Claude Code;
 // phase 4 adds hook mode for Codex CLI, including the both-agents install;
-// phase 5 adds the utils — `status`, `update`, `version` and `unhook`/`unset`.
+// phase 5 adds the utils — `status`, `update`, `version` and `unhook`/`unset`;
+// phase 7 moves help out to lib/help.js, so `help` is now a command like any
+// other and the usage text has one owner.
 // Every command's logic lives in lib/; this file only parses argv and picks
 // one. No runtime dependencies anywhere.
 
@@ -13,6 +15,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const adapters = require('../lib/adapters');
+const help = require('../lib/help');
 const hooks = require('../lib/hooks');
 const memory = require('../lib/memory');
 const pref = require('../lib/pref');
@@ -26,34 +29,6 @@ const PKG_PATH = path.join(__dirname, '..', 'package.json');
 function readVersion() {
   return JSON.parse(fs.readFileSync(PKG_PATH, 'utf8')).version;
 }
-
-const USAGE = `speakingwords — keep agent replies in the shape you asked for.
-
-Usage
-  speakingwords init [flags]     install a style contract
-  speakingwords version          print the installed version
-  speakingwords status           show what the linter caught (hook mode)
-  speakingwords update "<hint>"  tune the rules from one line of English
-  speakingwords unhook [--yes]   remove hook wiring (alias: unset)
-
-init flags (skip the questions, for scripts and CI)
-  --memory                       memory mode: write rules into the memory file
-  --hook                         hook mode: lint and bounce every reply
-  --agent claude|codex|both      which agent to install for
-  --scope local|global           this project only, or everywhere
-  --voice terse|convo            point form only, or prose retained
-  -h, --help                     this text
-
-update hints say what you want less of, or more of:
-  speakingwords update "less emoji"
-  speakingwords update "no game-changer, stop saying dive into"
-  speakingwords update "more robust"     allow a word again
-Every file it edits gets a .bak beside it first.
-
-unhook flags
-  -y, --yes                      skip the confirmation prompt
-
-Without flags, init asks three questions: mode, agent + scope, voice.`;
 
 // ---------------------------------------------------------------- arg parsing
 
@@ -93,7 +68,11 @@ function fail(message) {
 function oneOf(name, value, allowed) {
   if (value === undefined) return undefined;
   if (!allowed.includes(value)) {
-    fail(`--${name} must be one of: ${allowed.join(', ')} (got "${value}")`);
+    // A16/A18: a bad flag value is help shown *at* the user — overview to
+    // stderr, exit 1, so a redirected `> file` never captures an error page.
+    process.exit(help.run({
+      reason: `--${name} must be one of: ${allowed.join(', ')} (got "${value}")`,
+    }));
   }
   return value;
 }
@@ -108,8 +87,16 @@ async function cmdInit(flags) {
   const version = readVersion();
   const cwd = process.cwd();
 
+  // Validate every flag value before asking anything. A bad `--voice` must not
+  // cost the user two answered questions before it complains, and the complaint
+  // has to reach stderr with nothing on stdout (A16, A18).
+  const givenMode = oneOf('mode', flags.mode, ['memory', 'hook']);
+  const givenAgent = oneOf('agent', flags.agent, ['claude', 'codex', 'both']);
+  const givenScope = oneOf('scope', flags.scope, ['local', 'global']);
+  const givenVoice = oneOf('voice', flags.voice, ['terse', 'convo']);
+
   // --- Question 1: mode ---
-  let mode = oneOf('mode', flags.mode, ['memory', 'hook']);
+  let mode = givenMode;
   if (!mode) {
     mode = await prompts.choose('How should the style contract be enforced?', [
       {
@@ -127,8 +114,8 @@ async function cmdInit(flags) {
 
   // --- Question 2: agent + scope, collapsed into one question to stay at 3 ---
   const detected = adapters.detectAgents();
-  let agentSel = oneOf('agent', flags.agent, ['claude', 'codex', 'both']);
-  let scope = oneOf('scope', flags.scope, ['local', 'global']);
+  let agentSel = givenAgent;
+  let scope = givenScope;
 
   if (!agentSel || !scope) {
     if (detected.length === 0) {
@@ -171,7 +158,7 @@ async function cmdInit(flags) {
   }
 
   // --- Question 3: voice ---
-  let voice = oneOf('voice', flags.voice, ['terse', 'convo']);
+  let voice = givenVoice;
   if (!voice) {
     voice = await prompts.choose('Which voice?', [
       { value: 'terse', label: 'terse', hint: 'point form only, brevity wins every trade-off' },
@@ -354,9 +341,20 @@ async function main() {
     return;
   }
 
-  if (flags.help || !command || command === 'help') {
-    process.stdout.write(`${USAGE}\n`);
-    process.exit(command && command !== 'help' ? 1 : 0);
+  // Every help path is one call into lib/help — no command, `help`, `-h`,
+  // `--help`, and `<command> --help` alike. Because the overview has exactly
+  // one renderer, the three no-topic triggers are byte-identical by
+  // construction rather than by test (A14).
+  if (command === 'help') {
+    process.exit(help.run({ topic: positional[1] }));
+  }
+  if (flags.help) {
+    // `speakingwords init --help` is help the user asked for: the topic page
+    // for that command, exit 0 (A16).
+    process.exit(help.run({ topic: command }));
+  }
+  if (!command) {
+    process.exit(help.run());
   }
 
   switch (command) {
@@ -389,8 +387,7 @@ async function main() {
       }
       break;
     default:
-      process.stderr.write(`Unknown command: ${command}\n\n${USAGE}\n`);
-      process.exit(1);
+      process.exit(help.run({ reason: `Unknown command: ${command}` }));
   }
 }
 
