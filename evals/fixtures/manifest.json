@@ -49,7 +49,12 @@
     "c47_security-answer.txt",
     "c48_versioning-answer.txt",
     "c49_cleanup-answer.txt",
-    "c50_summary-answer.txt"
+    "c50_summary-answer.txt",
+    "c51_near-miss-other-words.txt",
+    "c52_near-miss-another-way.txt",
+    "c53_near-miss-noted-above.txt",
+    "c54_near-miss-summarize-midline.txt",
+    "c55_near-miss-simply-put.txt"
   ],
   "perf": "perf_4000_clean.txt",
   "violations": {
@@ -215,6 +220,60 @@
     "v50_combo-apology-hedge.txt": [
       "strip-i-apologize",
       "strip-great-point"
+    ],
+    "v51_in-other-words.txt": [
+      "conc-in-other-words"
+    ],
+    "v52_another-way.txt": [
+      "conc-another-way"
+    ],
+    "v53_as-mentioned-above.txt": [
+      "conc-as-mentioned-above"
+    ],
+    "v54_to-summarize.txt": [
+      "conc-to-summarize"
+    ],
+    "v55_simply-put.txt": [
+      "conc-simply-put"
     ]
-  }
+  },
+  "controls": {
+    "conc-in-other-words": [
+      "c51_near-miss-other-words.txt"
+    ],
+    "conc-another-way": [
+      "c52_near-miss-another-way.txt"
+    ],
+    "conc-as-mentioned-above": [
+      "c53_near-miss-noted-above.txt"
+    ],
+    "conc-to-summarize": [
+      "c54_near-miss-summarize-midline.txt"
+    ],
+    "conc-simply-put": [
+      "c55_near-miss-simply-put.txt"
+    ]
+  },
+  "e8": [
+    "e01_retry-budget.txt",
+    "e02_token-expiry.txt",
+    "e03_migration-window.txt",
+    "e04_stale-lockfile.txt",
+    "e05_cache-key.txt",
+    "e06_timeout-tuning.txt",
+    "e07_index-choice.txt",
+    "e08_queue-backpressure.txt",
+    "e09_auth-refresh.txt",
+    "e10_log-volume.txt",
+    "e11_schema-drift.txt",
+    "e12_race-window.txt",
+    "e13_memory-growth.txt",
+    "e14_rollback-path.txt",
+    "e15_cron-overlap.txt",
+    "e16_error-shape.txt",
+    "e17_perf-regression.txt",
+    "e18_flag-rollout.txt",
+    "e19_dependency-pin.txt",
+    "e20_security-header.txt"
+  ]
 }

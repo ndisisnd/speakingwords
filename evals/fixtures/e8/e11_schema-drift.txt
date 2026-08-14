@@ -1,0 +1,1 @@
+What is happening is that the staging schema and the production schema have drifted apart from one another over time. Specifically, staging has a `deleted_at` column on the `orders` table which production does not have at all. The migration that added it was applied by hand on staging and never made it into the repository, so it was never applied anywhere else.

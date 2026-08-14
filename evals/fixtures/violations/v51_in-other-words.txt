@@ -1,0 +1,5 @@
+The retry budget is three attempts, then the job is parked in the dead-letter
+queue. In other words, a job that fails four times stops retrying and waits for
+someone to look at it.
+
+The parked jobs live in `queue/dead`, and `bin/requeue` puts them back.

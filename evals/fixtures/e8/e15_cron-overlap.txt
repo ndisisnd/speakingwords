@@ -1,0 +1,1 @@
+The cron job overlaps with itself, which is the root of the problem you are seeing. It is scheduled to run every 5 minutes, but the job itself regularly takes somewhere between 7 and 9 minutes to complete. That means a second copy starts before the first has finished. A lock file, or moving to a queue-based trigger, would both solve it.

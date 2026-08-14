@@ -94,6 +94,14 @@ async function cmdInit(flags) {
   const givenAgent = oneOf('agent', flags.agent, ['claude', 'codex', 'both']);
   const givenScope = oneOf('scope', flags.scope, ['local', 'global']);
   const givenVoice = oneOf('voice', flags.voice, ['terse', 'convo']);
+  const givenConciseness = oneOf('conciseness', flags.conciseness, pref.LEVELS);
+
+  // A command line that already answers mode, agent, scope and voice is a
+  // script, not a conversation. Asking it a brand-new fourth question would
+  // hang every 0.1.0 install script on a prompt it has no answer for, so a
+  // fully specified invocation takes the default level instead of being asked.
+  // Anything less than fully specified is an interactive run, and gets asked.
+  const scripted = Boolean(givenMode && givenAgent && givenScope && givenVoice);
 
   // --- Question 1: mode ---
   let mode = givenMode;
@@ -166,21 +174,38 @@ async function cmdInit(flags) {
     ], 'terse');
   }
 
+  // --- Question 4: conciseness ---
+  // Voice says what shape a reply takes; conciseness says how much of it
+  // survives. They are independent axes, which is why they are two questions
+  // and not one merged picker (plan §8).
+  let conciseness = givenConciseness;
+  if (!conciseness) {
+    conciseness = scripted ? pref.DEFAULT_LEVEL : await prompts.choose('How concise?', [
+      { value: 'low', label: 'low', hint: 'prose intact; only filler and restatement go' },
+      { value: 'med', label: 'med', hint: 'every sentence earns its place; elaborations cut' },
+      { value: 'high', label: 'high', hint: 'load-bearing content only; facts all still survive' },
+    ], pref.DEFAULT_LEVEL);
+  }
+
   // --- Write ---
   const agentIds = agentsFor(agentSel);
 
   if (mode === 'hook') {
-    return installHookMode({ agentIds, scope, voice, version, cwd });
+    return installHookMode({ agentIds, scope, voice, conciseness, version, cwd });
   }
 
-  const block = memory.renderBlock({ voice, version });
+  const block = memory.renderBlock({ voice, conciseness, version });
   const results = agentIds.map((id) =>
     memory.writeBlock(adapters.memoryTarget(id, scope, cwd), block)
   );
-  const prefFile = pref.writePref({ agents: agentIds, mode, scope, voice, version });
+  const prefFile = pref.writePref({ agents: agentIds, mode, scope, voice, conciseness, version });
 
   // --- Summary: say exactly what was written where ---
-  const lines = ['', `speakingwords ${version} installed — memory mode, ${voice} voice.`, ''];
+  const lines = [
+    '',
+    `speakingwords ${version} installed — memory mode, ${voice} voice, ${conciseness} conciseness.`,
+    '',
+  ];
   for (const result of results) {
     const verb = { created: 'created', replaced: 'updated block in', appended: 'added block to' }[result.action];
     lines.push(`  ${verb} ${result.path}`);
@@ -204,7 +229,7 @@ async function cmdInit(flags) {
 // A both-agents install ships ONE core (plan §7) at the Claude Code root, and
 // points the Codex wiring back at it. That is what makes a later `update` edit
 // one lexicon and change behaviour on both agents at once.
-function installHookMode({ agentIds, scope, voice, version, cwd }) {
+function installHookMode({ agentIds, scope, voice, conciseness, version, cwd }) {
   const wantsCodex = agentIds.includes('codex');
 
   // Decide the Codex story before writing anything. If config.toml already has
@@ -244,11 +269,18 @@ function installHookMode({ agentIds, scope, voice, version, cwd }) {
       : { agent: 'codex', kind: 'notify', ...hooks.installCodexNotify({ skillRoot }) });
   }
 
-  const prefFile = pref.writePref({ agents: agentIds, mode: 'hook', scope, voice, version });
+  const prefFile = pref.writePref({
+    agents: agentIds, mode: 'hook', scope, voice, conciseness, version,
+  });
 
   // --- Summary: say exactly what was wired where, per agent ---
   const label = agentIds.map((id) => adapters.getAdapter(id).label).join(' + ');
-  const lines = ['', `speakingwords ${version} installed — hook mode, ${voice} voice, ${label}.`, ''];
+  const lines = [
+    '',
+    `speakingwords ${version} installed — hook mode, ${voice} voice, `
+    + `${conciseness} conciseness, ${label}.`,
+    '',
+  ];
 
   for (const wiring of wirings) {
     const name = adapters.getAdapter(wiring.agent).label;
@@ -256,6 +288,11 @@ function installHookMode({ agentIds, scope, voice, version, cwd }) {
       lines.push(`  ${name}`);
       lines.push(`    hook entry   ${wiring.path}`);
       lines.push(`                 Stop → ${wiring.command}`);
+      // Claude Code only. The injector states the rules up front so fewer
+      // replies need bouncing; it can never block one.
+      if (wiring.sessionCommand) {
+        lines.push(`                 SessionStart → ${wiring.sessionCommand}`);
+      }
     } else {
       lines.push(`  ${name}  (audit-only — see the downgrade note below)`);
       lines.push(`    notify       ${wiring.path}`);
@@ -289,6 +326,13 @@ function installHookMode({ agentIds, scope, voice, version, cwd }) {
     lines.push('  can only tell you what hook mode would have caught.');
   }
   lines.push('');
+
+  if (agentIds.includes('claude')) {
+    lines.push('  On Claude Code, the SessionStart hook also states the voice and conciseness');
+    lines.push('  rules once at the top of each session, so fewer replies need bouncing at all.');
+    lines.push('  It can never block a reply; if it fails or is masked, nothing changes.');
+    lines.push('');
+  }
 
   // --- Trust step: the one thing the installer cannot do for the user ---
   const codexHook = wirings.find((w) => w.agent === 'codex' && w.kind === 'hook');

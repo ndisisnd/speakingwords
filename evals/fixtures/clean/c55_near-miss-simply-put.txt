@@ -1,0 +1,2 @@
+Simply put the file in `/tmp` and rerun the importer. It picks up anything in
+that directory on the next pass.

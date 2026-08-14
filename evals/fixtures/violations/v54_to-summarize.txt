@@ -1,0 +1,4 @@
+The build failed on a stale lockfile. The dependency was added without a
+reinstall, so the resolver never wrote the new entry.
+
+To summarize, run install first and then rebuild.

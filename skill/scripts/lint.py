@@ -11,7 +11,12 @@ crash is reported on stderr and reported as clean with a "lint_error" field.
 
 Usage:
     python3 lint.py --voice terse reply.txt
-    cat reply.txt | python3 lint.py --voice convo
+    cat reply.txt | python3 lint.py --voice convo --conciseness med
+
+--conciseness takes low, med or high. Anything else, and the flag's absence,
+behaves as high (plan assertion A19): only an upgrade from 0.1.0 can leave the
+level unset, and 0.1.0 behaviour already measured in the high band, so high is
+the value that preserves what the user already had.
 """
 
 import json
@@ -37,10 +42,21 @@ MATCH_SNIPPET_CHARS = 120
 # source of truth: a missing, stale, corrupt or unreadable cache falls straight
 # back to a full reparse, so no cache state can change a verdict (A21, E10).
 CACHE_SUFFIX = ".cache.json"
-CACHE_VERSION = 1
+# Bumped to 2 in v0.2.0: rule records grew a level set, so a v1 cache written by
+# an older install describes a different shape. The version rides in the cache
+# key, so an old file simply misses and is reparsed — never misread.
+CACHE_VERSION = 2
 
 STRIP_HEADING = re.compile(r"^##\s+Strip rules\s*$", re.MULTILINE)
+CONCISENESS_HEADING = re.compile(r"^##\s+Conciseness rules\s*$", re.MULTILINE)
 NEXT_HEADING = re.compile(r"^##\s+", re.MULTILINE)
+
+# The conciseness dial (plan §2 W2). Voice says what shape a reply takes; the
+# level says how much of it survives.
+LEVELS = ("low", "med", "high")
+DEFAULT_LEVEL = "high"
+# Strip rules are level-independent: a banned phrase is banned at every level.
+ALL_LEVELS = frozenset(LEVELS)
 
 # Lines that are structurally not prose: bullets, numbered items, headings,
 # quotes, table rows, fence markers, horizontal rules.
@@ -58,42 +74,73 @@ class LexiconError(Exception):
     pass
 
 
-def parse_rules(path=LEXICON_PATH):
-    """Parse the strip-rule table out of lexicon.md.
+def normalise_level(value):
+    """Coerce anything at all into one of the three levels.
 
-    The lexicon is the single source of truth; nothing is hardcoded here.
-    Returns a list of (rule_id, compiled_pattern, severity).
+    Absence and nonsense both land on DEFAULT_LEVEL rather than raising (A19).
+    A bad level is a reason to lint at the level the user already had, never a
+    reason to crash and take the reply down with it.
     """
-    try:
-        with open(path, "r", encoding="utf-8") as fh:
-            text = fh.read()
-    except OSError as exc:
-        raise LexiconError("cannot read lexicon at %s: %s" % (path, exc))
+    if not isinstance(value, str):
+        return DEFAULT_LEVEL
+    candidate = value.strip().lower()
+    return candidate if candidate in LEVELS else DEFAULT_LEVEL
 
-    start = STRIP_HEADING.search(text)
+
+def parse_levels(cell):
+    """Read an `active at` cell into the set of levels a row fires at.
+
+    An unreadable or empty cell yields {high} only. A rule nobody can place
+    belongs at the strictest level, not at every level: silently widening a
+    rule's reach is how a false positive reaches a `low` user.
+    """
+    found = {token for token in re.split(r"[,\s/]+", (cell or "").lower()) if token in LEVELS}
+    return frozenset(found) if found else frozenset((DEFAULT_LEVEL,))
+
+
+def _section(text, heading, path, required):
+    """Slice the markdown between a `## <heading>` line and the next `##`."""
+    start = heading.search(text)
     if not start:
-        raise LexiconError("no '## Strip rules' section in %s" % path)
-
+        if required:
+            raise LexiconError("no '## Strip rules' section in %s" % path)
+        return None
     rest = text[start.end():]
     nxt = NEXT_HEADING.search(rest)
-    section = rest[: nxt.start()] if nxt else rest
+    return rest[: nxt.start()] if nxt else rest
 
-    rules = []
-    seen = set()
+
+def _rows(section):
+    """Yield the cell lists of every table row in a section.
+
+    Cells split on an escaped pipe inside a pattern are rebuilt here, so both
+    tables read `\\|` the same way.
+    """
     for line in section.splitlines():
         line = line.strip()
         if not line.startswith("|"):
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
-        # Rebuild cells that were split on an escaped pipe inside a pattern.
         merged = []
         for cell in cells:
             if merged and merged[-1].endswith("\\"):
                 merged[-1] = merged[-1] + "|" + cell
             else:
                 merged.append(cell)
-        cells = merged
-        if len(cells) < 4:
+        yield merged
+
+
+def _parse_table(section, path, levels_column, seen):
+    """Compile one rule table into (rule_id, pattern, severity, levels) tuples.
+
+    `levels_column` is the index of the `active at` cell, or None for a table
+    whose rows fire at every level (the strip table: a banned phrase is banned
+    regardless of how much text the user wants to survive).
+    """
+    width = 4 if levels_column is None else levels_column + 2
+    rules = []
+    for cells in _rows(section):
+        if len(cells) < width:
             continue
         rule_id, pattern, severity = cells[0], cells[1], cells[2].lower()
         if not rule_id or rule_id.startswith("#") or rule_id.lower() == "id":
@@ -113,10 +160,39 @@ def parse_rules(path=LEXICON_PATH):
             compiled = re.compile(pattern, re.IGNORECASE | re.MULTILINE)
         except re.error as exc:
             raise LexiconError("bad pattern for %s: %s" % (rule_id, exc))
-        rules.append((rule_id, compiled, severity))
+        levels = ALL_LEVELS if levels_column is None else parse_levels(cells[levels_column])
+        rules.append((rule_id, compiled, severity, levels))
+    return rules
 
+
+def parse_rules(path=LEXICON_PATH):
+    """Parse the rule tables out of lexicon.md.
+
+    The lexicon is the single source of truth; nothing is hardcoded here.
+    Returns a list of (rule_id, compiled_pattern, severity, levels), where
+    `levels` is the frozenset of conciseness levels the row fires at. Strip
+    rules carry all three; conciseness rows carry whatever their `active at`
+    column says.
+
+    The conciseness section is optional. A 0.1.0 lexicon that predates it still
+    parses, and still lints exactly as it always did.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            text = fh.read()
+    except OSError as exc:
+        raise LexiconError("cannot read lexicon at %s: %s" % (path, exc))
+
+    seen = set()
+    rules = _parse_table(
+        _section(text, STRIP_HEADING, path, required=True), path, None, seen
+    )
     if not rules:
         raise LexiconError("strip-rule table in %s is empty" % path)
+
+    conciseness = _section(text, CONCISENESS_HEADING, path, required=False)
+    if conciseness:
+        rules.extend(_parse_table(conciseness, path, 3, seen))
     return rules
 
 
@@ -149,8 +225,13 @@ def read_cache(path):
         if not isinstance(payload, dict) or payload.get("key") != cache_key(path):
             return None
         rules = []
-        for rule_id, pattern, severity in payload["rules"]:
-            rules.append((rule_id, re.compile(pattern, re.IGNORECASE | re.MULTILINE), severity))
+        for rule_id, pattern, severity, levels in payload["rules"]:
+            rules.append((
+                rule_id,
+                re.compile(pattern, re.IGNORECASE | re.MULTILINE),
+                severity,
+                frozenset(levels),
+            ))
         return rules or None
     except Exception:
         return None
@@ -167,7 +248,12 @@ def write_cache(path, rules):
     tmp = "%s.%d.tmp" % (target, os.getpid())
     payload = {
         "key": cache_key(path),
-        "rules": [[rule_id, pattern.pattern, severity] for rule_id, pattern, severity in rules],
+        # Levels are written as a sorted list so the same lexicon always
+        # produces byte-identical cache bytes.
+        "rules": [
+            [rule_id, pattern.pattern, severity, sorted(levels)]
+            for rule_id, pattern, severity, levels in rules
+        ],
     }
     try:
         with open(tmp, "w", encoding="utf-8") as fh:
@@ -214,7 +300,7 @@ def strip_code_fences(text):
 def scan_strip_rules(text, rules):
     violations = []
     total = 0
-    for rule_id, pattern, severity in rules:
+    for rule_id, pattern, severity, _levels in rules:
         count = 0
         for match in pattern.finditer(text):
             if total >= MAX_TOTAL_MATCHES or count >= MAX_MATCHES_PER_RULE:
@@ -273,6 +359,7 @@ def read_input(argv_path):
 
 def parse_args(argv):
     voice = "convo"
+    conciseness = DEFAULT_LEVEL
     path = None
     i = 0
     while i < len(argv):
@@ -282,6 +369,13 @@ def parse_args(argv):
             voice = argv[i] if i < len(argv) else "convo"
         elif arg.startswith("--voice="):
             voice = arg.split("=", 1)[1]
+        elif arg == "--conciseness":
+            # A trailing `--conciseness` with no value is treated as no value at
+            # all, which is DEFAULT_LEVEL — the same answer a bad value gets.
+            i += 1
+            conciseness = argv[i] if i < len(argv) else DEFAULT_LEVEL
+        elif arg.startswith("--conciseness="):
+            conciseness = arg.split("=", 1)[1]
         elif arg in ("-h", "--help"):
             sys.stderr.write(__doc__)
             raise SystemExit(EXIT_CLEAN)
@@ -290,24 +384,39 @@ def parse_args(argv):
         i += 1
     if voice not in ("terse", "convo"):
         voice = "convo"
-    return voice, path
+    return voice, normalise_level(conciseness), path
 
 
-def lint(text, voice, rules):
-    violations = scan_strip_rules(text, rules)
+def lint(text, voice, rules, conciseness=DEFAULT_LEVEL):
+    """Every violation in `text` at this voice and this conciseness level.
+
+    The level filters the rule set before the scan: a row only fires when its
+    `active at` column names the level in play. Strip rules carry all three
+    levels, so they fire whatever the dial says — the level governs how much
+    padding survives, never whether a banned phrase is allowed back in.
+    """
+    level = normalise_level(conciseness)
+    active = [rule for rule in rules if level in rule[3]]
+    violations = scan_strip_rules(text, active)
     if voice == "terse":
         violations.extend(check_terse_structure(text))
     return violations
 
 
 def main(argv):
-    voice, path = parse_args(argv)
+    voice, conciseness, path = parse_args(argv)
     text = read_input(path)
     rules = read_rules()
-    violations = lint(text, voice, rules)
+    violations = lint(text, voice, rules, conciseness)
     verdict = "violations" if violations else "clean"
+    # The level is echoed back so a caller can see which one actually applied
+    # after the fallback, rather than guessing at what it asked for.
     sys.stdout.write(
-        json.dumps({"verdict": verdict, "violations": violations}) + "\n"
+        json.dumps({
+            "verdict": verdict,
+            "violations": violations,
+            "conciseness": normalise_level(conciseness),
+        }) + "\n"
     )
     return EXIT_VIOLATIONS if violations else EXIT_CLEAN
 

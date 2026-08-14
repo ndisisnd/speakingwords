@@ -1,0 +1,2 @@
+Two other words in the config mean the same thing as `strict`: `pedantic` and
+`hard`. The parser accepts all three and normalises them to `strict`.

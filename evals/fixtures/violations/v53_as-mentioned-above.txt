@@ -1,0 +1,4 @@
+The migration adds two indexes and drops one. As mentioned above, it runs
+online, so no table is locked while it works.
+
+Expect about 40 seconds on the current row count.

@@ -50,6 +50,37 @@ table below at runtime; no rule is hardcoded in Python.
 | strip-in-conclusion | `^\s*In conclusion\b` | warn | Essay scaffolding. Lead with the conclusion instead of announcing it. |
 | strip-i-apologize | `^\s*I apologi[sz]e\b` | warn | Apology opener. State the correction, not the contrition. |
 
+## How the conciseness table is read
+
+- Every row of the table under `## Conciseness rules` is one rule, and the
+  columns are fixed and ordered: `id`, `pattern`, `severity`, `active at`,
+  `guidance`. Same pattern dialect as the strip table (backticks, `IGNORECASE`,
+  `MULTILINE`, `\|` for a literal pipe).
+- `active at` lists the conciseness levels where the row fires, comma separated,
+  drawn from `low`, `med` and `high`. Membership is literal — a row that omits
+  `low` is silent at `low`, whatever the other levels say.
+- `lint.py --conciseness <level>` picks the level. An unknown or missing level
+  behaves as `high`: only an upgrade from 0.1.0 can produce a missing level, and
+  0.1.0 behaviour already measured in the `high` band, so `high` is the value
+  that preserves what the user already had.
+- A row with an unreadable `active at` cell falls back to `high` only. A rule
+  nobody can place belongs at the strictest level, not everywhere.
+
+## Conciseness rules
+
+Padding and restatement: text that repeats what the reply already said, or
+announces what it is about to say. These are what the conciseness level cuts.
+Severity is `warn` across the table — each phrase has legitimate uses at some
+level, which is exactly why the `active at` column exists.
+
+| id | pattern | severity | active at | guidance |
+|----|---------|----------|-----------|----------|
+| conc-in-other-words | `\bin other words\b` | warn | med, high | Restatement. The sentence before it already said this. If that sentence was unclear, fix it; do not say it twice. |
+| conc-another-way | `\bto put it another way\b` | warn | med, high | Same class as above, one clause longer. Rewrite the first attempt instead of appending a second. |
+| conc-as-mentioned-above | `\bas (?:mentioned\|noted\|stated) above\b` | warn | low, med, high | Pure back-reference. The reader has the text above; pointing at it adds nothing at any level, so this row fires even at `low`. |
+| conc-to-summarize | `^\s*To summari[sz]e\b` | warn | med, high | Essay scaffolding. Lead with the summary rather than announcing one. Anchored to line start so "used to summarize the log" is safe. |
+| conc-simply-put | `^\s*Simply put,` | warn | high | Framing phrase that adds no content. Anchored and comma-gated so the instruction "simply put the file in /tmp" is safe. Only `high` cuts this hard. |
+
 ## Language rules
 
 Probabilistic. A regex cannot judge these, so the rewrite skill applies them by reading.

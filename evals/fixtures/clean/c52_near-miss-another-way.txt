@@ -1,0 +1,2 @@
+There is another way to put it on the queue: call `enqueue()` directly and skip
+the HTTP layer. That path does not retry, so use it only for work you can lose.

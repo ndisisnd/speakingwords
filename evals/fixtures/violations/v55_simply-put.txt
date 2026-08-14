@@ -1,0 +1,4 @@
+Simply put, the cache never sees the second request because the key includes
+the request id.
+
+Drop the request id from the key in `lib/cache.js:41` and the hit rate recovers.

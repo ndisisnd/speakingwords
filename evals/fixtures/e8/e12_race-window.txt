@@ -1,0 +1,1 @@
+There is a race window here and it is small but it is real. Two workers can both read the same row, both decide that it is unclaimed, and both then write their own worker id into it. The window is about 40 milliseconds wide in practice. The fix is a conditional update, so the write only lands when the claim column is still null.

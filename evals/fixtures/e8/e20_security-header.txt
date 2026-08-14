@@ -1,0 +1,1 @@
+The security header is missing on the static asset responses only, and it is present everywhere else. The reason is that static assets are served by the CDN directly and never touch the application, so the middleware that adds the header never runs for them. Setting it in the CDN configuration is the fix, rather than changing anything in the application.

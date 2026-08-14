@@ -1,0 +1,1 @@
+The rollback path does exist and it is fairly straightforward to use. You would run `bin/deploy --rollback` and it puts the previous release back in place. The one thing to be aware of is that it does not roll back database migrations, so any migration that ran as part of the deploy stays applied and you have to reverse it yourself if that matters.

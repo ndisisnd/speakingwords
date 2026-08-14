@@ -1,0 +1,1 @@
+The log volume went up because the debug logger got switched on in production during the last deploy, and nobody noticed at the time. The setting responsible is `LOG_LEVEL`, which is currently sitting at `debug` when it really ought to be at `info`. Changing it back cuts the volume by roughly 90% based on what we saw before the deploy, and it does not require a restart.

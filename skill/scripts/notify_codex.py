@@ -77,9 +77,12 @@ def run(argv):
         return EXIT_OK
 
     hook_stop = load_hook_stop()
-    voice = hook_stop.read_voice()
+    pref = hook_stop.read_pref()
+    voice = hook_stop.read_voice(pref)
     lint = hook_stop.load_lint()
-    violations = lint.lint(text, voice, lint.read_rules())
+    # Same level as the Stop hook would use, so the audit log records what an
+    # enforcing install would have blocked, not a different rule set (E7).
+    violations = lint.lint(text, voice, lint.read_rules(), hook_stop.read_conciseness(pref))
     if not violations:
         return EXIT_OK
 

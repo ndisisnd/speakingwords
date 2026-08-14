@@ -1,0 +1,2 @@
+Pass `--summary` to summarize the log instead of printing every line. The flag
+takes no argument and works with every subcommand.

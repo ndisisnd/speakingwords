@@ -1,0 +1,1 @@
+The feature flag is currently rolled out to 5% of traffic, and that rollout has been sitting at 5% for about three weeks now. Nothing is blocking a wider rollout from a technical standpoint. The metrics look flat, meaning no regression and no improvement either, which is probably the actual reason nobody has pushed the number higher.

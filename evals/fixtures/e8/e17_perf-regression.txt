@@ -1,0 +1,1 @@
+The performance regression traces back to a single commit, `a3f9c2`, which switched the serializer from the streaming implementation to the buffering one. Buffering is simpler to reason about but it holds the whole response in memory before writing anything out. On the large export endpoint that pushes p95 from 300 milliseconds up to 2.1 seconds.

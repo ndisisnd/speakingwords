@@ -44,6 +44,17 @@ const help = require(path.join(REPO, 'lib', 'help.js'));
 const USAGE_PIN_REF = 'v0.1.0:bin/speakingwords.js';
 const V010_USAGE = readV010Usage();
 
+// Lines from the 0.1.0 overview that a later plan retires on purpose, each with
+// the reason. Anything not named here is still a fatal drop; this map is the
+// only way a line is allowed to leave the overview, and it has to say why.
+const RETIRED_LINES = new Map([
+  [
+    'Without flags, init asks three questions: mode, agent + scope, voice.',
+    'v0.2.0 §8: init asks four questions now — conciseness joins voice as an '
+    + 'independent axis, and the "three questions" wording is retired with it.',
+  ],
+]);
+
 const results = [];
 
 function check(assertion, name, ok, detail = '') {
@@ -103,17 +114,42 @@ function evalOverviewIdentity() {
 
   // Nothing from 0.1.0 may be dropped: every non-blank line of the old usage
   // text must still appear verbatim in the rendered overview.
+  //
+  // P9 relaxed this in one direction only. The original pin also asserted byte
+  // equality with the 0.1.0 text, which made every later release impossible to
+  // document: adding `--conciseness` to the init flag list is exactly the kind
+  // of change the overview is supposed to grow by. Additions are now allowed,
+  // and the order of the surviving 0.1.0 lines is checked instead, so a line
+  // cannot be quietly moved into a section where it means something else.
+  // Dropping a line is still fatal — that is the regression the pin exists for.
   if (V010_USAGE === null) {
     check('A14', 'the 0.1.0 usage text is available to compare against', false,
       `could not read ${USAGE_PIN_REF}`);
   } else {
-    const missing = V010_USAGE.split('\n')
-      .filter((line) => line.trim())
-      .filter((line) => !first.includes(line));
+    const oldLines = V010_USAGE.split('\n').filter((line) => line.trim());
+    const missing = oldLines.filter(
+      (line) => !first.includes(line) && !RETIRED_LINES.has(line)
+    );
     check('A14', 'no line of the 0.1.0 overview was dropped', missing.length === 0,
       missing.join(' | '));
-    check('A14', 'the overview is exactly the 0.1.0 text',
-      first === `${V010_USAGE}\n`, 'overview text changed');
+
+    // Every retired line must be retired on purpose, and gone. A line still on
+    // the retirement list but still printed is a stale exemption, not a pass.
+    const stillPresent = [...RETIRED_LINES.keys()].filter((line) => first.includes(line));
+    check('A14', 'every retired 0.1.0 line is actually gone', stillPresent.length === 0,
+      stillPresent.join(' | '));
+
+    // Order check: walk the overview once, consuming surviving 0.1.0 lines in
+    // sequence. A line that appears out of sequence fails to be consumed.
+    const survivors = oldLines.filter((line) => !RETIRED_LINES.has(line));
+    const rendered = first.split('\n');
+    let cursor = 0;
+    for (const line of rendered) {
+      if (cursor < survivors.length && line.includes(survivors[cursor])) cursor += 1;
+    }
+    check('A14', 'the surviving 0.1.0 lines keep their original order',
+      cursor === survivors.length,
+      `matched ${cursor} of ${survivors.length}; first unmatched: ${survivors[cursor] || '-'}`);
   }
 }
 

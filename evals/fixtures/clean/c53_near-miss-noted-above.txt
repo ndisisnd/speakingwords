@@ -1,0 +1,2 @@
+The value noted above the fold is the cached one, not the live one. Read the
+live value from `/metrics` if you need it fresh.

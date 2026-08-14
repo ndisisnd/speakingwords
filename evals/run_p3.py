@@ -402,7 +402,12 @@ def eval_settings(scope, seed_existing):
 
         # Uninstall restores the file exactly, or removes it cleanly.
         removed = uninstall(home, project, scope)
-        check("P3", "%s: uninstall reports one entry removed" % label, removed == 1, "removed=%s" % removed)
+        # Two entries since v0.2.0: the Stop hook and the SessionStart injector.
+        # Both are wired by one install and both must come out on one unhook —
+        # an injector left behind would keep writing style rules into a session
+        # that nothing is enforcing.
+        check("P3", "%s: uninstall reports both entries removed" % label, removed == 2,
+              "removed=%s" % removed)
         after = open(target, "r", encoding="utf-8").read()
         if seed_existing:
             check(

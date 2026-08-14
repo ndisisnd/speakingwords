@@ -1,0 +1,1 @@
+Memory grows because the response cache has no eviction policy attached to it whatsoever. Every distinct URL that gets requested adds an entry to the cache, and nothing ever removes those entries again. Over the course of a week that works out at roughly 1.2 GB of growth on the busiest instance. Adding an LRU bound of 10,000 entries would cap it.

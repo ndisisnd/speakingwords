@@ -1,0 +1,1 @@
+The error shape is inconsistent across the API, which is why your client code has to do so much branching. Some endpoints return `{error: string}` and others return `{errors: [{field, message}]}` instead. The newer endpoints written after March all use the second shape, and the plan is to migrate the older ones, but that has not happened yet.

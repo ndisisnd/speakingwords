@@ -1,0 +1,5 @@
+The token expires 15 minutes after it is issued, and the refresh call has to
+land before that. To put it another way, a client that sleeps for 20 minutes
+will always come back to a dead token.
+
+Refresh runs from `lib/session.js:88`.

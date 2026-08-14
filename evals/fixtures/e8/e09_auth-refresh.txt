@@ -1,0 +1,1 @@
+The authentication flow works roughly like this. A login exchange returns both an access token and a refresh token together in the same response. The access token is short lived and lasts 15 minutes, whereas the refresh token lasts for 30 days. The client is expected to call the refresh endpoint when it gets a 401 back, and that endpoint is `POST /auth/refresh`.

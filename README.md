@@ -82,8 +82,8 @@ speakingwords status      # shows what the linter has caught (hook mode)
 
 ## The two decisions
 
-`init` asks three questions — mode, agent + scope, voice — and then prints exactly what it
-wrote and where.
+`init` asks four questions — mode, agent + scope, voice, conciseness — and then prints
+exactly what it wrote and where.
 
 ### Mode: how hard the rules are enforced
 
@@ -101,6 +101,26 @@ the one that actually holds.
 |-------|-------|
 | **terse** | Point form only. Bullets, short lists, tables, code. Brevity wins every trade-off. |
 | **convo** | Prose is retained. Point form is allowed, but brevity is not forced. |
+
+### Conciseness: how much of it survives
+
+Voice says what shape a reply takes. Conciseness says how much of it there is. The two are
+independent axes — any voice pairs with any level.
+
+| Level | Target cut vs. an unstyled reply | Character |
+|-------|----------------------------------|-----------|
+| **low** | 10–20% | Prose intact; only decoration goes — filler, restatement, hedge stacks. |
+| **med** | 25–35% | Every sentence earns its place. Explanations kept, elaborations cut. |
+| **high** | 40–50% | Only load-bearing content — but every fact, number, path and code block still survives. |
+
+The percentages are targets measured across a fixture set, not rules applied to a single
+reply: nothing can measure one reply against the reply you would otherwise have written.
+Two guardrails hold at every level. Losing a fact is always worse than the violation it
+was meant to fix, and `high` never collapses a convo reply into point form.
+
+Upgrading from 0.1.0 keeps the behaviour you already had: a `pref.json` with no
+`conciseness` key reads as `high`, which is the band 0.1.0 already behaved in. New installs
+are offered `med`.
 
 Both voices obey the same language rules. Switching voice changes the *shape* of a reply,
 never the standard of the language.
@@ -195,8 +215,8 @@ speakingwords unhook [--yes]   remove hook wiring (alias: unset)
 ### init
 
 ```sh
-speakingwords init                                  # asks three questions
-speakingwords init --hook --agent claude --scope global --voice terse
+speakingwords init                                  # asks four questions
+speakingwords init --hook --agent claude --scope global --voice terse --conciseness med
 ```
 
 | Flag | Values |
@@ -205,8 +225,12 @@ speakingwords init --hook --agent claude --scope global --voice terse
 | `--agent` | `claude` · `codex` · `both` |
 | `--scope` | `local` · `global` |
 | `--voice` | `terse` · `convo` |
+| `--conciseness` | `low` · `med` · `high` |
 
-Passing all four skips every question, which is what makes it scriptable. Re-running `init`
+Passing them all skips every question, which is what makes it scriptable. A command line
+that already answers mode, agent, scope and voice is treated as a script and takes the
+default level rather than being asked a brand-new question, so 0.1.0 install scripts keep
+working untouched. Re-running `init`
 replaces the memory block in place rather than adding a second one.
 
 ### status
@@ -294,9 +318,10 @@ To park a rule without deleting it, prefix its id with `#`.
 ├── scripts/
 │   ├── lint.py           # the deterministic pass
 │   ├── hook_stop.py      # Claude Code Stop hook
+│   ├── hook_session.py   # Claude Code SessionStart injector (states rules up front)
 │   ├── hook_codex.py     # Codex Stop hook (imports hook_stop — one verdict, two agents)
 │   └── notify_codex.py   # Codex audit-only fallback
-├── pref.json             # { agents, mode, scope, voice, version }
+├── pref.json             # { agents, mode, scope, voice, version, conciseness }
 └── hits.jsonl            # hook-mode telemetry, append-only
 ```
 
@@ -304,7 +329,7 @@ To park a rule without deleting it, prefix its id with `#`.
 
 ```sh
 python3 lint.py --voice terse reply.txt
-cat reply.txt | python3 lint.py --voice convo
+cat reply.txt | python3 lint.py --voice convo --conciseness med
 ```
 
 It exits `0` on clean input and `2` on violations, and never any other code. The hook

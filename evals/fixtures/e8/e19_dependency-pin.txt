@@ -1,0 +1,1 @@
+The dependency is pinned to an exact version rather than a range, and that pin is deliberate. Version 4.2.1 is the last release before the maintainer changed the default encoding behaviour, and our fixtures all assume the old behaviour. Upgrading past it means regenerating about 400 fixture files, which is why it has not been done.

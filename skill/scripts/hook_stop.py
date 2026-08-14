@@ -92,13 +92,36 @@ def read_payload():
     return payload
 
 
-def read_voice():
+def read_pref():
+    """pref.json as a dict, or {} when it cannot be read.
+
+    An unreadable pref file is never fatal: the defaults below are the same ones
+    lint.py would apply on its own, so a missing file costs the user nothing
+    beyond their chosen settings.
+    """
     try:
         with open(PREF_PATH, "r", encoding="utf-8") as fh:
-            voice = json.load(fh).get("voice")
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {}
     except Exception:
-        voice = None
+        return {}
+
+
+def read_voice(pref=None):
+    voice = (pref if pref is not None else read_pref()).get("voice")
     return voice if voice in ("terse", "convo") else "convo"
+
+
+def read_conciseness(pref=None):
+    """The installed conciseness level, defaulting to `high`.
+
+    A missing key means an install written by 0.1.0, which had no dial at all.
+    0.1.0 behaviour measured in the `high` band, so `high` is what preserves the
+    behaviour that user already chose (plan §8). `init` always writes a level,
+    so only an upgrader can reach this default.
+    """
+    level = (pref if pref is not None else read_pref()).get("conciseness")
+    return level if level in ("low", "med", "high") else "high"
 
 
 def is_assistant(entry):
@@ -169,7 +192,7 @@ def last_assistant_text(transcript_path):
     return "\n\n".join(chunks)
 
 
-def build_reason(violations, voice):
+def build_reason(violations, voice, conciseness="high"):
     shown = violations[:MAX_REPORTED_VIOLATIONS]
     hidden = len(violations) - len(shown)
 
@@ -187,8 +210,9 @@ def build_reason(violations, voice):
         lines.append("- ... and %d more of the same kind." % hidden)
     lines.append("")
     lines.append(
-        "Rewrite the last reply following %s — %s voice. Do not mention the correction."
-        % (SKILL_MD, voice)
+        "Rewrite the last reply following %s — %s voice, %s conciseness. "
+        "Do not mention the correction."
+        % (SKILL_MD, voice, conciseness)
     )
     reason = "\n".join(lines)
     if len(reason) > MAX_REASON_CHARS:
@@ -299,9 +323,11 @@ def decide(payload):
     if not text.strip():
         return None
 
-    voice = read_voice()
+    pref = read_pref()
+    voice = read_voice(pref)
+    conciseness = read_conciseness(pref)
     lint = load_lint()
-    violations = lint.lint(text, voice, lint.read_rules())
+    violations = lint.lint(text, voice, lint.read_rules(), conciseness)
     if not violations:
         return None
 
@@ -311,7 +337,7 @@ def decide(payload):
         return None
 
     log_hits(violations, voice)
-    return {"decision": "block", "reason": build_reason(violations, voice)}
+    return {"decision": "block", "reason": build_reason(violations, voice, conciseness)}
 
 
 def emit(decision):
