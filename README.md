@@ -186,6 +186,17 @@ narrowly: `Landed` only at the start of a line ("the plane landed safely" is fin
 `Certainly` only with punctuation after it ("certainly true" is fine), `elevate` but never
 "elevator".
 
+### Prevention: the SessionStart injector
+
+Bouncing a reply costs a full regeneration, so the cheapest bounce is the one that never
+happens. Alongside the Stop hook, hook mode installs a **SessionStart hook** that states
+your voice and conciseness rules once, near the top of each session's context — roughly
+200–400 tokens, injected once rather than per prompt.
+
+It is prevention, never enforcement. It cannot block a reply, and if it fails, times out or
+is masked, nothing about your session changes: the Stop hook is still the thing that holds
+the line. Both agents get it, from the same script.
+
 ### Codex specifics
 
 - **Trust.** Codex will not run a hook until you grant it trust, once. The installer says so
@@ -196,6 +207,11 @@ narrowly: `Landed` only at the start of a line ("the plane landed safely" is fin
   delivered, and violations are logged for `status`, but **nothing is blocked or rewritten**.
   The install summary states this plainly rather than burying it. Upgrade Codex and re-run
   `init` to get real enforcement.
+- **A resumed Codex thread gets no injected block.** On Codex 0.130.0, launching bare
+  `codex` auto-restores your previous thread without emitting `SessionStart`
+  ([openai/codex#24228](https://github.com/openai/codex/issues/24228)), so the style block
+  is not injected for that session. Nothing else changes — the Stop hook still lints and
+  bounces exactly as it would have. Starting a fresh session injects normally.
 - The `notify` key is user-level only in Codex — there is no per-project equivalent — so the
   audit pass applies everywhere even if you chose `local`. If some other tool already owns
   `notify`, the installer refuses rather than overwriting it.
@@ -325,7 +341,7 @@ needs, like "the aforementioned case law".
 ├── scripts/
 │   ├── lint.py           # the deterministic pass
 │   ├── hook_stop.py      # Claude Code Stop hook
-│   ├── hook_session.py   # Claude Code SessionStart injector (states rules up front)
+│   ├── hook_session.py   # SessionStart injector, both agents (states rules up front)
 │   ├── hook_codex.py     # Codex Stop hook (imports hook_stop — one verdict, two agents)
 │   └── notify_codex.py   # Codex audit-only fallback
 ├── pref.json             # { agents, mode, scope, voice, version, conciseness }
@@ -344,7 +360,7 @@ wiring depends on that contract.
 
 ---
 
-## What v0.1.0 does not do
+## What v0.2.0 does not do
 
 - No per-project rule profiles — one active profile per scope.
 - No editing of *your* prompts. This is an output parser only.

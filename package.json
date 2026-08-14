@@ -1,6 +1,6 @@
 {
   "name": "speakingwords",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An output parser for agent replies. Installs a style contract as configuration, in memory mode or hook mode, in a terse or conversational voice.",
   "license": "MIT",
   "bin": {
@@ -23,7 +23,11 @@
     "eval:p4": "python3 evals/run_p4.py",
     "eval:p5": "python3 evals/run_p5.py",
     "eval:p6": "python3 evals/run_p6.py",
-    "eval:deterministic": "npm run eval:p1 && npm run eval:p2 && npm run eval:p3 && npm run eval:p4 && npm run eval:p5 && npm run eval:p6",
+    "eval:p7": "node evals/run_p7.js",
+    "eval:p8": "python3 evals/run_p8.py",
+    "eval:p9": "python3 evals/run_p9.py",
+    "eval:p10": "python3 evals/run_p10.py",
+    "eval:deterministic": "npm run eval:p1 && npm run eval:p2 && npm run eval:p3 && npm run eval:p4 && npm run eval:p5 && npm run eval:p6 && npm run eval:p7 && npm run eval:p8 && npm run eval:p9 && npm run eval:p10",
     "eval": "npm run eval:deterministic"
   },
   "keywords": [
@@ -46,5 +50,8 @@
   "homepage": "https://github.com/ndisisnd/speakingwords#readme",
   "bugs": {
     "url": "https://github.com/ndisisnd/speakingwords/issues"
+  },
+  "dependencies": {
+    "speakingwords": "^0.2.0"
   }
 }

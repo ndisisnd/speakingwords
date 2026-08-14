@@ -1,0 +1,788 @@
+{
+  "date": "2026-08-14",
+  "e8": {
+    "bands": {
+      "high": [
+        0.4,
+        0.5
+      ],
+      "low": [
+        0.1,
+        0.2
+      ],
+      "med": [
+        0.25,
+        0.35
+      ]
+    },
+    "convo_high_prose_failures": [],
+    "fact_loss_judgements": {
+      "e01_retry-budget.txt|high": {
+        "loss": true,
+        "reason": "The original states parked jobs wait for a human to review them, but the rewrite only says the job is 'parked in queue/dead' without stating that human review is the reason it's waiting there \u2014 that fact is dropped, not just compressed."
+      },
+      "e01_retry-budget.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: 3-attempt retry budget, 4th failure triggering the move to queue/dead with retries stopped and a human wait, and bin/requeue restoring the job all appear unchanged in the rewrite."
+      },
+      "e01_retry-budget.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: 3-attempt retry budget, 4th failure triggers parking in queue/dead, job waits for a human, and bin/requeue restores parked jobs \u2014 the rewrite only reformats these into bullets without dropping any value or path."
+      },
+      "e02_token-expiry.txt|high": {
+        "loss": false,
+        "reason": "All four facts (15-minute expiry, refresh must land before expiry, 20-minute sleep returns to a dead token, refresh logic at lib/session.js:88) are preserved in the rewrite with unchanged meaning."
+      },
+      "e02_token-expiry.txt|low": {
+        "loss": false,
+        "reason": "All facts survive: 15-minute expiry, the requirement that refresh land before expiry, the 20-minute-idle-returns-dead-token case, and the exact file path lib/session.js:88 are all present unchanged in meaning."
+      },
+      "e02_token-expiry.txt|med": {
+        "loss": false,
+        "reason": "The rewrite preserves every fact from the original: the 15-minute expiry from issuance, the requirement that refresh land before that deadline, the 20-minute-sleep-always-returns-to-a-dead-token scenario, and the exact file path lib/session.js:88."
+      },
+      "e03_migration-window.txt|high": {
+        "loss": false,
+        "reason": "All facts carry over unchanged: 2 new indexes, 1 dropped index noted as unused, online/no-locking behavior, and the ~40s ETA tied to current row count are all present in the rewrite."
+      },
+      "e03_migration-window.txt|low": {
+        "loss": false,
+        "reason": "REWRITE preserves all facts from ORIGINAL: 2 new indexes added, 1 unused index dropped, the migration runs online with no table lock, and the ~40 second timing estimate is tied to current row count in both versions."
+      },
+      "e03_migration-window.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: two new indexes added, one unused index dropped, the migration runs online with the table unlocked throughout, and the ~40 second estimate tied to current row count is retained with unchanged meaning."
+      },
+      "e04_stale-lockfile.txt|high": {
+        "loss": false,
+        "reason": "Every fact from the original \u2014 build failure caused by a stale lockfile, the cause being a dependency added without a reinstall so the resolver never wrote a new lockfile entry, and the two-step fix (install then rebuild) leading to a green build \u2014 is preserved unchanged in the rewrite, just reformatted as bullets."
+      },
+      "e04_stale-lockfile.txt|low": {
+        "loss": false,
+        "reason": "All facts (build failure, stale lockfile cause, dependency added without reinstall, resolver not writing new entry, fix steps of install then rebuild, and expected green result) are preserved in the rewrite with unchanged meaning."
+      },
+      "e04_stale-lockfile.txt|med": {
+        "loss": false,
+        "reason": "All key facts are preserved: the failure (stale lockfile), the cause (a dependency was added but install was never rerun, so the resolver didn't write a new lockfile entry), and the fix (run install, then rebuild) all appear unchanged in the rewrite."
+      },
+      "e05_cache-key.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: cache key includes request id, every request has a different id, the fix is to drop request id from the key in lib/cache.js:41, and hit rate should recover \u2014 no numbers, paths, or claims are dropped or altered."
+      },
+      "e05_cache-key.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the cache key includes the request ID (always unique, causing every lookup to miss), the fix location `lib/cache.js:41`, the action (drop request ID from the key), and the expected fast recovery of hit rate are all present in the rewrite."
+      },
+      "e05_cache-key.txt|med": {
+        "loss": false,
+        "reason": "The rewrite keeps every fact: cache never seeing the second request, the cause (key includes request id, so every id differs and every lookup misses), the fix (drop request id from the key) with the exact file path lib/cache.js:41, and the expected outcome (hit rate recovers quickly/fast, same meaning)."
+      },
+      "e06_timeout-tuning.txt|high": {
+        "loss": false,
+        "reason": "All facts preserved: 5s timeout, ~8s p99 upstream latency, mismatch causing the logged errors, suggested fix of raising to 15 seconds, and the file path config/http.json all appear unchanged in the rewrite."
+      },
+      "e06_timeout-tuning.txt|low": {
+        "loss": false,
+        "reason": "All hard facts (5s timeout, ~8s p99, log errors from the mismatch, and the fix \u2014 bump to 15s in config/http.json) are preserved unchanged; only the softer 'comfortable margin' rationale is dropped, which is explanatory framing, not a fact/number/path/command."
+      },
+      "e06_timeout-tuning.txt|med": {
+        "loss": false,
+        "reason": "All facts carry over unchanged: 5s timeout, ~8s p99 upstream latency, the mismatch causing the logged errors, the proposed fix of raising the timeout to 15s, and the file path config/http.json."
+      },
+      "e07_index-choice.txt|high": {
+        "loss": false,
+        "reason": "The rewrite keeps both options, their column/storage details (composite index on two columns, ~200 MB, speeds up the shown query; partial index on active rows only, ~12 MB, helps only when the query filters on active), with no numbers or conditions dropped or altered."
+      },
+      "e07_index-choice.txt|low": {
+        "loss": false,
+        "reason": "Both numeric costs (200 MB, 12 MB) and both index descriptions (composite on both columns, partial on active rows) are preserved, along with the conditional limitation that the partial index only helps when the query filters on active."
+      },
+      "e07_index-choice.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: composite index on two columns matching the query with ~200MB storage cost, and the partial index on active rows only at ~12MB that helps only when filtering on active."
+      },
+      "e08_queue-backpressure.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: backpressure exists but is off by default (explaining why unnoticed), the setting name `queue.max_inflight`, its current value 0 meaning unlimited, and the effect of setting it to 200 (producers block once 200 messages are in flight) all carry over unchanged."
+      },
+      "e08_queue-backpressure.txt|low": {
+        "loss": false,
+        "reason": "All facts survive: backpressure exists but is off by default, the setting name `queue.max_inflight`, its current value of 0 meaning unlimited, and the behavior of setting it to 200 (producers block at 200 in-flight messages) are all preserved unchanged."
+      },
+      "e08_queue-backpressure.txt|med": {
+        "loss": false,
+        "reason": "All facts survive: backpressure off by default, setting name `queue.max_inflight`, current value 0 meaning unlimited, and the suggested value 200 with producers blocking once 200 messages are in flight are all present unchanged."
+      },
+      "e09_auth-refresh.txt|high": {
+        "loss": false,
+        "reason": "All facts preserved: tokens returned together, 15 min access / 30 day refresh lifetimes, and the 401 -> POST /auth/refresh trigger/endpoint are all present unchanged."
+      },
+      "e09_auth-refresh.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the login exchange still returns both tokens together, access token = 15 minutes, refresh token = 30 days, and the client action is still to call POST /auth/refresh upon receiving a 401."
+      },
+      "e09_auth-refresh.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: tokens issued together, 15-minute access token, 30-day refresh token, 401 trigger, and the exact `POST /auth/refresh` endpoint."
+      },
+      "e10_log-volume.txt|high": {
+        "loss": false,
+        "reason": "All facts from the original are preserved: debug logger enabled in prod on last deploy unnoticed, LOG_LEVEL is debug but should be info, reverting cuts volume ~90% vs. the pre-deploy baseline, and no restart is required."
+      },
+      "e10_log-volume.txt|low": {
+        "loss": false,
+        "reason": "All facts carry over unchanged: cause (debug logger enabled in prod during last deploy, unnoticed), the setting name LOG_LEVEL and its current/target values (debug \u2192 info), the ~90% volume reduction estimate based on pre-deploy data, and the no-restart-required detail."
+      },
+      "e10_log-volume.txt|med": {
+        "loss": false,
+        "reason": "Every fact from the original \u2014 LOG_LEVEL as the setting, its current value debug vs. intended info, the ~90% volume cut, the pre-deploy baseline comparison, and no restart required \u2014 appears unchanged in the rewrite."
+      },
+      "e11_schema-drift.txt|high": {
+        "loss": false,
+        "reason": "All facts survive: schema drift, the staging-only deleted_at column on orders, and that the migration was hand-applied on staging, never committed, and thus never applied elsewhere."
+      },
+      "e11_schema-drift.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the schema drift, staging having `deleted_at` on `orders` while production lacks it, and the migration being applied by hand on staging but never committed to the repo or run elsewhere are all retained with equivalent meaning."
+      },
+      "e11_schema-drift.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: the deleted_at column on orders in staging but not production, the hand-applied migration, and that it was never committed or applied elsewhere all carry through unchanged."
+      },
+      "e12_race-window.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: the race condition mechanism (two workers, same row, both see unclaimed, both write worker id), the ~40ms window size, and the conditional-update fix tied to the claim column being null all appear unchanged in the rewrite."
+      },
+      "e12_race-window.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the race mechanism (two workers reading the same row, both seeing it unclaimed, both writing their own worker id), the ~40ms window size, and the conditional-update fix (write only lands if claim column is still null) all appear unchanged in meaning."
+      },
+      "e12_race-window.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: the race condition mechanism (two workers read row as unclaimed, both write worker id), the ~40ms window size, and the conditional-update fix tied to the claim column being null all appear unchanged in the rewrite."
+      },
+      "e13_memory-growth.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: the eviction-policy cause, the per-URL/no-removal mechanism, the ~1.2 GB/week growth on the busiest instance, and the LRU fix of 10,000 entries all appear unchanged in the rewrite."
+      },
+      "e13_memory-growth.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: no eviction policy, every new URL adds an entry with nothing removing them, ~1.2 GB/week growth on the busiest instance, and the fix of an LRU cap at 10,000 entries."
+      },
+      "e13_memory-growth.txt|med": {
+        "loss": true,
+        "reason": "The original states each distinct requested URL adds a cache entry; the rewrite only says 'entries pile up forever' without mentioning that URLs are the specific mechanism/key driving growth, dropping that detail."
+      },
+      "e14_rollback-path.txt|high": {
+        "loss": false,
+        "reason": "The rewrite preserves the exact rollback command, the fact that it restores the previous release, and the key caveat that DB migrations are not rolled back and must be reverted manually."
+      },
+      "e14_rollback-path.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the rollback command, its effect of restoring the previous release, and the caveat that database migrations are not rolled back and must be reversed manually."
+      },
+      "e14_rollback-path.txt|med": {
+        "loss": false,
+        "reason": "All facts preserved: the command, the effect (restores previous release), and the caveat (migrations aren't rolled back and must be reversed manually) are all present with unchanged meaning."
+      },
+      "e15_cron-overlap.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: the overlap cause, the 5-minute schedule, the 7-9 minute runtime, the mechanism (second run starts before first ends), and both proposed fixes (lock file or queue-based trigger) all appear unchanged in the rewrite."
+      },
+      "e15_cron-overlap.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the 5-minute schedule, the 7-9 minute runtime, the overlap causing a second run to start before the first finishes, and both proposed fixes (lock file, queue-based trigger) all appear unchanged in the rewrite."
+      },
+      "e15_cron-overlap.txt|med": {
+        "loss": false,
+        "reason": "The rewrite retains every fact: the overlap root cause, the 5-minute schedule, the 7-9 minute actual runtime, the second-copy-starts-early result, and both fixes (lock file, queue-based trigger)."
+      },
+      "e16_error-shape.txt|high": {
+        "loss": false,
+        "reason": "All facts (the two error shapes with their exact code snippets, the March cutoff, and the unmigrated status of older endpoints) are preserved with equivalent meaning in the rewrite."
+      },
+      "e16_error-shape.txt|low": {
+        "loss": false,
+        "reason": "Both error shapes, the cause-effect framing (inconsistency drives client branching), the March cutoff for the new shape, and the unfinished migration plan for older endpoints all appear unchanged in the rewrite."
+      },
+      "e16_error-shape.txt|med": {
+        "loss": true,
+        "reason": "The rewrite drops the original's causal claim that the inconsistent error shape is why client code has to do so much branching \u2014 that consequence/reason is not retrievable from the bullet list."
+      },
+      "e17_perf-regression.txt|high": {
+        "loss": true,
+        "reason": "The original notes buffering is 'simpler to reason about' as the tradeoff motivating the switch; the rewrite drops this characterization entirely, keeping only the memory-holding fact."
+      },
+      "e17_perf-regression.txt|low": {
+        "loss": false,
+        "reason": "All facts are preserved: the commit hash a3f9c2, the streaming-to-buffering switch, the buffering trade-off description, and the p95 numbers (300ms to 2.1s) on the large export endpoint all appear unchanged in meaning."
+      },
+      "e17_perf-regression.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: commit hash a3f9c2, the streaming-to-buffering serializer swap, the memory-holding behavior of buffering, and the p95 latency change from 300ms to 2.1 seconds on the large export endpoint."
+      },
+      "e18_flag-rollout.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: the 5% figure, the ~3 week duration, no technical blocker, and the flat metrics with the inferred reason (no regression/improvement is likely why rollout hasn't widened) all carry through unchanged in meaning."
+      },
+      "e18_flag-rollout.txt|low": {
+        "loss": false,
+        "reason": "All facts (5% figure, ~3 week duration, no technical blocker, flat metrics with no regression/improvement, and the inferred reason) are preserved unchanged in meaning; only the format changed."
+      },
+      "e18_flag-rollout.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: the 5% figure, ~3-week duration, absence of a technical blocker, and the flat metrics (no regression, no improvement) with the causal inference about why rollout hasn't widened all appear unchanged in the bullet rewrite."
+      },
+      "e19_dependency-pin.txt|high": {
+        "loss": false,
+        "reason": "All facts preserved: the exact version pin (4.2.1), the reason (default encoding behavior change), the fixtures assuming old behavior, and the ~400 fixture files to regenerate."
+      },
+      "e19_dependency-pin.txt|low": {
+        "loss": false,
+        "reason": "All facts preserved: the pin being deliberate/not stale, version 4.2.1 as last release before encoding behavior change, fixtures assuming old behavior, and the ~400 fixture files blocking the upgrade all appear unchanged in meaning."
+      },
+      "e19_dependency-pin.txt|med": {
+        "loss": true,
+        "reason": "The rewrite drops the specific detail that the dependency is pinned to an exact version rather than a version range, only saying 'Pin is deliberate' without that distinction."
+      },
+      "e20_security-header.txt|high": {
+        "loss": false,
+        "reason": "All facts are preserved: header missing only on static assets, present elsewhere, CDN serves assets directly bypassing the app, middleware never runs, and fix belongs in CDN config not the app."
+      },
+      "e20_security-header.txt|low": {
+        "loss": false,
+        "reason": "The rewrite keeps all three facts: the header is missing only on static assets (implying present elsewhere), the CDN serves those directly and bypasses the app so the middleware never runs, and the fix is in CDN config rather than the app."
+      },
+      "e20_security-header.txt|med": {
+        "loss": false,
+        "reason": "All facts are preserved: the CDN-only scope of the missing header, the causal chain (CDN serves assets directly, bypassing app middleware), and the fix (configure the CDN, not the app) all appear unchanged in the rewrite."
+      }
+    },
+    "failed_calls": {
+      "judge": [],
+      "rewrite": []
+    },
+    "fixture_set": "evals/fixtures/e8 (20 fixtures)",
+    "gates": {
+      "convo_high_stays_prose": true,
+      "medians_in_band": false,
+      "zero_fact_losses": false
+    },
+    "in_band": {
+      "high": true,
+      "low": false,
+      "med": false
+    },
+    "losses": [
+      {
+        "pair": "e01_retry-budget.txt|high",
+        "reason": "The original states parked jobs wait for a human to review them, but the rewrite only says the job is 'parked in queue/dead' without stating that human review is the reason it's waiting there \u2014 that fact is dropped, not just compressed."
+      },
+      {
+        "pair": "e13_memory-growth.txt|med",
+        "reason": "The original states each distinct requested URL adds a cache entry; the rewrite only says 'entries pile up forever' without mentioning that URLs are the specific mechanism/key driving growth, dropping that detail."
+      },
+      {
+        "pair": "e16_error-shape.txt|med",
+        "reason": "The rewrite drops the original's causal claim that the inconsistent error shape is why client code has to do so much branching \u2014 that consequence/reason is not retrievable from the bullet list."
+      },
+      {
+        "pair": "e17_perf-regression.txt|high",
+        "reason": "The original notes buffering is 'simpler to reason about' as the tradeoff motivating the switch; the rewrite drops this characterization entirely, keeping only the memory-holding fact."
+      },
+      {
+        "pair": "e19_dependency-pin.txt|med",
+        "reason": "The rewrite drops the specific detail that the dependency is pinned to an exact version rather than a version range, only saying 'Pin is deliberate' without that distinction."
+      }
+    ],
+    "medians": {
+      "high": 0.49691358024691357,
+      "low": 0.47722960151802657,
+      "med": 0.5117430673457838
+    },
+    "per_pair_reduction": {
+      "e01_retry-budget.txt|high": 0.8064516129032258,
+      "e01_retry-budget.txt|low": 0.7419354838709677,
+      "e01_retry-budget.txt|med": 0.7526881720430108,
+      "e02_token-expiry.txt|high": 0.654320987654321,
+      "e02_token-expiry.txt|low": 0.6666666666666666,
+      "e02_token-expiry.txt|med": 0.6419753086419753,
+      "e03_migration-window.txt|high": 0.7307692307692307,
+      "e03_migration-window.txt|low": 0.6794871794871795,
+      "e03_migration-window.txt|med": 0.6794871794871795,
+      "e04_stale-lockfile.txt|high": 0.5352112676056338,
+      "e04_stale-lockfile.txt|low": 0.5492957746478874,
+      "e04_stale-lockfile.txt|med": 0.5633802816901409,
+      "e05_cache-key.txt|high": 0.5138888888888888,
+      "e05_cache-key.txt|low": 0.5277777777777778,
+      "e05_cache-key.txt|med": 0.4583333333333333,
+      "e06_timeout-tuning.txt|high": 0.5066666666666667,
+      "e06_timeout-tuning.txt|low": 0.6933333333333334,
+      "e06_timeout-tuning.txt|med": 0.64,
+      "e07_index-choice.txt|high": 0.49382716049382713,
+      "e07_index-choice.txt|low": 0.6172839506172839,
+      "e07_index-choice.txt|med": 0.41975308641975306,
+      "e08_queue-backpressure.txt|high": 0.36764705882352944,
+      "e08_queue-backpressure.txt|low": 0.47058823529411764,
+      "e08_queue-backpressure.txt|med": 0.5588235294117647,
+      "e09_auth-refresh.txt|high": 0.5396825396825397,
+      "e09_auth-refresh.txt|low": 0.5555555555555556,
+      "e09_auth-refresh.txt|med": 0.6190476190476191,
+      "e10_log-volume.txt|high": 0.5223880597014925,
+      "e10_log-volume.txt|low": 0.3880597014925373,
+      "e10_log-volume.txt|med": 0.43283582089552236,
+      "e11_schema-drift.txt|high": 0.5,
+      "e11_schema-drift.txt|low": 0.4838709677419355,
+      "e11_schema-drift.txt|med": 0.532258064516129,
+      "e12_race-window.txt|high": 0.4,
+      "e12_race-window.txt|low": 0.36923076923076925,
+      "e12_race-window.txt|med": 0.4,
+      "e13_memory-growth.txt|high": 0.3870967741935484,
+      "e13_memory-growth.txt|low": 0.5161290322580645,
+      "e13_memory-growth.txt|med": 0.5806451612903226,
+      "e14_rollback-path.txt|high": 0.640625,
+      "e14_rollback-path.txt|low": 0.359375,
+      "e14_rollback-path.txt|med": 0.59375,
+      "e15_cron-overlap.txt|high": 0.43548387096774194,
+      "e15_cron-overlap.txt|low": 0.41935483870967744,
+      "e15_cron-overlap.txt|med": 0.3709677419354839,
+      "e16_error-shape.txt|high": 0.1896551724137931,
+      "e16_error-shape.txt|low": 0.25862068965517243,
+      "e16_error-shape.txt|med": 0.3275862068965517,
+      "e17_perf-regression.txt|high": 0.38181818181818183,
+      "e17_perf-regression.txt|low": 0.18181818181818182,
+      "e17_perf-regression.txt|med": 0.12727272727272726,
+      "e18_flag-rollout.txt|high": 0.49122807017543857,
+      "e18_flag-rollout.txt|low": 0.43859649122807015,
+      "e18_flag-rollout.txt|med": 0.49122807017543857,
+      "e19_dependency-pin.txt|high": 0.35714285714285715,
+      "e19_dependency-pin.txt|low": 0.32142857142857145,
+      "e19_dependency-pin.txt|med": 0.4642857142857143,
+      "e20_security-header.txt|high": 0.2786885245901639,
+      "e20_security-header.txt|low": 0.4262295081967213,
+      "e20_security-header.txt|med": 0.2786885245901639
+    },
+    "rewrites_attempted": 60,
+    "rewrites_succeeded": 60,
+    "verdict": "FAIL",
+    "voice": "convo"
+  },
+  "e9": {
+    "axes": [
+      "register",
+      "fidelity"
+    ],
+    "axis_rates": {
+      "fidelity": 0.9736842105263158,
+      "register": 0.6578947368421053
+    },
+    "bounce_recovered": 8,
+    "bounce_recovery_rate": 0.5714285714285714,
+    "bounce_scores": {
+      "p02|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p04|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p04|terse": {
+        "fidelity": false,
+        "register": true
+      },
+      "p05|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p07|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p08|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p09|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p10|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p11|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p13|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p14|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p16|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p16|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p18|convo": {
+        "fidelity": true,
+        "register": false
+      }
+    },
+    "bounced": 14,
+    "conciseness": "med",
+    "failed_calls": {
+      "judge": [
+        "p03|terse/register: unparseable"
+      ],
+      "reply": [
+        "p12|convo: rc=1 stderr="
+      ]
+    },
+    "first_reasons": {
+      "p01|convo": {
+        "fidelity": "Reply gives concrete, specific facts (three retries, fourth failure triggers dead-letter queue) with no vagueness or omitted numbers.",
+        "register": "Short, plain sentences with casual phrasing ('waits someone look at it') read like a quick Slack update, not a formal report; it gives the count and pointer without a mechanical roll-call."
+      },
+      "p01|terse": {
+        "fidelity": "The reply contains no fabricated facts, numbers, paths, or commands\u2014it honestly states the retry count isn't available in context, which preserves technical accuracy rather than compromising fidelity.",
+        "register": "Short, plain, conversational lines with no report structure or roll call \u2014 reads like a quick Slack reply asking for a pointer."
+      },
+      "p02|convo": {
+        "fidelity": "All key facts are concrete and specific: the 1-hour default TTL, the exact response fields (refresh_token, expires_in), and the actionable remedy of using the refresh token before expiry. Nothing is vaguely gestured at or hand-waved.",
+        "register": "It's formatted as a report with bullet points and backtick-quoted field names (`refresh_token`, `expires_in`), reading like documentation excerpts rather than a colleague's casual Slack reply."
+      },
+      "p02|terse": {
+        "fidelity": "All claims (1-hour default TTL, refresh_token field, expires_in/3600 field name) are concrete and specific with no missing counts or dangling pointers; nothing is collapsed into vague hand-waving.",
+        "register": "Short, plain, bulleted lines with everyday phrasing ('use that to get a new access token instead of re-logging in') read like a quick chat answer, not report prose; no roll-call issue since the content is explanatory, not a work summary."
+      },
+      "p03|convo": {
+        "fidelity": "The reply grounds its advice in concrete technical categories (additive changes like new column/table/index; blocking operations like backfills/table locks; destructive changes like drop/rename/type-change) and gives a specific actionable pattern (deploy code removing references, then migrate) rather than vague generalities.",
+        "register": "Short punchy sentences, plain everyday words, no essay connectives or report-style structure \u2014 reads like a quick Slack answer from a colleague."
+      },
+      "p03|terse": {
+        "fidelity": "The reply gives concrete, specific technical gates (backwards-compatible schema changes, pg_ready/replica lag checks, deploy-code-before-migrate ordering, concurrent index builds vs locking ALTER TABLE, pre-migration backup, rollback script prepared in advance) rather than vague generalities, so its technical substance is intact and concrete."
+      },
+      "p04|convo": {
+        "fidelity": "The reply contains a self-sufficient generic fix (run install to regenerate lockfile) with no enumerated items, external references, or specifics omitted; nothing concrete is missing or hand-waved relative to what the reply itself asserts.",
+        "register": "Labeled bullets ('Cause:', 'Fix:') and restating the problem back read like a structured doc/report, not a quick Slack reply to a colleague."
+      },
+      "p04|terse": {
+        "fidelity": "The reply gives no actual command (e.g. 'npm install' or 'rm package-lock.json && npm install') or file paths \u2014 it just says 'run install' and 'rebuild' without the concrete command/tool name, which is a loss of technical substance rather than a valid enumeration-to-pointer collapse.",
+        "register": "Two terse bullets, plain everyday phrasing, no essay connectives or report grammar \u2014 reads like a quick Slack instruction, not a formal writeup."
+      },
+      "p05|convo": {
+        "fidelity": "The reply stays concrete rather than hand-waving: it names specific cache-key components (path, query params) and gives concrete examples for each vague-prone category (Accept-Language, Accept-Encoding, User-Agent for vary headers; session/user ID for auth state; A/B bucket; locale/currency), satisfying the fidelity bar for a question with no fixed original.",
+        "register": "Reads like a colleague dashing off a quick explainer in Slack\u2014casual opener, short bullet fragments, plain words, and a closing offer to get specific if given more detail, not report-style prose."
+      },
+      "p05|terse": {
+        "fidelity": "All seven cache-key factors and the closing rationale are concrete, specific items with no missing counts or vague pointers \u2014 nothing here relies on an external reference that could be lossy.",
+        "register": "It's a straight roll call of seven bullet-point items rather than a colleague-style answer \u2014 no short summary framing, just a report-style inventory of cache-key factors."
+      },
+      "p06|convo": {
+        "fidelity": "The reply is entirely a conditional recommendation with no enumeration, external data, or specific facts/paths/commands to preserve \u2014 it stays concrete on its own terms (p99, circuit breaker, retries) with nothing hand-waved away.",
+        "register": "Short bulleted lines with plain words like 'guess' and 'back up retries', no essay connectives or report-style grammar \u2014 reads like quick Slack advice, not a formal writeup."
+      },
+      "p06|terse": {
+        "fidelity": "The reply's technical content (5s timeout, 15s recommendation, p99 reasoning) is concrete and internally consistent with no missing facts, numbers, or references it fails to support.",
+        "register": "Short, punchy sentences with casual phrasing ('5s is tight', 'Bump 15s watch error rates') read like a quick Slack reply, not a formal report."
+      },
+      "p07|convo": {
+        "fidelity": "The reply's own technical content (mentions of driver.py, 'index', and the scratchpad context) is concrete and unchanged; nothing is vaguely hand-waved or omitted.",
+        "register": "It's a bulleted roll-call of checks performed ('no hits here', 'no query schema there') rather than a natural chat reply \u2014 reads like a status report format, not a Slack message to a colleague."
+      },
+      "p07|terse": {
+        "fidelity": "The reply contains no technical claims (facts, paths, commands, numbers) at all\u2014it's a clarifying question\u2014so there is no technical content to lose or distort.",
+        "register": "Short, casual, asks a direct clarifying question back \u2014 reads like a quick Slack reply, not a report."
+      },
+      "p08|convo": {
+        "fidelity": "All six option categories and the diagnostic closing question are preserved with their specific details (autoscaling off queue depth, batching db writes/caching, backpressure, capacity/retention buffer) intact \u2014 no enumeration was collapsed into a mere count or pointer.",
+        "register": "It's formatted as a bolded-header listicle with six labeled sections, which reads like a doc or report rather than a Slack message to a colleague \u2014 a real chat reply would just talk through the options in plain sentences."
+      },
+      "p08|terse": {
+        "fidelity": "The reply is a self-contained list of concrete, specific technical options (autoscaling on queue depth, backpressure/load shedding, batching, concurrency tuning, priority queues, dependency checks) plus a specific metrics recommendation, with no vague hand-waving or unresolved enumerations needing external lookup.",
+        "register": "Reads like a quick colleague chat: short bullet fixes in plain words, then a one-line 'start here' pointer \u2014 no report scaffolding or inventory roll call."
+      },
+      "p09|convo": {
+        "fidelity": "The reply's specific technical claims (rotating refresh tokens causing the second tab to get rejected, and lock coordination via localStorage or BroadcastChannel) are stated concretely with no missing counts or unresolved pointers.",
+        "register": "Reads like a quick Slack explainer with short bullet fragments and plain words; the final line asks a targeted follow-up rather than reciting a report, so it doesn't read as a roll-call status update."
+      },
+      "p09|terse": {
+        "fidelity": "All four listed patterns and the rotating-token risk callout are concrete and self-contained technical claims (localStorage flag, storage event, BroadcastChannel/postMessage, in-flight promise dedupe); nothing is collapsed into a vague pointer, so there's no missing count or reference to check.",
+        "register": "This reads like a structured technical report with bolded pattern names, bullet taxonomy, and formal phrasing ('within a single tab this dedupes concurrent calls'), not a quick Slack-style answer from a colleague."
+      },
+      "p10|convo": {
+        "fidelity": "The reply contains no enumerations, file paths, or code that would need preservation \u2014 it's operational advice with no technical facts to lose, so nothing is missing or vague relative to what it needs to convey.",
+        "register": "This reads like a written diagnostic report with formal connectives ('also worth a quick sanity check') and multi-clause explanatory sentences, not a quick Slack message; it explains mechanisms (retry loops, shared config) at length rather than pointing to a next step tersely."
+      },
+      "p10|terse": {
+        "fidelity": "The reply is a short list of investigative steps with no enumerations, facts, numbers, file paths, or commands being compressed or dropped \u2014 it's inherently concise advice, not a summary of pre-existing concrete content, so there's nothing lost.",
+        "register": "Reads like a quick Slack triage list from a colleague\u2014short imperative bullets, plain words, no report grammar or roll-call summarizing of prior work; it's advice, not a completed-work recap."
+      },
+      "p11|convo": {
+        "fidelity": "All commands, tool names, and flags are concrete and unchanged in meaning (migra command with connection strings, pg_dump --schema-only, mysqldiff, pt-table-checksum) \u2014 no enumeration was collapsed or dropped.",
+        "register": "This is advice-giving, not a completed-work report reading out its own parts, so the inventory rule doesn't apply; the phrasing itself is casual and colloquial (e.g., 'that's the fastest way', 'just noisier', 'so you see additions, drops, and type changes at a glance') like a coworker talking through options."
+      },
+      "p11|terse": {
+        "fidelity": "All four methods retain concrete specifics: actual tool/command names (pg_diff, migra, mysqldiff, pg_dump --schema-only, diff) and specific ORM examples (Prisma, Django, Rails) rather than vague references.",
+        "register": "This is a four-item checklist with tool-name roll call and inline code across multiple bullets \u2014 it reads like structured documentation, not a quick Slack message from a colleague."
+      },
+      "p12|terse": {
+        "fidelity": "The reply contains no enumeration or technical claims to preserve\u2014it states there's no relevant code found and asks for clarification, which is factually consistent with itself and introduces no fabricated or altered technical content.",
+        "register": "Short, plain, direct sentences with a natural follow-up question \u2014 reads like a quick Slack reply, no report grammar or roll call."
+      },
+      "p13|convo": {
+        "fidelity": "The reply identifies the conversation context window as the mechanism, correctly notes it's session-scoped, and gives concrete examples of what does persist (memory files, saved plan, session transcript) \u2014 all technically coherent with no vague hand-waving or missing counts/pointers.",
+        "register": "Short plain sentences, no report grammar, names function not parts."
+      },
+      "p13|terse": {
+        "fidelity": "All claims are concrete with specific file paths, flags, and mechanisms (RAM vs disk, ~/.claude/projects/.../*.jsonl, --continue/--resume, memory/*.md + MEMORY.md) and nothing is hand-waved or reduced to a vague enumeration.",
+        "register": "This is formatted as a bulleted report reading off each component (session RAM, restart, transcript file, resume flag, persistent memory) rather than a colleague's quick answer naming the cause with a pointer \u2014 it's a structured writeup, not a Slack-style reply."
+      },
+      "p14|convo": {
+        "fidelity": "No enumeration or specific technical facts were dropped or vaguely summarized \u2014 the reply gives concrete, generic rollback guidance (redeploy prior artifact, roll back migrations separately, monitor logs) and explicitly asks for the deploy system to give an exact command, which is appropriate rather than a loss.",
+        "register": "This is essay-style prose with connective phrasing ('most CI/CD setups keep...', 'since redeploying code won't undo it') and full report-grammar sentences rather than short Slack-style lines; it reads like a written explainer, not a quick colleague message."
+      },
+      "p14|terse": {
+        "fidelity": "The reply gives concrete, specific technical content throughout: the exact command `vercel rollback`, specific concepts like 'redeploy previous known-good build/tag', 'keep last N deploys tagged', DB migration reversibility check, and feature flag kill switch \u2014 nothing is vaguely hand-waved or collapsed without a pointer.",
+        "register": "Bullets are short, plain-language phrases with no essay connectives or report grammar; the deploy-platform variance genuinely needs distinct facts rather than a summarizable roll call, so this doesn't trip the function-over-inventory rule."
+      },
+      "p15|convo": {
+        "fidelity": "All technical elements are concrete and complete: the flock command with placeholder path/script, the -n flag explained, both scheduler-native options named specifically (Airflow's feature and the exact K8s field/value), and no enumeration was collapsed to a vague pointer.",
+        "register": "Short, punchy bullets with everyday phrasing ('bails instead of stacking', 'worth checking why') and no essay connectives \u2014 reads like a Slack answer, not a report."
+      },
+      "p15|terse": {
+        "fidelity": "All technical content is concrete and specific: exact flock command with flags/paths, the Kubernetes concurrencyPolicy field name, and the PID-file alternative, with no vague hand-waving or unexplained omissions.",
+        "register": "Short, punchy bullets with contractions and casual phrasing ('same effect, no flock needed'); each bullet names a distinct fix rather than reciting parts of one thing, and ends with a quick colleague-style recommendation."
+      },
+      "p16|convo": {
+        "fidelity": "All concrete elements (envelope fields error/code/message/details, example code value invalid_input, guidance on HTTP status vs code, no stack traces server-side logging) are fully present with no vague placeholders or missing enumerations.",
+        "register": "This is written like a spec/report: full paragraphs with connectives ('Depends on...', 'Keep the... and use...'), backtick-formatted field definitions, and a closing recommendation sentence \u2014 not short colloquial Slack-style lines a colleague would type."
+      },
+      "p16|terse": {
+        "fidelity": "All technical content is concrete and complete: the exact JSON shape, field names/types, an example code, and specific HTTP status mappings are all present with no vague summarization or missing pointers.",
+        "register": "This is a bulleted spec written in report/documentation grammar (full clauses, backticked field definitions, a 'match status to type' rule) rather than a quick Slack-style answer; it reads as a completed writeup, not a colleague's chat message."
+      },
+      "p17|convo": {
+        "fidelity": "No enumeration or factual claims are made to begin with \u2014 the reply only states unavailability and asks for pointers, so there's no technical content that could be lost or hedged.",
+        "register": "Short bullets, plain everyday phrasing, no report grammar or essay connectives \u2014 reads like a quick Slack reply, not a roll-call of completed work."
+      },
+      "p17|terse": {
+        "fidelity": "The reply contains no factual claims, numbers, paths, or commands to preserve\u2014it's purely a request for missing information, so there's nothing concrete to lose or hand-wave.",
+        "register": "Reads like a quick Slack reply: short lines, plain words, bullet asks, no report grammar or padding."
+      },
+      "p18|convo": {
+        "fidelity": "No enumeration was collapsed with a missing count/pointer \u2014 all listed items (bucketing key, monitoring, kill switch, segmentation) are concrete and fully present, and no facts, paths, or commands were dropped or altered.",
+        "register": "The bulleted steps use bolded phrase-lead sentences and colons ('Pick the bucketing key carefully.', 'Have a kill switch.') which read like a structured report/doc rather than a quick Slack message, and the opening sentence is long and clause-heavy rather than short chat-style phrasing."
+      },
+      "p18|terse": {
+        "fidelity": "No enumerations or specifics were dropped; the four points are self-contained best-practice statements without omitted facts, numbers, or pointers needed.",
+        "register": "Short imperative bullets with plain everyday phrasing ('set it to 10%', 'watch error rates') read like quick Slack advice, not a report or essay \u2014 no roll-call issue since this is instructional guidance, not a completed-work summary."
+      },
+      "p19|convo": {
+        "fidelity": "The reply is a compact decision rule, not an enumeration standing in for omitted specifics \u2014 every claim (pin apps, float libraries, default to pin) is stated directly with its rationale, nothing is hand-waved or pointed elsewhere.",
+        "register": "Reads like a quick Slack tip: short fragments, casual phrasing, no report/roll-call structure since it's answering a decision question, not summarizing completed work."
+      },
+      "p19|terse": {
+        "fidelity": "There's no enumeration or technical content to preserve here; the reply asks a clarifying question rather than reporting facts, so nothing concrete was lost.",
+        "register": "Short, plain question back with a quick parenthetical list of options \u2014 reads like a fast Slack reply, no report grammar or roll-call structure."
+      },
+      "p20|convo": {
+        "fidelity": "The reply contains no security-header enumeration to preserve or lose; it correctly states no data is available and asks for the repo/response data, which is a valid substantive answer rather than a hedge over existing content.",
+        "register": "Reads like a quick Slack reply\u2014casual phrasing, short sentences, and a direct ask for more info rather than a report-style rundown."
+      },
+      "p20|terse": {
+        "fidelity": "No original data existed to omit; the reply correctly states it has nothing to analyze and lists concrete example headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy) rather than being vague.",
+        "register": "Short, plain sentences with a direct ask and no report-style roll call; the example list is a brief illustrative pointer, not an inventory of completed work."
+      }
+    },
+    "first_reply_gate": 0.85,
+    "first_reply_rate": 0.631578947368421,
+    "first_scores": {
+      "p01|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p01|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p02|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p02|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p03|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p03|terse": null,
+      "p04|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p04|terse": {
+        "fidelity": false,
+        "register": true
+      },
+      "p05|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p05|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p06|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p06|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p07|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p07|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p08|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p08|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p09|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p09|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p10|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p10|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p11|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p11|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p12|convo": null,
+      "p12|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p13|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p13|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p14|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p14|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p15|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p15|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p16|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p16|terse": {
+        "fidelity": true,
+        "register": false
+      },
+      "p17|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p17|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p18|convo": {
+        "fidelity": true,
+        "register": false
+      },
+      "p18|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p19|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p19|terse": {
+        "fidelity": true,
+        "register": true
+      },
+      "p20|convo": {
+        "fidelity": true,
+        "register": true
+      },
+      "p20|terse": {
+        "fidelity": true,
+        "register": true
+      }
+    },
+    "gates": {
+      "first_reply_85pct": false,
+      "post_bounce_95pct": false
+    },
+    "post_bounce_gate": 0.95,
+    "post_bounce_rate": 0.8421052631578947,
+    "prompt_set": "evals/fixtures/manifest.json e9_prompts (20 prompts)",
+    "replies_attempted": 40,
+    "replies_scored": 38,
+    "replies_succeeded": 39,
+    "verdict": "FAIL",
+    "voices": [
+      "terse",
+      "convo"
+    ]
+  },
+  "eval": "E8+E9",
+  "model": {
+    "invocation": "claude -p --model claude-sonnet-5 --max-turns 6",
+    "judge": "claude-sonnet-5",
+    "note": "Same model id pinned for rewriter and judge, per v0.1.0 \u00a714.",
+    "rewriter": "claude-sonnet-5"
+  },
+  "release": "v0.2.0"
+}

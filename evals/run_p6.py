@@ -81,7 +81,7 @@ def tree_hashes(root, subdirs=PARITY_DIRS):
     return out
 
 
-def run_install(args, home, url=None, sha256=None, extra_env=None, path=None):
+def run_install(args, home, url=None, sha256=None, extra_env=None, path=None, script=None):
     env = dict(os.environ)
     env["HOME"] = home
     env.pop("SPEAKINGWORDS_PREFIX", None)
@@ -99,7 +99,7 @@ def run_install(args, home, url=None, sha256=None, extra_env=None, path=None):
     return subprocess.run(
         # Absolute path: the PATH-stripping tests below would otherwise hide
         # the shell itself.
-        ["/bin/sh", INSTALL_SH] + args,
+        ["/bin/sh", script or INSTALL_SH] + args,
         cwd=home,
         env=env,
         capture_output=True,
@@ -109,6 +109,25 @@ def run_install(args, home, url=None, sha256=None, extra_env=None, path=None):
 
 def make_home():
     return tempfile.mkdtemp(prefix="speakingwords-p6-home-")
+
+
+def pinless_install_sh():
+    """A copy of install.sh with the release pins blanked.
+
+    Since 41d19fb the script bakes in the published tarball URL and its SHA-256,
+    so the "no URL" / "no checksum" refusals are unreachable through env vars
+    alone (`:-` treats empty as unset). The refusals still guard the case that
+    matters — a maintainer cutting a release without setting the pins — so they
+    are tested against a copy where the pins are empty, which is exactly that
+    machine state.
+    """
+    text = open(INSTALL_SH, encoding="utf-8").read()
+    text = re.sub(r'^DEFAULT_URL=.*$', 'DEFAULT_URL=""', text, count=1, flags=re.M)
+    text = re.sub(r'^DEFAULT_SHA256=.*$', 'DEFAULT_SHA256=""', text, count=1, flags=re.M)
+    fd, path = tempfile.mkstemp(prefix="speakingwords-p6-pinless-", suffix=".sh")
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(text)
+    return path
 
 
 def app_dir(home):
@@ -327,10 +346,15 @@ def eval_checksum_refusals(tarball):
     finally:
         shutil.rmtree(home, ignore_errors=True)
 
+    # The release pins make "no URL" / "no checksum" unreachable through env
+    # vars on the shipped script, so these refusals run against a pin-blanked
+    # copy — the maintainer-forgot-the-pins machine state they exist to catch.
+    pinless = pinless_install_sh()
+
     # --- no checksum, no --insecure ---
     home = make_home()
     try:
-        proc = run_install([], home, url=url)
+        proc = run_install([], home, url=url, script=pinless)
         check("PKG", "missing checksum exits non-zero", proc.returncode != 0, proc.stdout[:200])
         check("PKG", "missing checksum points at --insecure",
               "--insecure" in proc.stderr, proc.stderr[:300])
@@ -341,7 +365,7 @@ def eval_checksum_refusals(tarball):
     # --- no URL at all: no invented default ---
     home = make_home()
     try:
-        proc = run_install([], home, sha256=digest)
+        proc = run_install([], home, sha256=digest, script=pinless)
         check("PKG", "no URL exits non-zero", proc.returncode != 0, proc.stdout[:200])
         check("PKG", "no URL explains that one must be supplied",
               "SPEAKINGWORDS_URL" in proc.stderr, proc.stderr[:300])
@@ -351,13 +375,14 @@ def eval_checksum_refusals(tarball):
     # --- --insecure is the only way through without a checksum ---
     home = make_home()
     try:
-        proc = run_install(["--insecure"], home, url=url)
+        proc = run_install(["--insecure"], home, url=url, script=pinless)
         check("PKG", "--insecure installs without a checksum",
               proc.returncode == 0, proc.stderr.strip()[:300])
         check("PKG", "--insecure says the tarball was not verified",
               "SKIPPED" in proc.stdout, proc.stdout[:300])
         check("PKG", "--insecure still lands the app tree",
               os.path.isdir(app_dir(home)))
+        os.unlink(pinless)
     finally:
         shutil.rmtree(home, ignore_errors=True)
 
@@ -418,8 +443,21 @@ def eval_install_sh_shape():
     ):
         check("PKG", "install.sh avoids the %s bashism" % label,
               re.search(pattern, text) is None)
-    check("PKG", "install.sh bakes in no default download URL",
-          'DEFAULT_URL=""' in text)
+    # Since 41d19fb the maintainer sets both pins at release time; the release
+    # gate is that they exist and agree with the version being shipped.
+    pkg_version = json.load(open(os.path.join(ROOT, "package.json")))["version"]
+    url_match = re.search(r'^DEFAULT_URL="([^"]*)"', text, flags=re.M)
+    sha_match = re.search(r'^DEFAULT_SHA256="([^"]*)"', text, flags=re.M)
+    check("PKG", "install.sh pins the published tarball for this version",
+          url_match is not None
+          and url_match.group(1)
+          == "https://registry.npmjs.org/speakingwords/-/speakingwords-%s.tgz" % pkg_version,
+          url_match.group(1) if url_match else "no DEFAULT_URL")
+    check("PKG", "install.sh pins a SHA-256 for the tarball",
+          sha_match is not None and re.fullmatch(r"[0-9a-f]{64}", sha_match.group(1) or "") is not None,
+          sha_match.group(1) if sha_match else "no DEFAULT_SHA256")
+    check("PKG", "install.sh version hint matches package.json",
+          'VERSION_HINT="%s"' % pkg_version in text)
     proc = subprocess.run(["sh", "-n", INSTALL_SH], capture_output=True, text=True)
     check("PKG", "install.sh parses under sh -n", proc.returncode == 0, proc.stderr[:300])
 
@@ -455,8 +493,10 @@ def eval_readme_reflects_reality():
     check("DOC", "README states the Codex audit-only fallback below v0.124.0",
           "v0.124.0" in readme and "audit-only" in readme)
     check("DOC", "README states the Codex trust step", "trust" in readme.lower())
+    # Whitespace-normalised: the phrase may wrap across a line break in the
+    # README source without changing what the reader sees.
     check("DOC", "README states the checksum refusal",
-          "refuses to install without a checksum" in readme)
+          "refuses to install without a checksum" in re.sub(r"[\s*]+", " ", readme))
     check("DOC", "README says memory mode is suggestive, not enforced",
           "suggestive" in readme)
 
