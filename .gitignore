@@ -9,3 +9,4 @@ hits.jsonl.1
 sessions.json
 __pycache__/
 evals/rig2/
+.claude/kermit/state.json
