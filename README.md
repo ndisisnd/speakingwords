@@ -29,6 +29,14 @@
 <b>AI agents / LLMs:</b> read <a href="llms.txt"><code>llms.txt</code></a>.
 </sub></p>
 
+<!-- mkpub:release v0.3.0 -->
+> [!NOTE]
+> **🚀 New in v0.3.0 · Write in a Simplified Technical English register, with a mode that both prevents and enforces**
+>
+> Pick an STE-inspired register at setup and every sentence is capped at 25 words, contractions are bounced, and the writing stays active and imperative — built for runbooks and readers whose first language is not English. A new "both" mode keeps the standing reminder in context and still lints every reply, without stating a rule twice.
+> Update with `npm i -g speakingwords` · [Release notes](RELEASES.md)
+<!-- /mkpub:release -->
+
 ---
 
 You pick how your agent should sound, once, and it keeps sounding that way — without you

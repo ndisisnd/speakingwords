@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 2026-08-16
+
+### [2] — Existing users see what v0.3.0 gave them, right at the top of the README
+
+- `README.md`: add an mkpub release NOTE card to the header for v0.3.0 — STE register and the prevent-and-enforce "both" mode, with an update command and a link to the release notes
+
 ## 2026-08-15
 
 ### [1] — Release-notes history is complete: readers can see what every version gave them
