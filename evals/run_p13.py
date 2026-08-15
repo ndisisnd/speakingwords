@@ -459,8 +459,11 @@ def eval_w7_register():
 
 def eval_w7_session_block():
     """The SessionStart line names the same three tells, in the same words."""
+    # v0.3.0 turned the single REGISTER_RULE constant into REGISTER_RULES, one
+    # entry per register. The Slack entry is the one this assertion is about:
+    # report grammar is what E9 caught, in the Slack register.
     hook = read(HOOK_SESSION)
-    rule = hook.split("REGISTER_RULE = (")[1].split("\n)")[0]
+    rule = hook.split('"slack": (')[1].split("\n    ),")[0]
 
     check("P13", "the session register line names report grammar",
           "No report grammar" in rule, rule[-200:])

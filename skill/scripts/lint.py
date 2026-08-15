@@ -3,8 +3,8 @@
 
 Reads an agent reply from stdin or a file argument, scans it against the strip
 rules in ../refs/lexicon.md, adds two structural checks — one voice-dependent
-(terse-prose-block), one not (long-sentence) — and prints a single JSON object
-on stdout.
+(terse-prose-block), one not (a sentence-length check, which one depending on
+the register) — and prints a single JSON object on stdout.
 
 Contract (plan assertion A6): exit 0 on clean, exit 2 on violations, never any
 other code. An internal error is never allowed to block a user's reply, so a
@@ -13,6 +13,16 @@ crash is reported on stderr and reported as clean with a "lint_error" field.
 Usage:
     python3 lint.py --voice terse reply.txt
     cat reply.txt | python3 lint.py --voice convo --conciseness high
+    python3 lint.py --register ste reply.txt
+
+--register takes slack or ste. `ste` is the register inspired by ASD-STE100
+Simplified Technical English: it turns on the register rows of the lexicon and
+swaps the Slack register's 3x35-word `long-sentence` heuristic for a flat
+25-word cap on every sentence. Anything else, and the flag's absence, behaves as
+`slack` (plan assertion A33): every install that predates the register key was a
+Slack-register install, so `slack` is the value that preserves what the user
+already had. Nothing about `ste` is conformant STE — the writing rules are
+implemented, the approved-word dictionary is not shipped and never will be.
 
 --conciseness takes low or high. `med`, the third position the dial carried
 during 0.2.0 development, is still recognised and reads as high — that is the
@@ -49,13 +59,16 @@ CACHE_SUFFIX = ".cache.json"
 # Bumped to 2 in v0.2.0: rule records grew a level set, so a v1 cache written by
 # an older install describes a different shape. Bumped to 3 in P14: the level
 # set itself changed membership when the dial dropped to two positions, so a v2
-# cache describes rows as firing at levels that no longer exist. The version
-# rides in the cache key, so an old file simply misses and is reparsed — never
-# misread.
-CACHE_VERSION = 3
+# cache describes rows as firing at levels that no longer exist. Bumped to 4 in
+# v0.3.0: every record grew a register set, and a v3 record read as a v4 one
+# would place register rows at the wrong register — the exact failure the
+# version guard exists to prevent. The version rides in the cache key, so an old
+# file simply misses and is reparsed — never misread.
+CACHE_VERSION = 4
 
 STRIP_HEADING = re.compile(r"^##\s+Strip rules\s*$", re.MULTILINE)
 CONCISENESS_HEADING = re.compile(r"^##\s+Conciseness rules\s*$", re.MULTILINE)
+REGISTER_HEADING = re.compile(r"^##\s+Register rules\s*$", re.MULTILINE)
 NEXT_HEADING = re.compile(r"^##\s+", re.MULTILINE)
 
 # The conciseness dial (plan §2 W2). Voice says what shape a reply takes; the
@@ -70,6 +83,29 @@ LEGACY_LEVELS = {"med": "high"}
 DEFAULT_LEVEL = "high"
 # Strip rules are level-independent: a banned phrase is banned at every level.
 ALL_LEVELS = frozenset(LEVELS)
+
+# The register axis (plan v0.3.0 W5). Voice says what shape a reply takes, the
+# level says how much of it survives, the register says how the sentences are
+# built. `ste` is inspired by ASD-STE100 Simplified Technical English and
+# implements its writing rules only; the approved-word dictionary is ASD's
+# copyright and is not shipped, reproduced or approximated anywhere in this
+# tree. `slack` is the register every install behaved as before this key
+# existed, which is why it is both the default and the fallback (A33).
+REGISTERS = ("slack", "ste")
+DEFAULT_REGISTER = "slack"
+# Strip, conciseness and language rules are register-neutral: the register
+# governs how sentences are built, never which words are banned.
+ALL_REGISTERS = frozenset(REGISTERS)
+
+# The STE sentence cap. ASD-STE100 caps procedural sentences at 20 words and
+# descriptive ones at 25; nothing here can tell a procedure from a description,
+# so the looser number applies to both (plan §8, resolved). One conservative cap
+# beats a classifier that would bounce good replies on a guess.
+STE_SENTENCE_WORDS = 25
+
+# Inline code spans. Register rows read the reply with its code taken out, so a
+# rule about sentence construction never fires on a command or a quoted snippet.
+INLINE_CODE = re.compile(r"`[^`\n]*`")
 
 # Lines that are structurally not prose: bullets, numbered items, headings,
 # quotes, table rows, fence markers, horizontal rules.
@@ -108,6 +144,36 @@ def normalise_level(value):
     if candidate in LEVELS:
         return candidate
     return LEGACY_LEVELS.get(candidate, DEFAULT_LEVEL)
+
+
+def normalise_register(value):
+    """Coerce anything at all into one of the two shipped registers.
+
+    Absence and nonsense both land on DEFAULT_REGISTER rather than raising
+    (A33), exactly as normalise_level() lands on DEFAULT_LEVEL. The fallback is
+    `slack` because every install written before the register key existed was a
+    Slack-register install: a bad value is a reason to lint at the register the
+    user already had, never a reason to change their register for them.
+    """
+    if not isinstance(value, str):
+        return DEFAULT_REGISTER
+    candidate = value.strip().lower()
+    return candidate if candidate in REGISTERS else DEFAULT_REGISTER
+
+
+def parse_registers(cell):
+    """Read an `active at register` cell into the set of registers a row fires at.
+
+    An unreadable or empty cell yields {ste} only, and the asymmetry with
+    parse_levels() is deliberate. A rule nobody can place must not reach the
+    register every existing install runs, because that would change behaviour
+    nobody asked to change. It goes to the newer, stricter register instead.
+    """
+    found = set()
+    for token in re.split(r"[,\s/]+", (cell or "").lower()):
+        if token in REGISTERS:
+            found.add(token)
+    return frozenset(found) if found else frozenset(("ste",))
 
 
 def parse_levels(cell):
@@ -162,14 +228,19 @@ def _rows(section):
         yield merged
 
 
-def _parse_table(section, path, levels_column, seen):
-    """Compile one rule table into (rule_id, pattern, severity, levels) tuples.
+def _parse_table(section, path, levels_column, seen, registers_column=None):
+    """Compile one table into (id, pattern, severity, levels, registers, code_exempt).
 
     `levels_column` is the index of the `active at` cell, or None for a table
     whose rows fire at every level (the strip table: a banned phrase is banned
     regardless of how much text the user wants to survive).
+
+    `registers_column` is the index of the `active at register` cell, or None
+    for a table whose rows fire at every register (strip and conciseness rows:
+    the register governs sentence construction, not vocabulary).
     """
-    width = 4 if levels_column is None else levels_column + 2
+    gated = [c for c in (levels_column, registers_column) if c is not None]
+    width = 4 if not gated else max(gated) + 2
     rules = []
     for cells in _rows(section):
         if len(cells) < width:
@@ -193,7 +264,13 @@ def _parse_table(section, path, levels_column, seen):
         except re.error as exc:
             raise LexiconError("bad pattern for %s: %s" % (rule_id, exc))
         levels = ALL_LEVELS if levels_column is None else parse_levels(cells[levels_column])
-        rules.append((rule_id, compiled, severity, levels))
+        registers = (ALL_REGISTERS if registers_column is None
+                     else parse_registers(cells[registers_column]))
+        # Code exemption is a property of the table a row came from, not of the
+        # registers it happens to name. A register row would still read the
+        # code-free text if someone wrote `slack, ste` in its cell.
+        rules.append((rule_id, compiled, severity, levels, registers,
+                      registers_column is not None))
     return rules
 
 
@@ -201,13 +278,16 @@ def parse_rules(path=LEXICON_PATH):
     """Parse the rule tables out of lexicon.md.
 
     The lexicon is the single source of truth; nothing is hardcoded here.
-    Returns a list of (rule_id, compiled_pattern, severity, levels), where
-    `levels` is the frozenset of conciseness levels the row fires at. Strip
-    rules carry every level; conciseness rows carry whatever their `active at`
-    column says.
+    Returns a list of (rule_id, compiled_pattern, severity, levels, registers,
+    code_exempt), where `levels` is the frozenset of conciseness levels the row fires at and
+    `registers` the frozenset of registers. Strip rules carry every level and
+    every register; conciseness rows carry whatever their `active at` column
+    says, at every register; register rows carry every level, at whatever their
+    `active at register` column says.
 
-    The conciseness section is optional. A 0.1.0 lexicon that predates it still
-    parses, and still lints exactly as it always did.
+    Both gated sections are optional. A 0.1.0 lexicon that predates the
+    conciseness table, or a 0.2.0 one that predates the register table, still
+    parses and still lints exactly as it always did.
     """
     try:
         with open(path, "r", encoding="utf-8") as fh:
@@ -225,6 +305,10 @@ def parse_rules(path=LEXICON_PATH):
     conciseness = _section(text, CONCISENESS_HEADING, path, required=False)
     if conciseness:
         rules.extend(_parse_table(conciseness, path, 3, seen))
+
+    register = _section(text, REGISTER_HEADING, path, required=False)
+    if register:
+        rules.extend(_parse_table(register, path, None, seen, registers_column=3))
     return rules
 
 
@@ -257,12 +341,14 @@ def read_cache(path):
         if not isinstance(payload, dict) or payload.get("key") != cache_key(path):
             return None
         rules = []
-        for rule_id, pattern, severity, levels in payload["rules"]:
+        for rule_id, pattern, severity, levels, registers, code_exempt in payload["rules"]:
             rules.append((
                 rule_id,
                 re.compile(pattern, re.IGNORECASE | re.MULTILINE),
                 severity,
                 frozenset(levels),
+                frozenset(registers),
+                bool(code_exempt),
             ))
         return rules or None
     except Exception:
@@ -280,11 +366,12 @@ def write_cache(path, rules):
     tmp = "%s.%d.tmp" % (target, os.getpid())
     payload = {
         "key": cache_key(path),
-        # Levels are written as a sorted list so the same lexicon always
-        # produces byte-identical cache bytes.
+        # Levels and registers are written as sorted lists so the same lexicon
+        # always produces byte-identical cache bytes.
         "rules": [
-            [rule_id, pattern.pattern, severity, sorted(levels)]
-            for rule_id, pattern, severity, levels in rules
+            [rule_id, pattern.pattern, severity, sorted(levels), sorted(registers),
+             bool(code_exempt)]
+            for rule_id, pattern, severity, levels, registers, code_exempt in rules
         ],
     }
     try:
@@ -329,10 +416,21 @@ def strip_code_fences(text):
     return "\n".join(out)
 
 
+def strip_code(text):
+    """Blank out fenced blocks and inline backtick spans.
+
+    The reading register rows get: a rule about how sentences are written must
+    never fire on a command, a path or a quoted snippet, because that text is
+    content the user has to keep verbatim. Strip rules do not use this path —
+    a banned word is banned wherever it appears.
+    """
+    return INLINE_CODE.sub(" ", strip_code_fences(text))
+
+
 def scan_strip_rules(text, rules):
     violations = []
     total = 0
-    for rule_id, pattern, severity, _levels in rules:
+    for rule_id, pattern, severity, _levels, _registers, _exempt in rules:
         count = 0
         for match in pattern.finditer(text):
             if total >= MAX_TOTAL_MATCHES or count >= MAX_MATCHES_PER_RULE:
@@ -424,6 +522,35 @@ def check_long_sentences(text):
     ]
 
 
+def check_ste_long_sentences(text):
+    """Flag every prose sentence over the STE cap. The `ste` register only.
+
+    This replaces check_long_sentences() rather than joining it. The Slack
+    register asks whether the reply reads like an essay, so it counts a pattern
+    of long sentences and forgives one or two. STE asks whether each individual
+    sentence can be read once and acted on, so there is no allowance: one
+    sentence over the cap is one violation, reported by itself.
+
+    Exemptions come through the same prose_blocks() path both other structural
+    checks use, so code fences, tables, quotes, headings and bullets are never
+    counted. A bullet is exempt as a line, not as content — the cap applies to
+    the prose the reader reads as sentences.
+    """
+    violations = []
+    for joined in prose_blocks(text):
+        for sentence in SENTENCE_SPLIT.split(joined):
+            sentence = sentence.strip()
+            if len(sentence.split()) > STE_SENTENCE_WORDS:
+                violations.append({
+                    "rule": "ste-long-sentence",
+                    "match": sentence[:MATCH_SNIPPET_CHARS],
+                    "severity": "warn",
+                })
+            if len(violations) >= MAX_MATCHES_PER_RULE:
+                return violations
+    return violations
+
+
 def read_input(argv_path):
     if argv_path:
         with open(argv_path, "r", encoding="utf-8", errors="replace") as fh:
@@ -434,6 +561,7 @@ def read_input(argv_path):
 def parse_args(argv):
     voice = "convo"
     conciseness = DEFAULT_LEVEL
+    register = DEFAULT_REGISTER
     path = None
     i = 0
     while i < len(argv):
@@ -450,6 +578,13 @@ def parse_args(argv):
             conciseness = argv[i] if i < len(argv) else DEFAULT_LEVEL
         elif arg.startswith("--conciseness="):
             conciseness = arg.split("=", 1)[1]
+        elif arg == "--register":
+            # A trailing `--register` with no value is treated as no value at
+            # all, which is DEFAULT_REGISTER — the same answer a bad value gets.
+            i += 1
+            register = argv[i] if i < len(argv) else DEFAULT_REGISTER
+        elif arg.startswith("--register="):
+            register = arg.split("=", 1)[1]
         elif arg in ("-h", "--help"):
             sys.stderr.write(__doc__)
             raise SystemExit(EXIT_CLEAN)
@@ -458,42 +593,62 @@ def parse_args(argv):
         i += 1
     if voice not in ("terse", "convo"):
         voice = "convo"
-    return voice, normalise_level(conciseness), path
+    return voice, normalise_level(conciseness), normalise_register(register), path
 
 
-def lint(text, voice, rules, conciseness=DEFAULT_LEVEL):
-    """Every violation in `text` at this voice and this conciseness level.
+def lint(text, voice, rules, conciseness=DEFAULT_LEVEL, register=DEFAULT_REGISTER):
+    """Every violation in `text` at this voice, level and register.
 
-    The level filters the rule set before the scan: a row only fires when its
-    `active at` column names the level in play. Strip rules carry every level,
-    so they fire whatever the dial says — the level governs how much
-    padding survives, never whether a banned phrase is allowed back in.
+    The level and the register both filter the rule set before the scan: a row
+    only fires when its `active at` column names the level in play and its
+    `active at register` column names the register. Strip rules carry every
+    level and every register, so they fire whatever the dial and the register
+    say — those axes govern how much padding survives and how sentences are
+    built, never whether a banned phrase is allowed back in.
+
+    The two sentence-length checks are a swap, not a stack. Exactly one runs:
+    the Slack register's essay-grammar heuristic at `slack`, the flat 25-word
+    cap at `ste`. Running both would report the same sentence twice and give
+    the rewrite two different targets to hit.
     """
     level = normalise_level(conciseness)
-    active = [rule for rule in rules if level in rule[3]]
-    violations = scan_strip_rules(text, active)
-    # Register is voice-independent and level-independent: a colleague in a DM
-    # writes short sentences whatever shape the answer takes and however much
-    # of it survives.
-    violations.extend(check_long_sentences(text))
+    reg = normalise_register(register)
+    active = [rule for rule in rules if level in rule[3] and reg in rule[4]]
+    register_rows = [rule for rule in active if rule[5]]
+    plain_rows = [rule for rule in active if not rule[5]]
+
+    violations = scan_strip_rules(text, plain_rows)
+    # Register rows read the reply with its code taken out, so a contraction in
+    # a shell command is never a violation.
+    if register_rows:
+        violations.extend(scan_strip_rules(strip_code(text), register_rows))
+
+    # Sentence length is voice-independent and level-independent: a register
+    # decides how sentences are built whatever shape the answer takes and
+    # however much of it survives.
+    violations.extend(
+        check_ste_long_sentences(text) if reg == "ste" else check_long_sentences(text)
+    )
     if voice == "terse":
         violations.extend(check_terse_structure(text))
     return violations
 
 
 def main(argv):
-    voice, conciseness, path = parse_args(argv)
+    voice, conciseness, register, path = parse_args(argv)
     text = read_input(path)
     rules = read_rules()
-    violations = lint(text, voice, rules, conciseness)
+    violations = lint(text, voice, rules, conciseness, register)
     verdict = "violations" if violations else "clean"
-    # The level is echoed back so a caller can see which one actually applied
-    # after the fallback, rather than guessing at what it asked for.
+    # The level and the register are echoed back so a caller can see which ones
+    # actually applied after the fallback, rather than guessing at what it asked
+    # for.
     sys.stdout.write(
         json.dumps({
             "verdict": verdict,
             "violations": violations,
             "conciseness": normalise_level(conciseness),
+            "register": normalise_register(register),
         }) + "\n"
     )
     return EXIT_VIOLATIONS if violations else EXIT_CLEAN

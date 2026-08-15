@@ -1,0 +1,1 @@
+The scheduler moves the job into the dead-letter queue after the third failed attempt and then waits for an operator to read it right now.

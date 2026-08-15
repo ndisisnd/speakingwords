@@ -101,6 +101,47 @@ level, which is exactly why the `active at` column exists.
 | conc-to-summarize | `^\s*To summari[sz]e\b` | warn | high | Essay scaffolding. Lead with the summary rather than announcing one. Anchored to line start so "used to summarize the log" is safe. |
 | conc-simply-put | `^\s*Simply put,` | warn | high | Framing phrase that adds no content. Anchored and comma-gated so the instruction "simply put the file in /tmp" is safe. Only `high` cuts this hard. |
 
+## How the register table is read
+
+- Every row of the table under `## Register rules` is one rule, and the columns
+  are fixed and ordered: `id`, `pattern`, `severity`, `active at register`,
+  `guidance`. Same pattern dialect as the tables above (backticks, `IGNORECASE`,
+  `MULTILINE`, `\|` for a literal pipe).
+- `active at register` lists the registers where the row fires, drawn from
+  `slack` and `ste`. Membership is literal, exactly like the conciseness column.
+- `lint.py --register <value>` picks the register. An unknown or missing
+  register behaves as `slack`. Every install that predates the register key was
+  a Slack-register install, so `slack` is the value that preserves what the user
+  already had.
+- A row with an unreadable `active at register` cell falls back to `ste` only.
+  The rule nobody can place goes to the newer, stricter register, never to the
+  one every existing install runs — widening a rule's reach is how a false
+  positive reaches a user who never asked for it.
+- The register is a swap, not an extra layer. At `ste` these rows fire and
+  `lang-slack-register` is off; at `slack` these rows are silent and nothing
+  else changes. Strip rules, language rules and conciseness rules are
+  register-neutral and run the same way at both.
+- Register rows read the reply with its code taken out. Fenced blocks and
+  inline backtick spans are blanked first, so a rule about how sentences are
+  written can never fire on a command, a path or a quoted snippet. Strip rules
+  still read the raw text, as they always have.
+- The `ste` register is **inspired by** ASD-STE100 Simplified Technical English.
+  It implements writing rules only. It ships no approved-word dictionary, and
+  output from it is not conformant STE.
+
+## Register rules
+
+Sentence construction, not vocabulary. These rows only fire at `ste`, where the
+reader is often working in a second language and a procedure has to read the
+same way every time.
+
+The sentence-length cap is not in this table. It is a structural check, like
+`long-sentence`, so it lives with the structural rules below.
+
+| id | pattern | severity | active at register | guidance |
+|----|---------|----------|--------------------|----------|
+| ste-contraction | `\b(?:can\|don\|doesn\|didn\|isn\|aren\|wasn\|weren\|hasn\|haven\|hadn\|won\|couldn\|shouldn\|wouldn\|mustn\|ain)['’]t\b\|\b(?:it\|that\|there\|what\|here\|he\|she\|who\|let)['’]s\b\|\bI['’](?:m\|ve\|d\|ll)\b\|\b(?:we\|you\|they)['’](?:re\|ve\|ll\|d)\b` | warn | ste | Contractions are out at `ste`: write "do not", "it is", "we will". The pattern enumerates the verb forms one by one and never matches a bare apostrophe, so "the pump's seal" and "the operators' manual" stay clean. The `'s` forms are the honest edge: `it's`, `that's`, `there's`, `what's`, `here's`, `he's`, `she's`, `who's` and `let's` are listed because a following noun cannot be told from a following verb by pattern. They are safe to list anyway — each of those words takes `its`, `whose` or no possessive at all, so a possessive reading of the listed forms does not exist. Any other `'s` is left alone. Code is exempt: fenced blocks and inline backtick spans are blanked before this row runs, so a contraction inside quoted code or a shell command is never a violation. |
+
 ## Language rules
 
 Probabilistic. A regex cannot judge these, so the rewrite skill applies them by reading.
@@ -127,9 +168,12 @@ today.
 
 ## Structural rules
 
-Applied by `lint.py`, not by the tables above. One is voice-dependent, one is not.
+Applied by `lint.py`, not by the tables above. One is voice-dependent, two are
+not. The two sentence-length rules are the same rule at two settings: exactly
+one of them runs, and the installed register picks which.
 
 | id | applies to | rule |
 |----|-----------|------|
 | terse-prose-block | terse voice only | A paragraph of more than two consecutive non-bullet sentences is a prose block. Terse voice is point-form only, so rewrite it as bullets. Code fences, headings, tables and bullet lists are exempt. Convo voice never triggers this rule — prose is retained and brevity is not forced. |
-| long-sentence | both voices | Three or more prose sentences of over 35 words each. One long sentence is style; three is essay grammar, which is what the Slack register rules out. The threshold is deliberately high — a false positive bounces a good reply. Exempt through the same path as `terse-prose-block`: code fences, tables, quotes, headings and bullets are not counted. |
+| long-sentence | both voices, `slack` register only | Three or more prose sentences of over 35 words each. One long sentence is style; three is essay grammar, which is what the Slack register rules out. The threshold is deliberately high — a false positive bounces a good reply. Exempt through the same path as `terse-prose-block`: code fences, tables, quotes, headings and bullets are not counted. |
+| ste-long-sentence | both voices, `ste` register only | One prose sentence of over 25 words. Every sentence counts, and there is no allowance: at `ste` a long sentence is the violation, not a pattern of them. ASD-STE100 caps procedural sentences at 20 words and descriptive ones at 25; a linter cannot tell the two apart, so the looser cap applies to both — a false positive bounces a good reply, which is the worse failure. Replaces `long-sentence` at this register; the two never run together. Exempt through the same path: code fences, tables, quotes, headings and bullets are not counted. |

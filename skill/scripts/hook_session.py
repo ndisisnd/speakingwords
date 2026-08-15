@@ -79,14 +79,34 @@ SOURCE_KEYS = ("source", "trigger")
 # right before the reply is written, not after it bounces. The three report-
 # grammar tells are the ones E9 actually caught (patch1 §2 W7), named here in the
 # same words SKILL.md uses, so prevention and enforcement cannot drift apart.
-REGISTER_RULE = (
-    "Register: write like a colleague in a Slack DM. Short sentences, everyday "
-    "words, contractions where they read naturally. Technical terms stay — it is "
-    "the grammar around them that stays simple, not the vocabulary of the domain. "
-    "No essay connectives (furthermore, moreover, thus, hence, whilst, prior to). "
-    "No report grammar: no bolded section headers, no labelled bullets "
-    "(Cause: / Fix:), no roll-call lists."
-)
+REGISTER_RULES = {
+    "slack": (
+        "Register: write like a colleague in a Slack DM. Short sentences, everyday "
+        "words, contractions where they read naturally. Technical terms stay — it is "
+        "the grammar around them that stays simple, not the vocabulary of the domain. "
+        "No essay connectives (furthermore, moreover, thus, hence, whilst, prior to). "
+        "No report grammar: no bolded section headers, no labelled bullets "
+        "(Cause: / Fix:), no roll-call lists."
+    ),
+    # The STE-inspired register. Same slot, opposite discipline: this reader is
+    # often working in a second language, so the sentence is built to be read
+    # once and acted on. Writing rules only — no approved-word dictionary is
+    # shipped or implied, and output from this register is not conformant STE.
+    # The line is written in the register it prescribes, because an instruction
+    # that breaks its own rule teaches the wrong thing by example.
+    "ste": (
+        "Register: write in Simplified Technical English (STE-inspired). Use short "
+        "sentences of 25 words or fewer. Do not use contractions: write \"do not\", "
+        "\"it is\", \"we will\". Use the active voice. Give an instruction as an "
+        "imperative. Give one instruction in one sentence. Keep the articles: write "
+        "\"install the pump\", not \"install pump\". Keep technical terms exactly as "
+        "they are."
+    ),
+}
+
+# Registers this reader understands. A missing or unknown value reads as
+# `slack`, the register every install had before this key existed.
+DEFAULT_REGISTER = "slack"
 
 VOICE_RULES = {
     "terse": (
@@ -157,6 +177,20 @@ def voice_of(pref):
     return voice if voice in VOICE_RULES else "convo"
 
 
+def register_of(pref):
+    """The installed register, or `slack` when the key is missing or unknown.
+
+    Same fallback as lint.py and hook_stop.py (A33). The injector states the
+    register the linter will enforce, so a disagreement here would be prevention
+    teaching one contract and enforcement checking another.
+    """
+    register = pref.get("register")
+    if not isinstance(register, str):
+        return DEFAULT_REGISTER
+    candidate = register.strip().lower()
+    return candidate if candidate in REGISTER_RULES else DEFAULT_REGISTER
+
+
 def conciseness_of(pref):
     """The installed level, or `high` when the key is missing or legacy.
 
@@ -185,7 +219,8 @@ def build_block(pref):
     """
     voice = voice_of(pref)
     level = conciseness_of(pref)
-    rules = [REGISTER_RULE, VOICE_RULES[voice], CONCISENESS_RULES[level]]
+    rules = [REGISTER_RULES[register_of(pref)], VOICE_RULES[voice],
+             CONCISENESS_RULES[level]]
     if level in FUNCTION_RULE:
         rules.append(FUNCTION_RULE[level])
     return "\n".join([

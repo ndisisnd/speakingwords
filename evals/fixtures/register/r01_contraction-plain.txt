@@ -1,0 +1,3 @@
+The worker won't restart because the socket file is stale.
+
+It's a leftover from the crash, and you can't reuse it. Delete the file, then start the service again.

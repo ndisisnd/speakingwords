@@ -7,3 +7,4 @@ hits.jsonl.1
 .serena/
 .claude/
 sessions.json
+__pycache__/

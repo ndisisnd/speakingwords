@@ -80,10 +80,11 @@ speakingwords status      # shows what the linter has caught (hook mode)
 
 ---
 
-## The two decisions
+## The decisions
 
-`init` asks four questions — mode, agent + scope, voice, conciseness — and then prints
-exactly what it wrote and where.
+`init` asks five questions — mode, agent + scope, voice, conciseness, register — and then
+prints exactly what it wrote and where. `speakingwords init --defaults` takes every
+default and asks nothing.
 
 ### Mode: how hard the rules are enforced
 
@@ -150,6 +151,38 @@ Upgrading from 0.1.0 keeps the behaviour you already had: a `pref.json` with no
 
 Both voices obey the same language rules. Switching voice changes the *shape* of a reply,
 never the standard of the language.
+
+### Register: how the sentences are built
+
+Voice says what shape a reply takes. Conciseness says how much of it there is. Register
+says how the sentences themselves are built. Three independent axes — any voice pairs with
+any level and any register.
+
+| Register | Character |
+|----------|-----------|
+| **slack** | Colleague in a DM. Short sentences, everyday words, contractions where they read naturally. |
+| **ste** | STE-inspired. Maximum 25 words a sentence, no contractions, active voice, imperative instructions, articles kept. |
+
+`ste` is for procedures, runbooks and operator-facing docs — especially for readers whose
+first language is not English. Two rules are enforced by the linter: `ste-contraction`
+bounces "don't" and leaves "the pump's seal" alone, and `ste-long-sentence` bounces any
+sentence over 25 words. The rest — active voice, one instruction a sentence, keeping the
+articles — is stated in the contract the model reads, because a passive-voice regex is a
+false-positive machine and a false positive bounces a good reply.
+
+**STE-inspired, not STE-conformant.** ASD-STE100 is the aerospace industry's controlled
+English standard. Its writing rules are implementable and that is what ships here. Its
+approved-word dictionary is ASD's copyright: it is **not** shipped, reproduced or
+approximated anywhere in this repository, and output from this register is not certified
+STE. The specification is free to download from the issuing body at
+[asd-ste100.org](https://asd-ste100.org/). Read it there.
+
+The cap is 25 words flat. The real standard uses 20 words for procedures and 25 for
+descriptions; nothing here can tell a procedure from a description, so the looser number
+applies to both.
+
+Upgrading from 0.2.0 or earlier keeps the behaviour you already had: a `pref.json` with no
+`register` key reads as `slack`, which is what every install before 0.3.0 behaved as.
 
 ### Scope
 
@@ -257,7 +290,8 @@ speakingwords unhook [--yes]   remove hook wiring (alias: unset)
 ### init
 
 ```sh
-speakingwords init                                  # asks four questions
+speakingwords init                                  # asks five questions
+speakingwords init --defaults                       # takes every default, asks nothing
 speakingwords init --hook --agent claude --scope global --voice terse --conciseness high
 ```
 
@@ -268,12 +302,15 @@ speakingwords init --hook --agent claude --scope global --voice terse --concisen
 | `--scope` | `local` · `global` |
 | `--voice` | `terse` · `convo` |
 | `--conciseness` | `low` · `high` (legacy `med` reads as `high`) |
+| `--register` | `slack` · `ste` |
+| `--defaults` | take every default and ask nothing |
 
 Passing them all skips every question, which is what makes it scriptable. A command line
 that already answers mode, agent, scope and voice is treated as a script and takes the
-default level rather than being asked a brand-new question, so 0.1.0 install scripts keep
-working untouched. Re-running `init`
-replaces the memory block in place rather than adding a second one.
+default level and default register rather than being asked a brand-new question, so 0.1.0
+and 0.2.0 install scripts keep working untouched. `--defaults` does the same thing on
+purpose rather than by inference, and any flag passed alongside it still wins. Re-running
+`init` replaces the memory block in place rather than adding a second one.
 
 ### status
 
@@ -296,6 +333,9 @@ Tune the rules from plain English. Say what you want **less** of or **more** of:
 speakingwords update "less emoji"
 speakingwords update "no game-changer, stop saying dive into"
 speakingwords update "more robust"          # allow a word again
+speakingwords update "more concise"         # move the conciseness level up
+speakingwords update "simplified technical english"   # switch to the ste register
+speakingwords update "back to slack register"         # and switch back
 ```
 
 `less X` · `no X` · `stop saying X` · `ban X` · `avoid X` → adds a strip rule.

@@ -383,5 +383,26 @@
     "How should I roll this flag out to 10% of traffic?",
     "Should this dependency be pinned or floated?",
     "Which security headers are missing from the responses?"
-  ]
+  ],
+  "register": {
+    "planted": {
+      "ste-contraction": [
+        "r01_contraction-plain.txt",
+        "r02_contraction-forms.txt"
+      ],
+      "ste-long-sentence": [
+        "r03_long-sentence-26.txt"
+      ]
+    },
+    "controls": {
+      "ste-contraction": [
+        "rc01_possessive-control.txt",
+        "rc02_code-control.txt"
+      ],
+      "ste-long-sentence": [
+        "rc03_long-sentence-25.txt",
+        "rc04_exempt-control.txt"
+      ]
+    }
+  }
 }

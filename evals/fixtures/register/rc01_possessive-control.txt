@@ -1,0 +1,3 @@
+The pump's seal is intact. The operators' manual covers the reset procedure.
+
+Check the server's uptime and the queue's depth. The team's runbook lists both.

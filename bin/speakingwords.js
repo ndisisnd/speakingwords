@@ -49,6 +49,10 @@ function parseArgs(argv) {
       // The third mode gets a bare flag like the other two, so a script picking
       // it reads the same as a script picking either half.
       flags.mode = 'both';
+    } else if (arg === '--defaults') {
+      // Boolean like `--yes`, and for the same reason: it answers questions
+      // rather than taking a value, so it must not swallow the next argument.
+      flags.defaults = true;
     } else if (arg === '-y' || arg === '--yes') {
       // Boolean, so it must not swallow the next argument as its value.
       flags.yes = true;
@@ -131,6 +135,14 @@ async function cmdInit(flags) {
   const givenScope = oneOf('scope', flags.scope, ['local', 'global']);
   const givenVoice = oneOf('voice', flags.voice, ['terse', 'convo']);
   const givenConciseness = concisenessFlag(flags.conciseness);
+  const givenRegister = oneOf('register', flags.register, pref.REGISTERS);
+
+  // `--defaults` answers every question with the value the interactive prompt
+  // already suggests, and asks nothing. It is for scripts, piped installs and
+  // anyone who wants the shipped setup without five prompts. Flags still win
+  // wherever they are given, so a partly specified command line is legal:
+  // `init --defaults --voice convo` takes convo and defaults the rest.
+  const useDefaults = Boolean(flags.defaults);
 
   // A command line that already answers mode, agent, scope and voice is a
   // script, not a conversation. Asking it a brand-new fourth question would
@@ -141,6 +153,7 @@ async function cmdInit(flags) {
 
   // --- Question 1: mode ---
   let mode = givenMode;
+  if (!mode && useDefaults) mode = 'memory';
   if (!mode) {
     mode = await prompts.choose('How should the style contract be enforced?', [
       {
@@ -192,7 +205,9 @@ async function cmdInit(flags) {
       }
     }
 
-    const picked = await prompts.choose(
+    // The first option is the suggested one, so `--defaults` takes it without
+    // asking — same answer the interactive default would have given.
+    const picked = useDefaults ? options[0].value : await prompts.choose(
       'Which agent, and this project only or everywhere?',
       options,
       options[0].value
@@ -204,6 +219,7 @@ async function cmdInit(flags) {
 
   // --- Question 3: voice ---
   let voice = givenVoice;
+  if (!voice && useDefaults) voice = 'terse';
   if (!voice) {
     voice = await prompts.choose('Which voice?', [
       { value: 'terse', label: 'terse', hint: 'point form only, brevity wins every trade-off' },
@@ -217,26 +233,40 @@ async function cmdInit(flags) {
   // and not one merged picker (plan §8).
   let conciseness = givenConciseness;
   if (!conciseness) {
-    conciseness = scripted ? pref.DEFAULT_LEVEL : await prompts.choose('How concise?', [
+    conciseness = (scripted || useDefaults) ? pref.DEFAULT_LEVEL : await prompts.choose('How concise?', [
       { value: 'low', label: 'low', hint: 'prose intact; only filler and restatement go' },
       { value: 'high', label: 'high', hint: 'every sentence earns its place; elaborations cut' },
     ], pref.DEFAULT_LEVEL);
+  }
+
+  // --- Question 5: register ---
+  // The third axis. Voice says what shape a reply takes, conciseness says how
+  // much of it survives, register says how the sentences are built. Two choices
+  // only, and `slack` is the default because it is what every install behaved
+  // as before this question existed (plan v0.3.0 §8).
+  let register = givenRegister;
+  if (!register) {
+    register = (scripted || useDefaults) ? pref.DEFAULT_REGISTER : await prompts.choose('Which register?', [
+      { value: 'slack', label: 'slack', hint: 'colleague in a DM; contractions read naturally' },
+      { value: 'ste', label: 'ste', hint: 'STE-inspired: max 25 words a sentence, no contractions, imperative instructions' },
+    ], pref.DEFAULT_REGISTER);
   }
 
   // --- Write ---
   const agentIds = agentsFor(agentSel);
 
   if (mode === 'hook' || mode === 'both') {
-    return installHookMode({ agentIds, scope, voice, conciseness, version, cwd, mode });
+    return installHookMode({ agentIds, scope, voice, conciseness, register, version, cwd, mode });
   }
 
-  const { block, results } = writeMemoryLayer({ agentIds, scope, voice, conciseness, version, cwd });
-  const prefFile = pref.writePref({ agents: agentIds, mode, scope, voice, conciseness, version });
+  const { block, results } = writeMemoryLayer({ agentIds, scope, voice, conciseness, register, version, cwd });
+  const prefFile = pref.writePref({ agents: agentIds, mode, scope, voice, conciseness, register, version });
 
   // --- Summary: say exactly what was written where ---
   const lines = [
     '',
-    `speakingwords ${version} installed — memory mode, ${voice} voice, ${conciseness} conciseness.`,
+    `speakingwords ${version} installed — memory mode, ${voice} voice, `
+    + `${conciseness} conciseness, ${register} register.`,
     '',
   ];
   for (const result of results) {
@@ -259,8 +289,8 @@ async function cmdInit(flags) {
 // One renderer, one block, whichever mode asked for it. `both` gets the same
 // bytes memory mode gets — the block is not a summary of the hook, it is the
 // same contract stated where the model reads it every session.
-function writeMemoryLayer({ agentIds, scope, voice, conciseness, version, cwd }) {
-  const block = memory.renderBlock({ voice, conciseness, version });
+function writeMemoryLayer({ agentIds, scope, voice, conciseness, register, version, cwd }) {
+  const block = memory.renderBlock({ voice, conciseness, register, version });
   const results = agentIds.map((id) =>
     memory.writeBlock(adapters.memoryTarget(id, scope, cwd), block)
   );
@@ -282,7 +312,7 @@ function writeMemoryLayer({ agentIds, scope, voice, conciseness, version, cwd })
 // contract in context every session, so the injector would state it a second
 // time — the one thing `both` must never do (A31). Prevention stays with the
 // block, enforcement stays with the Stop hook, and no rule text is duplicated.
-function installHookMode({ agentIds, scope, voice, conciseness, version, cwd, mode = 'hook' }) {
+function installHookMode({ agentIds, scope, voice, conciseness, register, version, cwd, mode = 'hook' }) {
   const both = mode === 'both';
   const wantsCodex = agentIds.includes('codex');
 
@@ -314,7 +344,7 @@ function installHookMode({ agentIds, scope, voice, conciseness, version, cwd, mo
   hooks.installSkillCore(agentIds, skillRoot);
 
   const memoryLayer = both
-    ? writeMemoryLayer({ agentIds, scope, voice, conciseness, version, cwd })
+    ? writeMemoryLayer({ agentIds, scope, voice, conciseness, register, version, cwd })
     : null;
 
   const injector = !both;
@@ -329,7 +359,7 @@ function installHookMode({ agentIds, scope, voice, conciseness, version, cwd, mo
   }
 
   const prefFile = pref.writePref({
-    agents: agentIds, mode, scope, voice, conciseness, version,
+    agents: agentIds, mode, scope, voice, conciseness, register, version,
   });
 
   // --- Summary: say exactly what was wired where, per agent ---
@@ -337,7 +367,7 @@ function installHookMode({ agentIds, scope, voice, conciseness, version, cwd, mo
   const lines = [
     '',
     `speakingwords ${version} installed — ${mode} mode, ${voice} voice, `
-    + `${conciseness} conciseness, ${label}.`,
+    + `${conciseness} conciseness, ${register} register, ${label}.`,
     '',
   ];
 

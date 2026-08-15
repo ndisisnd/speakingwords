@@ -1,0 +1,12 @@
+Three settings changed.
+
+- The scheduler moves the job into the dead-letter queue after the third failed attempt and then waits for an operator to read the record and act.
+- The retry budget is three.
+
+| setting | value |
+|---------|-------|
+| retry budget with a very long descriptive label that runs past the cap on purpose to prove that a table row is never counted as prose | 3 |
+
+```sh
+echo "the scheduler moves the job into the dead-letter queue after the third failed attempt and then waits for an operator to read the record"
+```

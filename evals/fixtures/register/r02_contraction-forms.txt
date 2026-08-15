@@ -1,0 +1,3 @@
+We're going to keep the old index. They've measured the rewrite and I'd rather not pay for it twice.
+
+Let's park the change until the next release. You'll see the plan in the tracker.

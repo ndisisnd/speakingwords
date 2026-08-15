@@ -237,13 +237,14 @@ function evalCli() {
   }
   fs.rmSync(surfaceHome, { recursive: true, force: true });
 
-  // Interactive path: four questions, answered over a pipe. This guards the
+  // Interactive path: five questions, answered over a pipe. This guards the
   // buffered-stdin regression where later answers were dropped and the flow
   // died on a false EOF.
   //
   // It was three questions in v0.1.0. Conciseness joined as a fourth in v0.2.0
-  // — a separate question, not a merged picker, because voice and level are
-  // independent axes and any voice pairs with any level (plan §8).
+  // and register as a fifth in v0.3.0 — separate questions, not merged pickers,
+  // because voice, level and register are independent axes and any one pairs
+  // with any other (plan §8). Anyone who wants none of them has `--defaults`.
   {
     const home = mkTemp('home');
     const project = mkTemp('project');
@@ -257,7 +258,7 @@ function evalCli() {
         // Pin the Codex version too: hook mode branches on it, and the eval must
     // not depend on whether this machine happens to have Codex installed.
     env: { ...process.env, SPEAKINGWORDS_HOME: home, SPEAKINGWORDS_CODEX_VERSION: '0.124.0' },
-        input: '1\n5\n2\n1\n', // memory -> both agents, local -> convo -> low
+        input: '1\n5\n2\n1\n2\n', // memory -> both agents, local -> convo -> low -> ste
         encoding: 'utf8',
         stdio: 'pipe',
       });
@@ -265,12 +266,14 @@ function evalCli() {
       err = String(e.stderr || e.message);
     }
     const prompted = (out.match(/Choose 1-/g) || []).length;
-    check('P2', 'interactive init asks exactly 4 questions', prompted === 4, err || `${prompted} prompts`);
+    check('P2', 'interactive init asks exactly 5 questions', prompted === 5, err || `${prompted} prompts`);
     check('P2', 'interactive init writes both targets',
       fs.existsSync(path.join(project, 'CLAUDE.local.md')) && fs.existsSync(path.join(project, 'AGENTS.md')), err);
     check('P2', 'interactive init honours the picked voice', out.includes('convo voice'), err);
     check('P2', 'interactive init honours the picked conciseness',
       out.includes('low conciseness'), err);
+    check('P2', 'interactive init honours the picked register',
+      out.includes('ste register'), err);
     fs.rmSync(home, { recursive: true, force: true });
     fs.rmSync(project, { recursive: true, force: true });
   }

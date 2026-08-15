@@ -1,0 +1,8 @@
+Run the command below. It prints the current branch.
+
+```sh
+git commit -m "don't ship this yet"
+echo "it's fine"
+```
+
+Use `printf "we'll retry"` if the shell is not bash.

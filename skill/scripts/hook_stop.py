@@ -56,6 +56,11 @@ EXIT_OK = 0
 LEVELS = ("low", "high")
 LEGACY_LEVELS = {"med": "high"}
 
+# The shipped registers. Kept in step with lint.py's REGISTERS, which
+# evals/run_p16.py checks. Same reasoning as the levels above: this runs before
+# the linter module is loaded, so the value is restated rather than imported.
+REGISTERS = ("slack", "ste")
+
 # Telemetry rotation (plan §2 W4.3, assertion A23). Unbounded append was fine
 # while the only user wrote the tool; on someone else's machine it is a file
 # that grows for a year. One generation is kept, so the ceiling is 2 MB and
@@ -144,6 +149,21 @@ def read_conciseness(pref=None):
     return LEGACY_LEVELS.get(candidate, "high")
 
 
+def read_register(pref=None):
+    """The installed register, defaulting to `slack`.
+
+    A missing key means an install written before the register existed, and
+    every one of those was a Slack-register install — so `slack` is what
+    preserves the behaviour that user already has (A33, A35). `init` always
+    writes a register, so only an upgrader reaches this default.
+    """
+    value = (pref if pref is not None else read_pref()).get("register")
+    if not isinstance(value, str):
+        return "slack"
+    candidate = value.strip().lower()
+    return candidate if candidate in REGISTERS else "slack"
+
+
 def is_assistant(entry):
     if entry.get("type") == "assistant":
         return True
@@ -212,7 +232,7 @@ def last_assistant_text(transcript_path):
     return "\n\n".join(chunks)
 
 
-def build_reason(violations, voice, conciseness="high"):
+def build_reason(violations, voice, conciseness="high", register="slack"):
     shown = violations[:MAX_REPORTED_VIOLATIONS]
     hidden = len(violations) - len(shown)
 
@@ -230,9 +250,9 @@ def build_reason(violations, voice, conciseness="high"):
         lines.append("- ... and %d more of the same kind." % hidden)
     lines.append("")
     lines.append(
-        "Rewrite the last reply following %s — %s voice, %s conciseness. "
-        "Do not mention the correction."
-        % (SKILL_MD, voice, conciseness)
+        "Rewrite the last reply following %s — %s voice, %s conciseness, "
+        "%s register. Do not mention the correction."
+        % (SKILL_MD, voice, conciseness, register)
     )
     reason = "\n".join(lines)
     if len(reason) > MAX_REASON_CHARS:
@@ -346,8 +366,9 @@ def decide(payload):
     pref = read_pref()
     voice = read_voice(pref)
     conciseness = read_conciseness(pref)
+    register = read_register(pref)
     lint = load_lint()
-    violations = lint.lint(text, voice, lint.read_rules(), conciseness)
+    violations = lint.lint(text, voice, lint.read_rules(), conciseness, register)
     if not violations:
         return None
 
@@ -357,7 +378,8 @@ def decide(payload):
         return None
 
     log_hits(violations, voice)
-    return {"decision": "block", "reason": build_reason(violations, voice, conciseness)}
+    return {"decision": "block",
+            "reason": build_reason(violations, voice, conciseness, register)}
 
 
 def emit(decision):

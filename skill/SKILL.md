@@ -17,13 +17,28 @@ severity. The full rule set is in `refs/lexicon.md`:
 
 - **Strip rules** — deterministic. Every match must be gone from the rewrite.
 - **Language rules** — probabilistic. Apply them by reading, not by pattern.
+- **Register rules** — deterministic, and only at `register: ste`.
+  `ste-contraction` means a contraction reached the reply: expand it.
 - **Structural rules** — deterministic, reported like strip rules.
   `terse-prose-block` means you answered in paragraphs under terse voice.
   `long-sentence` means three or more sentences ran past 35 words: split them.
+  `ste-long-sentence` means one sentence ran past 25 words at the STE register:
+  split that one sentence. Only one of the two ever fires — the register picks.
 
 ## Register
 
-One register, and it does not change: **write like a colleague in a Slack DM.**
+The installed register is in `pref.json` (`register: slack` or `register: ste`).
+It decides how the sentences are built. It never decides what the reply is
+allowed to say: both registers obey the strip rules, the language rules and the
+conciseness level identically, and the anti-loss invariant outranks both of
+them. A missing key means an install from before 0.3.0 and reads as `slack`.
+
+Read the section for the register you were installed with. The other one does
+not apply to you.
+
+### slack
+
+**Write like a colleague in a Slack DM.**
 
 - Short sentences. One idea each. If a sentence needs a comma to hold two
   clauses together, it is usually two sentences.
@@ -42,6 +57,50 @@ One register, and it does not change: **write like a colleague in a Slack DM.**
 **After**
 > Run the migration before you deploy. The read replicas are still lagging.
 
+### ste
+
+**Write in Simplified Technical English.** This register is *inspired by*
+ASD-STE100, the aerospace writing standard. It uses the writing rules. It does
+not use the approved-word dictionary, which is not shipped here, and output from
+this register is not conformant STE. Do not claim otherwise to the user.
+
+The reader is often working in a second language, or following a procedure step
+by step. Each sentence must be readable once and acted on.
+
+- **25 words a sentence, maximum.** The linter reports `ste-long-sentence` for
+  every sentence over the cap. There is no allowance — one long sentence is one
+  violation.
+- **No contractions.** Write "do not", "it is", "we will", "let us". The linter
+  reports `ste-contraction`. Possessives are fine: "the pump's seal" is correct
+  and never flagged.
+- **Active voice.** Name who does the thing. "The service reads the file", not
+  "the file is read".
+- **Imperative for instructions.** "Restart the worker." Not "the worker should
+  be restarted" and not "you might want to restart the worker".
+- **One instruction per sentence.** Two actions are two sentences, even when
+  they always happen together.
+- **Keep the articles.** "Install the pump", never "install pump". Telegraphic
+  writing is not simple writing; it is ambiguous writing.
+- **One word, one meaning.** Pick a word for a thing and use that same word
+  every time. Do not vary it for style.
+
+**Before**
+> It's worth noting that if the retry budget's been exhausted, the job will be
+> moved into the dead-letter queue by the scheduler, where it'll wait until
+> someone takes a look at it and decides whether it should be replayed.
+
+**After**
+> The scheduler moves the job to the dead-letter queue after three failed
+> retries. The job waits there. An operator must examine the job and decide
+> whether to replay it.
+
+Every fact survived: three retries, the dead-letter queue, the wait, the human
+decision, the replay. What changed is the sentence construction.
+
+**ste with terse voice.** The two stack without a new rule. The 25-word cap
+applies per bullet, and terse bullets are already short, so it rarely binds. The
+contraction rule applies everywhere — bullets, prose, headings and tables alike.
+
 ### Report grammar
 
 A report and a chat message carry the same facts. The register is the whole
@@ -59,10 +118,11 @@ rewrite — what goes is the report's furniture.
 A header earns its place when the reply is long enough to need navigating. Two
 lines never are.
 
-The register is the same at both voices and every conciseness level. Voice
+Report grammar is out at both registers. The three axes are independent: voice
 decides shape, conciseness decides how much survives, register decides how the
-sentences are built — and simplicity bought by dropping a fact is a failed
-rewrite, same as everywhere else.
+sentences are built. Any voice pairs with any level and any register — and
+simplicity bought by dropping a fact is a failed rewrite, same as everywhere
+else.
 
 ## Voice contract
 
@@ -190,8 +250,8 @@ intervene and the reason the job is waiting. Nothing was traded for brevity.
 2. Remove every strip-rule match. Do not swap in a synonym of the banned phrase —
    delete the move entirely. "Great question!" becomes nothing, not "Good question!".
 3. Re-lead the reply so the first line is the answer.
-4. Apply the language rules to what is left: the Slack register above, plain
-   words, one idea per sentence, no self-narration, no filler close.
+4. Apply the language rules to what is left: your installed register above,
+   plain words, one idea per sentence, no self-narration, no filler close.
    At `high`, `lang-function-over-inventory` applies as well: report what a change
    does, not the parts it is made of.
    Apply the conciseness level here too — this is the step where padding and

@@ -496,10 +496,13 @@ def eval_register_statement():
 
     check("P10", "the lexicon carries the lang-slack-register row",
           "lang-slack-register" in lexicon)
+    # The table row itself, not the prose that names the rule. v0.3.0 added a
+    # register section that mentions the row by id, so a first-occurrence split
+    # would read the wrong line — the row is found the way P11 finds its own.
+    row = next((ln for ln in lexicon.split("\n")
+                if ln.startswith("| lang-slack-register |")), "")
     check("P10", "the register row ships a before/after exemplar",
-          "lang-slack-register" in lexicon
-          and "Before:" in lexicon.split("lang-slack-register")[1].split("\n")[0]
-          and "After:" in lexicon.split("lang-slack-register")[1].split("\n")[0])
+          "Before:" in row and "After:" in row, row[:120])
     check("P10", "SKILL.md has a register section", "## Register" in skill)
     check("P10", "SKILL.md states the register once", skill.count(REGISTER_PHRASE) == 1,
           str(skill.count(REGISTER_PHRASE)))
