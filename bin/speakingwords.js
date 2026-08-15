@@ -45,6 +45,10 @@ function parseArgs(argv) {
       flags.mode = 'memory';
     } else if (arg === '--hook') {
       flags.mode = 'hook';
+    } else if (arg === '--both') {
+      // The third mode gets a bare flag like the other two, so a script picking
+      // it reads the same as a script picking either half.
+      flags.mode = 'both';
     } else if (arg === '-y' || arg === '--yes') {
       // Boolean, so it must not swallow the next argument as its value.
       flags.yes = true;
@@ -102,6 +106,19 @@ function agentsFor(selection) {
   return selection === 'both' ? ['claude', 'codex'] : [selection];
 }
 
+// The files a given mode writes for one agent, used to show the user what the
+// answer they are about to give costs them. `both` writes both layers, so it
+// names both files.
+function targetsFor(mode, agentId, scope, cwd) {
+  const hookTarget = agentId === 'claude'
+    ? hooks.settingsPath(scope, cwd)
+    : hooks.codexHooksPath(scope, cwd);
+  const memoryFile = adapters.memoryTarget(agentId, scope, cwd);
+  if (mode === 'hook') return [hookTarget];
+  if (mode === 'both') return [memoryFile, hookTarget];
+  return [memoryFile];
+}
+
 async function cmdInit(flags) {
   const version = readVersion();
   const cwd = process.cwd();
@@ -109,7 +126,7 @@ async function cmdInit(flags) {
   // Validate every flag value before asking anything. A bad `--voice` must not
   // cost the user two answered questions before it complains, and the complaint
   // has to reach stderr with nothing on stdout (A16, A18).
-  const givenMode = oneOf('mode', flags.mode, ['memory', 'hook']);
+  const givenMode = oneOf('mode', flags.mode, ['memory', 'hook', 'both']);
   const givenAgent = oneOf('agent', flags.agent, ['claude', 'codex', 'both']);
   const givenScope = oneOf('scope', flags.scope, ['local', 'global']);
   const givenVoice = oneOf('voice', flags.voice, ['terse', 'convo']);
@@ -136,6 +153,11 @@ async function cmdInit(flags) {
         label: 'hook',
         hint: 'lints every reply and bounces violations; stronger, larger footprint',
       },
+      {
+        value: 'both',
+        label: 'both',
+        hint: 'block prevents, hook enforces; the rules are stated once, never twice',
+      },
     ], 'memory');
   }
 
@@ -157,11 +179,7 @@ async function cmdInit(flags) {
     for (const candidate of candidates) {
       for (const candidateScope of ['local', 'global']) {
         const targets = agentsFor(candidate)
-          .map((id) => (mode === 'hook'
-            ? (id === 'claude'
-              ? hooks.settingsPath(candidateScope, cwd)
-              : hooks.codexHooksPath(candidateScope, cwd))
-            : adapters.memoryTarget(id, candidateScope, cwd)))
+          .flatMap((id) => targetsFor(mode, id, candidateScope, cwd))
           .join(' + ');
         const name = candidate === 'both'
           ? 'Both agents'
@@ -208,14 +226,11 @@ async function cmdInit(flags) {
   // --- Write ---
   const agentIds = agentsFor(agentSel);
 
-  if (mode === 'hook') {
-    return installHookMode({ agentIds, scope, voice, conciseness, version, cwd });
+  if (mode === 'hook' || mode === 'both') {
+    return installHookMode({ agentIds, scope, voice, conciseness, version, cwd, mode });
   }
 
-  const block = memory.renderBlock({ voice, conciseness, version });
-  const results = agentIds.map((id) =>
-    memory.writeBlock(adapters.memoryTarget(id, scope, cwd), block)
-  );
+  const { block, results } = writeMemoryLayer({ agentIds, scope, voice, conciseness, version, cwd });
   const prefFile = pref.writePref({ agents: agentIds, mode, scope, voice, conciseness, version });
 
   // --- Summary: say exactly what was written where ---
@@ -239,6 +254,19 @@ async function cmdInit(flags) {
   process.stdout.write(lines.join('\n'));
 }
 
+// Render the memory block once and write it to every agent's memory file.
+//
+// One renderer, one block, whichever mode asked for it. `both` gets the same
+// bytes memory mode gets — the block is not a summary of the hook, it is the
+// same contract stated where the model reads it every session.
+function writeMemoryLayer({ agentIds, scope, voice, conciseness, version, cwd }) {
+  const block = memory.renderBlock({ voice, conciseness, version });
+  const results = agentIds.map((id) =>
+    memory.writeBlock(adapters.memoryTarget(id, scope, cwd), block)
+  );
+  return { block, results };
+}
+
 // Hook mode installs two things and nothing else: the skill core at the
 // installed root, and one Stop-hook entry per agent. No memory block is
 // written — hook mode enforces the rules, so restating them as suggestions in
@@ -247,7 +275,15 @@ async function cmdInit(flags) {
 // A both-agents install ships ONE core (plan §7) at the Claude Code root, and
 // points the Codex wiring back at it. That is what makes a later `update` edit
 // one lexicon and change behaviour on both agents at once.
-function installHookMode({ agentIds, scope, voice, conciseness, version, cwd }) {
+//
+// `mode: both` runs through here too, and the difference is exactly two things
+// (plan v0.3.0 W6). The memory block is written as memory mode writes it, and
+// the SessionStart injector is not wired at all. The block already puts the
+// contract in context every session, so the injector would state it a second
+// time — the one thing `both` must never do (A31). Prevention stays with the
+// block, enforcement stays with the Stop hook, and no rule text is duplicated.
+function installHookMode({ agentIds, scope, voice, conciseness, version, cwd, mode = 'hook' }) {
+  const both = mode === 'both';
   const wantsCodex = agentIds.includes('codex');
 
   // Decide the Codex story before writing anything. If config.toml already has
@@ -277,28 +313,42 @@ function installHookMode({ agentIds, scope, voice, conciseness, version, cwd }) 
   const skillRoot = hooks.coreRoot(agentIds);
   hooks.installSkillCore(agentIds, skillRoot);
 
+  const memoryLayer = both
+    ? writeMemoryLayer({ agentIds, scope, voice, conciseness, version, cwd })
+    : null;
+
+  const injector = !both;
   const wirings = [];
   if (agentIds.includes('claude')) {
-    wirings.push({ agent: 'claude', kind: 'hook', ...hooks.installClaudeHook({ scope, cwd, skillRoot }) });
+    wirings.push({ agent: 'claude', kind: 'hook', ...hooks.installClaudeHook({ scope, cwd, skillRoot, injector }) });
   }
   if (wantsCodex) {
     wirings.push(codex.supportsHooks
-      ? { agent: 'codex', kind: 'hook', ...hooks.installCodexHook({ scope, cwd, skillRoot }) }
+      ? { agent: 'codex', kind: 'hook', ...hooks.installCodexHook({ scope, cwd, skillRoot, injector }) }
       : { agent: 'codex', kind: 'notify', ...hooks.installCodexNotify({ skillRoot }) });
   }
 
   const prefFile = pref.writePref({
-    agents: agentIds, mode: 'hook', scope, voice, conciseness, version,
+    agents: agentIds, mode, scope, voice, conciseness, version,
   });
 
   // --- Summary: say exactly what was wired where, per agent ---
   const label = agentIds.map((id) => adapters.getAdapter(id).label).join(' + ');
   const lines = [
     '',
-    `speakingwords ${version} installed — hook mode, ${voice} voice, `
+    `speakingwords ${version} installed — ${mode} mode, ${voice} voice, `
     + `${conciseness} conciseness, ${label}.`,
     '',
   ];
+
+  if (memoryLayer) {
+    for (const result of memoryLayer.results) {
+      const verb = { created: 'created', replaced: 'updated block in', appended: 'added block to' }[result.action];
+      lines.push(`  memory block   ${verb} ${result.path}`);
+    }
+    lines.push(`                 ${memory.countBullets(memoryLayer.block)} rule lines, inside <!-- speakingwords:start --> markers.`);
+    lines.push('');
+  }
 
   for (const wiring of wirings) {
     const name = adapters.getAdapter(wiring.agent).label;
@@ -346,8 +396,14 @@ function installHookMode({ agentIds, scope, voice, conciseness, version, cwd }) 
   lines.push('');
 
   // The injector rides along with every real hook wiring, on both agents. An
-  // audit-only install has no context channel to inject into, so it gets none.
-  if (enforcing.length > 0) {
+  // audit-only install has no context channel to inject into, so it gets none —
+  // and neither does `both`, where the block is already doing that job.
+  if (both) {
+    lines.push('  No SessionStart hook was wired. The memory block states the rules in every');
+    lines.push('  session already, so injecting them again would say the same thing twice.');
+    lines.push('  The block prevents, the Stop hook enforces, and nothing is stated twice.');
+    lines.push('');
+  } else if (enforcing.length > 0) {
     const lead = enforcing.length < wirings.length
       ? `On ${adapters.getAdapter(enforcing[0].agent).label}, the`
       : 'The';
@@ -392,7 +448,12 @@ function installHookMode({ agentIds, scope, voice, conciseness, version, cwd }) 
     lines.push('');
   }
 
-  lines.push('  No memory block was written. Hook mode enforces the rules directly.');
+  if (both) {
+    lines.push('  Re-running init replaces both layers in place. `unhook` takes the hook back');
+    lines.push('  out and keeps the block, leaving a working memory install.');
+  } else {
+    lines.push('  No memory block was written. Hook mode enforces the rules directly.');
+  }
   lines.push('');
   process.stdout.write(lines.join('\n'));
 }

@@ -62,9 +62,20 @@ def _env(home):
 
 # ---------------------------------------------------------------- provisioning
 
-def provision(voice, level):
-    """One install per (voice, level): temp HOME + project, real init."""
-    slug = "%s-%s" % (voice, level)
+def provision(voice, level, mode="hook"):
+    """One install per (voice, level, mode): temp HOME + project, real init.
+
+    `mode` is the seam E12 needs (plan v0.3.0 W6): the same prompt set has to run
+    against a hook-only install and a `both` install so the two bounce rates are
+    comparable. A hook install keeps its old slug and its old assertions, so the
+    trees already provisioned for the E8/E9 recordings are not invalidated.
+
+    The SessionStart assertion follows the mode rather than being fixed, because
+    at `both` an injector present is a defect, not a healthy install (A31): the
+    memory block carries the contract instead, and the rig must be measuring the
+    mode as it ships.
+    """
+    slug = "%s-%s" % (voice, level) if mode == "hook" else "%s-%s-%s" % (voice, level, mode)
     home = os.path.join(RIG, "installs", slug, "home")
     proj = os.path.join(RIG, "installs", slug, "proj")
     if os.path.isdir(os.path.join(proj, ".claude")):
@@ -73,7 +84,7 @@ def provision(voice, level):
     os.makedirs(proj, exist_ok=True)
     p = subprocess.run(
         ["node", os.path.join(ROOT, "bin", "speakingwords.js"), "init",
-         "--hook", "--agent", "claude", "--scope", "local",
+         "--%s" % mode, "--agent", "claude", "--scope", "local",
          "--voice", voice, "--conciseness", level],
         cwd=proj, env={**os.environ, "HOME": home},
         capture_output=True, text=True, timeout=60,
@@ -82,7 +93,13 @@ def provision(voice, level):
         raise SystemExit("provision %s failed: %s" % (slug, p.stderr[:400]))
     settings = json.load(open(os.path.join(proj, ".claude", "settings.json")))
     events = settings.get("hooks", {})
-    assert "Stop" in events and "SessionStart" in events, "hooks not wired: %s" % slug
+    assert "Stop" in events, "Stop hook not wired: %s" % slug
+    if mode == "both":
+        assert "SessionStart" not in events, "both mode wired an injector: %s" % slug
+        block = os.path.join(proj, "CLAUDE.local.md")
+        assert os.path.isfile(block), "both mode wrote no memory block: %s" % slug
+    else:
+        assert "SessionStart" in events, "injector not wired: %s" % slug
     skill = os.path.join(home, ".claude", "skills", "speakingwords")
     assert os.path.isfile(os.path.join(skill, "SKILL.md")), "skill core missing: %s" % slug
     return home, proj

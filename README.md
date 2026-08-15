@@ -91,9 +91,29 @@ exactly what it wrote and where.
 |------|-----------|-------------|-----------|
 | **memory** | Writes up to 9 point-form rule lines into your agent's memory file | Lower — suggestive; the agent can still drift | Plain instruction lines. No scripts, no hooks. |
 | **hook** | Installs a Stop hook that lints every finished reply and bounces violations | Higher — checked on every reply | A hook entry, the linter, the lexicon, a telemetry log |
+| **both** | Writes the block *and* wires the Stop hook | Highest — prevention that is always in context, enforcement on every reply | Both of the above, minus the SessionStart injector |
 
 Memory mode is honest about what it is: a suggestion the agent may ignore. Hook mode is
 the one that actually holds.
+
+#### Both: the block prevents, the hook enforces
+
+At `both` the two layers divide the work, and the division is total.
+
+- **The block prevents.** It is written exactly as memory mode writes it, so the rules are
+  in context every session, unconditionally.
+- **The Stop hook enforces.** It is wired exactly as hook mode wires it, so a reply that
+  drifts anyway is still bounced.
+- **No SessionStart injector is installed.** This is the point of the mode, not an
+  omission. The injector states the same rules the block already states, so wiring both
+  would put the contract in front of the model twice — tokens spent to teach nothing new.
+
+That also closes a gap hook mode has. A resumed Codex thread fires no `SessionStart`
+(openai/codex#24228), so hook mode's prevention is silently absent in that session. A
+block in `CLAUDE.md` or `AGENTS.md` is there either way.
+
+`unhook` on a both install is a downgrade, not a teardown: the hook comes out, the block
+stays, and `pref.json` says `memory`. Re-running `init --both` puts the hook back.
 
 ### Voice: what the output looks like
 
@@ -243,7 +263,7 @@ speakingwords init --hook --agent claude --scope global --voice terse --concisen
 
 | Flag | Values |
 |------|--------|
-| `--memory` / `--hook` | mode |
+| `--memory` / `--hook` / `--both` | mode |
 | `--agent` | `claude` · `codex` · `both` |
 | `--scope` | `local` · `global` |
 | `--voice` | `terse` · `convo` |
@@ -264,6 +284,10 @@ Under memory mode it prints one line explaining there is nothing to count — me
 installs no hook, so there is no telemetry — and exits 0. A half-written log line from a
 killed process is skipped and counted, never thrown.
 
+Under both mode it reports the layers first: whether the block is still in each memory
+file, whether the Stop hook is still wired, and that no SessionStart injector is installed.
+Then the same hit table as hook mode.
+
 ### update
 
 Tune the rules from plain English. Say what you want **less** of or **more** of:
@@ -279,8 +303,9 @@ speakingwords update "more robust"          # allow a word again
 
 Edits land in the installed `refs/lexicon.md`, which is the file the linter actually reads,
 so a new rule is live on the very next reply — no reinstall. Every touched file gets a
-`.bak` beside it first; **if the backup cannot be written, nothing is edited.** In memory
-mode the memory block is re-rendered too, so the two never disagree.
+`.bak` beside it first; **if the backup cannot be written, nothing is edited.** Where a
+memory block is installed — memory mode and both mode — it is re-rendered in the same pass,
+so the two never disagree.
 
 ### unhook (alias: unset)
 
@@ -291,6 +316,10 @@ exactly which files it will touch *before* touching them, and a bare Enter means
 
 What stays: `hits.jsonl` and the installed skill files. Your record of what was caught is
 yours; turning enforcement off is not deleting your history.
+
+On a both-mode install it is a downgrade rather than a removal: the hook comes out, the
+memory block stays untouched, and `pref.json` drops to `memory`. You are left with a
+working memory install, and `init --both` restores the hook.
 
 After removing, it greps every file it touched for `speakingwords` and prints the count. A
 non-zero count is a loud failure and a non-zero exit — a half-removed hook is worse than
