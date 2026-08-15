@@ -1,0 +1,143 @@
+speakingwords — v0.3.0 before/after examples
+=============================================
+
+Companion to plan/speakingwords-v0.3.0.md. Every "before" in examples 1–2 was
+run through the shipped skill/scripts/lint.py; every "after" lints clean.
+Example 3 illustrates the proposed STE register (not yet built). Example 4 is
+real output from lib/memory.js renderBlock().
+
+
+Example 1 — a real hook bounce
+------------------------------
+
+Before (unstyled reply, 120 words — bounced with 14 measured violations,
+exit 2: strip-great-question, strip-happy-to, strip-dive-into, strip-leverage,
+strip-seamless, strip-robust, strip-worth-noting, strip-whilst,
+strip-it-should-be-noted, strip-in-order-to, strip-prior-to,
+strip-let-me-know, strip-hope-this-helps, conc-in-other-words):
+
+    Great question! I'd be happy to explain what's going on here. Let me dive
+    into the config to understand the structure.
+
+    So, prior to the deployment it should be noted that the migration must be
+    applied first, whilst the read replicas remain in a lagging state. In
+    order to avoid downtime, we leverage a robust blue-green strategy that
+    seamlessly shifts traffic. In other words, the old pods keep serving until
+    the new ones pass their health checks.
+
+    It's worth noting that the timeout might possibly be a little too low in
+    some cases. To summarize, run the migration, then deploy, and the lag
+    should clear on its own.
+
+    I hope this helps! Let me know if you need anything else!
+
+After, convo voice (lints clean):
+
+    Run the migration before you deploy. The read replicas are still lagging.
+    To avoid downtime the deploy is blue-green: the old pods keep serving
+    until the new ones pass their health checks. The health-check timeout may
+    be too low. Run the migration, then deploy, and the lag clears on its own.
+
+After, terse voice — same facts, different shape (lints clean):
+
+    - Run the migration first, then deploy.
+    - Read replicas are still lagging.
+    - Deploy is blue-green: old pods keep serving until the new ones pass
+      health checks.
+    - Health-check timeout may be too low.
+    - Lag clears on its own after deploy.
+
+The cut lands past the conciseness band on purpose: nearly half the before was
+strip-rule matter, and strip removal is mandatory regardless of band. The band
+governs the prose that remains — Example 2 shows that.
+
+
+Example 2 — the conciseness dial, in-band (counts verified)
+-----------------------------------------------------------
+
+Before (65 words of padded, violation-free prose):
+
+    So basically what is happening here is that the cache entry is written
+    with a 60-second TTL. Once that TTL expires, what happens is that the
+    next request misses and goes to the database. That means, in effect, that
+    a burst of traffic right after expiry can all miss at once, which is the
+    thundering-herd problem, and that is why we added the request-coalescing
+    lock.
+
+low — 52 words, a 20% cut (band 10–20%). Decoration only; "what happens is
+that" survives because the budget was spent:
+
+    The cache entry is written with a 60-second TTL. Once that TTL expires,
+    what happens is that the next request misses and goes to the database. A
+    burst of traffic right after expiry can all miss at once, which is the
+    thundering-herd problem, and that is why we added the request-coalescing
+    lock.
+
+high — 43 words, a 34% cut (band 25–35%). Every fact survives, including the
+why of the lock:
+
+    The cache entry has a 60-second TTL. When it expires, the next request
+    misses and goes to the database. A traffic burst right after expiry can
+    all miss at once — the thundering-herd problem — which is why we added
+    the request-coalescing lock.
+
+
+Example 3 — the proposed STE register (v0.3.0, not yet built)
+-------------------------------------------------------------
+
+Before (the current Slack register at its best — a correct v0.2.0 reply,
+nothing bounces):
+
+    Don't restart the pump until the pressure's back under 30 psi — if you
+    restart it early, the seal can fail and you'll be looking at a full
+    teardown. Once it's under 30, restart it and watch the gauge for a couple
+    of minutes.
+
+After, register: ste — no contractions, every sentence ≤25 words, active
+voice, one instruction per sentence, articles kept:
+
+    Do not restart the pump until the pressure is below 30 psi. If you
+    restart the pump too early, the seal can fail. A failed seal makes a full
+    teardown necessary. When the pressure is below 30 psi, restart the pump.
+    Then monitor the gauge for two minutes.
+
+Register must be a swap, not a layer: the Slack register encourages the
+contractions STE forbids.
+
+
+Example 4 — what mode: both puts in context (real renderer output)
+------------------------------------------------------------------
+
+Rendered by lib/memory.js renderBlock() at convo + high. This is the block
+that mode: both writes into CLAUDE.md; because it is already in context every
+session, both skips the SessionStart injector (the no-duplication rule):
+
+    <!-- speakingwords:start -->
+    <!-- speakingwords v0.2.0 · memory mode · voice: convo · conciseness: high · managed block, edits here are overwritten -->
+    - Write like a colleague in a Slack DM. Short sentences, everyday words,
+      contractions where they read naturally. Technical terms stay — it is
+      the grammar around them that stays simple, never the vocabulary of the
+      domain.
+    - Lead with the answer. The first line resolves the question; reasoning
+      comes after.
+    - No self-narration. Do not say what you are about to do. Do it, then say
+      what you found.
+    - No filler at the edges. Never rate the question or the user; end on the
+      last piece of content.
+    - Concrete over vague. Replace intensifiers with the fact behind them,
+      and use at most one hedge per claim.
+    - Never use these words and phrases: (39 phrases, derived live from the
+      lexicon strip table).
+    - Voice is convo: prose is retained and brevity is not forced. Use point
+      form only where the content is genuinely a list.
+    - Conciseness is high: every sentence earns its place. Keep explanations,
+      cut elaborations.
+    - Report what a change does, not the parts it is made of. Keep the count
+      and a pointer — a file, a table, a diff — and drop the roll call.
+      Numbers, paths, code blocks and caveats always stay.
+    <!-- speakingwords:end -->
+
+In both mode this block is the prevention layer; the Stop hook from Example 1
+fires only when the model drifts anyway. E12 proves the block earns its place:
+fewer bounces with it than without. At STE the first bullet swaps for the STE
+line, so the 9-line budget (assertion A1) holds without spending a line.
