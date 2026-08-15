@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented here.
 
+## 2026-08-15
+
+### [1] — Release-notes history is complete: readers can see what every version gave them
+
+- `RELEASES.md`: backfill user-facing notes for v0.1.0 (initial release: style contract, memory/hook modes, two voices, Claude Code + Codex, checksummed installer) and v0.2.0 (conciseness levels, Slack register, help command, hardening), newest-first below v0.3.0
+
 ## History
 
 - 2026-08-14 — P0: repo init + v0.1.0 plan with build phasing
