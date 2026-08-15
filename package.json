@@ -1,6 +1,6 @@
 {
   "name": "speakingwords",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "An output parser for agent replies. Installs a style contract as configuration, in memory mode or hook mode, in a terse or conversational voice.",
   "license": "MIT",
   "bin": {
@@ -55,6 +55,6 @@
     "url": "https://github.com/ndisisnd/speakingwords/issues"
   },
   "dependencies": {
-    "speakingwords": "^0.2.0"
+    "speakingwords": "^0.3.0"
   }
 }

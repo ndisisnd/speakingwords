@@ -465,6 +465,22 @@ provisioned by the real installer rather than by pasting the contract into a pro
   that agrees with the terse contract, and a post-bounce measure that means something the
   hook can actually do — is its own piece of work. The deterministic layer, the conciseness
   bands and the anti-loss gate are all green and are what this release stands on.
+- **The STE judged axis is red; the STE deterministic gates are clean.** E11 rewrote the
+  fixture set inside real `register: ste` installs. The shipped linter found zero
+  contractions and zero over-cap sentences in 40 of 40 rewrites — the half the product
+  enforces is green. The judged active/imperative axis came in at 70% against an 85% gate,
+  and all twelve misses are the same rubric error: descriptive sentences ("the lockfile
+  was stale") marked down for not being imperatives, which STE itself does not ask of
+  description. Two real fact losses were also caught and are in the record. The rubric
+  needs an instruction/description split before a rerun means anything.
+- **The both-mode prevention gate is unreachable as written.** E12 asked for a strictly
+  lower bounce rate at `both` than at hook mode, and hook mode bounced zero of forty —
+  injection already prevents everything on this set with this model, and nothing is
+  strictly lower than zero. The data shows `both` prevents as well as hook mode; what the
+  mode uniquely promises — the contract stated once, survival of the Codex resume gap —
+  is deterministic and proven in `run_p15.py`. The gate needs a drifting baseline or a
+  "no worse, with the injector absent" definition. Both recordings live in
+  [`evals/records/e11-e12-v0.3.0.md`](evals/records/e11-e12-v0.3.0.md).
 
 ---
 

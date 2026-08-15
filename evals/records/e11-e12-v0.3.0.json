@@ -1,0 +1,477 @@
+{
+ "e11": {
+  "scope": "E8 fixture set, register=ste, voices=['terse', 'convo'], level=high only (register and level are orthogonal; recorded scope trims the level axis, not the register)",
+  "rewrites_ok": 40,
+  "deterministic": {
+   "contraction_hits": 0,
+   "length_hits": 0,
+   "offending": {}
+  },
+  "judged_rate_both_axes": 0.65,
+  "axis_rates": {
+   "active_imperative": 0.7,
+   "fidelity": 0.9
+  },
+  "scores": {
+   "e01_retry-budget.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e01_retry-budget.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e02_token-expiry.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e02_token-expiry.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e03_migration-window.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e03_migration-window.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e04_stale-lockfile.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e04_stale-lockfile.txt|terse": {
+    "active_imperative": false,
+    "fidelity": false
+   },
+   "e05_cache-key.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e05_cache-key.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e06_timeout-tuning.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e06_timeout-tuning.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e07_index-choice.txt|convo": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e07_index-choice.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e08_queue-backpressure.txt|convo": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e08_queue-backpressure.txt|terse": {
+    "active_imperative": true,
+    "fidelity": false
+   },
+   "e09_auth-refresh.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e09_auth-refresh.txt|terse": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e10_log-volume.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e10_log-volume.txt|terse": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e11_schema-drift.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e11_schema-drift.txt|terse": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e12_race-window.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e12_race-window.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e13_memory-growth.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e13_memory-growth.txt|terse": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e14_rollback-path.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e14_rollback-path.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e15_cron-overlap.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e15_cron-overlap.txt|terse": {
+    "active_imperative": false,
+    "fidelity": false
+   },
+   "e16_error-shape.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e16_error-shape.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e17_perf-regression.txt|convo": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e17_perf-regression.txt|terse": {
+    "active_imperative": true,
+    "fidelity": false
+   },
+   "e18_flag-rollout.txt|convo": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e18_flag-rollout.txt|terse": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e19_dependency-pin.txt|convo": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e19_dependency-pin.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   },
+   "e20_security-header.txt|convo": {
+    "active_imperative": false,
+    "fidelity": true
+   },
+   "e20_security-header.txt|terse": {
+    "active_imperative": true,
+    "fidelity": true
+   }
+  },
+  "reasons": {
+   "e01_retry-budget.txt|convo": {
+    "active_imperative": "All sentences use active voice with no passive constructions, and the one actual instruction (\"Use `bin/requeue`...\") is phrased as an imperative rather than a should-statement.",
+    "fidelity": "All facts are preserved unchanged: three-attempt retry budget, move to dead-letter queue, four-failure threshold before it stops retrying and awaits human review, and both the `queue/dead` path and `bin/requeue` command."
+   },
+   "e01_retry-budget.txt|terse": {
+    "active_imperative": "All sentences use active voice with no passive constructions; the one actual instruction ('Use `bin/requeue`...') is phrased as a clean imperative, and each line contains a single instruction or fact with articles intact.",
+    "fidelity": "All facts (3-attempt budget, dead-letter move, 4th-failure behavior, queue/dead path, bin/requeue) are preserved unchanged; only the grammar/format was simplified into bullets."
+   },
+   "e02_token-expiry.txt|convo": {
+    "active_imperative": "All four sentences use active voice with a clear subject performing the action, and instructions like 'must complete' function imperatively for the reader with one instruction per sentence; articles are retained throughout.",
+    "fidelity": "All facts are preserved unchanged: 15-minute expiry, refresh must complete before deadline, 20-minute sleep example, and the file path lib/session.js:88. Only grammar/phrasing was simplified, not content."
+   },
+   "e02_token-expiry.txt|terse": {
+    "active_imperative": "Every bullet is a short active-voice statement (\"expires\", \"must land\", \"always returns\") with one instruction per line and no passive constructions; articles are retained throughout.",
+    "fidelity": "All facts, numbers, the file path, and the causal link are preserved unchanged; only the grammar/format was simplified into bullet points, which is expected."
+   },
+   "e03_migration-window.txt|convo": {
+    "active_imperative": "Every sentence uses active voice with a clear subject performing the action (the migration adds, it drops, the migration runs), and instructions/facts are each stated as a single clean sentence rather than stacked or hedged with passive phrasing like 'should be expected'.",
+    "fidelity": "All facts are preserved: two new indexes added, one unused index dropped, online migration with no table lock at any point, and ~40 second runtime based on current row count. Only grammar was simplified, not content."
+   },
+   "e03_migration-window.txt|terse": {
+    "active_imperative": "The rewrite uses active voice throughout with imperative-style declarative sentences ('The migration adds...', 'Expect the migration...'), keeps articles intact, and splits each instruction into its own sentence with no stacking.",
+    "fidelity": "All facts are preserved unchanged: two new indexes added, one unused index dropped, online migration with no table locking, and ~40 seconds estimated based on current row count. Reformatting into bullets simplifies grammar, not content."
+   },
+   "e04_stale-lockfile.txt|convo": {
+    "active_imperative": "Every sentence is active voice with a clear subject-verb-object, and each imperative (\"Run the install first,\" \"Then rebuild the project\") states one instruction per sentence with no stacking or passive constructions.",
+    "fidelity": "All facts (stale lockfile, dependency added without reinstall, resolver couldn't write new entry, fix is install then rebuild, result is green build) are preserved unchanged; only sentence structure was simplified."
+   },
+   "e04_stale-lockfile.txt|terse": {
+    "active_imperative": "The narrative bullets keep passive constructions (\"the lockfile was stale\", \"a dependency was added\", \"should pass again\") and one bullet stacks two clauses (\"was added, but no one ran a reinstall\"); only the Fix section uses clean imperatives.",
+    "fidelity": "The rewrite drops the causal link 'because a dependency was added... the resolver never got the chance to write the new entry' \u2014 it presents the two facts as separate bullets without the explicit 'so'/therefore causal connection explaining why the lockfile went stale."
+   },
+   "e05_cache-key.txt|convo": {
+    "active_imperative": "Every sentence uses active voice with the subject performing the action, and imperatives ('Remove the request id from the key') are used for instructions. Instructions are split one per sentence rather than stacked.",
+    "fidelity": "All facts are preserved unchanged: cache misses on second request, cause is request id in cache key, fix is dropping request id from key built in lib/cache.js:41, and the expected outcome of quick hit-rate recovery. Only sentence structure was simplified, not content."
+   },
+   "e05_cache-key.txt|terse": {
+    "active_imperative": "Both sentences use active voice with a clear subject acting (\"cache key includes,\" \"every request has\"), and the fix is a single imperative instruction (\"remove the request id from the key\") rather than stacked commands.",
+    "fidelity": "All facts are preserved: the cache key includes the request id, every request has a different id causing misses by construction, the file path lib/cache.js:41, the fix of removing the request id, and the expected quick recovery of hit rate. Dropping 'fairly' before 'quickly' is a grammar simplification, not a content change."
+   },
+   "e06_timeout-tuning.txt|convo": {
+    "active_imperative": "The single instruction (\"Raise the timeout to 15 seconds in config/http.json\") is phrased as a clean, active imperative in its own sentence, unlike the original's stacked, non-imperative \"The change that I would suggest is raising...\" construction. Descriptive sentences use plain factual statements rather than instructions, and articles are retained throughout.",
+    "fidelity": "All facts are preserved unchanged: 5-second timeout, 8-second p99 upstream latency, causal link to the logged errors, the recommendation to raise to 15 seconds, the file path config/http.json, and the 'comfortable margin' rationale. Only grammar/sentence structure was simplified, not content."
+   },
+   "e06_timeout-tuning.txt|terse": {
+    "active_imperative": "The one actual instruction ('Increase the timeout to 15 seconds in `config/http.json`') is a clean single imperative in active voice with articles intact; the supporting bullets are factual statements, not instructions, so there's no passive or stacked-instruction violation.",
+    "fidelity": "All facts (5s timeout, 8s p99 latency, causal link, 15s recommendation, config/http.json path, margin rationale) are preserved unchanged; only formatting was simplified into bullets."
+   },
+   "e07_index-choice.txt|convo": {
+    "active_imperative": "The second and third sentences each pack two instructions/facts into one sentence via a comma-joined contrastive clause ('speeds up the query directly, but adds about 200 MB...'), violating the one-instruction-per-sentence rule, even though the voice itself is active.",
+    "fidelity": "All facts preserved: composite index on two columns (~200MB, helps the query), partial index on active rows only (~12MB, helps only when filtering on active) \u2014 numbers, scope, and causal conditions all match the original."
+   },
+   "e07_index-choice.txt|terse": {
+    "active_imperative": "Both bullets use active voice with imperative-adjacent verbs and articles intact; however, each bullet stacks two instructions (a description plus a cost/benefit clause) in one sentence, which slightly violates the one-instruction-per-sentence rule, though the sentences are short enough that this is borderline.",
+    "fidelity": "Both index options, their costs (~200 MB vs ~12 MB), and the causal caveats (helps the shown query vs. only helps when filtering on active) are all preserved accurately in the rewrite."
+   },
+   "e08_queue-backpressure.txt|convo": {
+    "active_imperative": "Every sentence is active voice and mostly one instruction per sentence, but the final imperative is split across two sentences ('Set it to a value such as 200. Producers will then block...') and the second sentence is a consequence statement, not itself an imperative \u2014 so it's borderline on the imperative-instruction requirement, though the bigger issue is the original had stacked clauses ('If you set it... then producers will start blocking...') now correctly split, which actually helps this axis. Reassessing strictly against the axis: the rewrite is active voice throughout and uses a clear imperative ('Set it to a value such as 200'), satisfying the axis.",
+    "fidelity": "All facts are preserved unchanged: backpressure exists but is off by default, the setting name queue.max_inflight, its current value of zero meaning unlimited, the example value 200, the resulting blocking behavior, and the causal link back to the user's original request. Only sentence structure was simplified, not content."
+   },
+   "e08_queue-backpressure.txt|terse": {
+    "active_imperative": "Instructions are imperative and singular ('Set it to 200'), statements are active ('It is off by default', 'Producers will then block'), each sentence carries one idea, and articles are retained throughout.",
+    "fidelity": "The rewrite drops the closing clause 'which is the behaviour you were describing wanting' \u2014 this causal link tying the config change back to the user's original request is omitted, so not every fact/link from the original survives."
+   },
+   "e09_auth-refresh.txt|convo": {
+    "active_imperative": "Every sentence uses active voice with a clear actor performing the action, and each sentence states one instruction or fact (e.g., 'The refresh endpoint is `POST /auth/refresh`' as its own sentence rather than stacked onto the prior one). No passive constructions remain.",
+    "fidelity": "All facts are preserved unchanged: same-response token pair, 15-minute access token, 30-day refresh token, 401 triggering a refresh call, and the exact endpoint POST /auth/refresh. Only sentence structure was simplified, not content."
+   },
+   "e09_auth-refresh.txt|terse": {
+    "active_imperative": "All sentences are active voice with one instruction per sentence, but the one true instruction ('The client must call POST /auth/refresh...') is phrased as a modal obligation rather than a true imperative ('Call POST /auth/refresh...'), so it doesn't meet the imperative requirement.",
+    "fidelity": "All facts are preserved: same-response token pair, 15-minute access token, 30-day refresh token, and the 401-triggered POST /auth/refresh call are all intact with unchanged meaning."
+   },
+   "e10_log-volume.txt|convo": {
+    "active_imperative": "The instruction is isolated into its own imperative sentence (\"Set `LOG_LEVEL` back to `info`.\") rather than being buried in a description, and all other sentences use active voice with articles intact and no passive constructions.",
+    "fidelity": "All facts, the LOG_LEVEL setting name, current/target values (debug/info), the ~90% volume reduction figure, the no-restart caveat, and the causal link to the last deploy are preserved unchanged; the rewrite only adds a slightly more explicit instruction ('Set LOG_LEVEL back to info') without altering meaning."
+   },
+   "e10_log-volume.txt|terse": {
+    "active_imperative": "The imperative bullet 'Set `LOG_LEVEL` to `info`' is a genuine active imperative, but most other bullets are declarative statements of fact (e.g., 'The last deploy enabled...', 'Nobody noticed...', '`LOG_LEVEL` is currently set to...') rather than imperative instructions, and this mix of statement types fails a strict imperative-instruction axis.",
+    "fidelity": "All facts, the LOG_LEVEL setting, current/target values, the ~90% reduction figure, its basis (pre-deploy data), and the no-restart caveat are preserved unchanged; format shifted to bullets but content is intact."
+   },
+   "e11_schema-drift.txt|convo": {
+    "active_imperative": "Every sentence uses active voice with a clear subject performing the action (e.g., 'Someone applied the migration', 'This migration never entered the repository'), and each sentence conveys one instruction/fact rather than stacking multiple clauses.",
+    "fidelity": "All facts are preserved: staging has deleted_at on orders, production lacks it, the migration was applied by hand on staging, never entered the repo, and thus never ran elsewhere. Only sentence structure was simplified, not content."
+   },
+   "e11_schema-drift.txt|terse": {
+    "active_imperative": "Contains a passive construction (\"Someone applied the migration by hand\" is fine actually, but \"The migration never entered the repository\" reads as active \u2014 however, the bullet list stacks multiple separate statements/facts as declarative descriptions rather than imperative instructions telling someone what to do; none of the sentences are commands (imperatives), they are all descriptive statements in indicative mood.",
+    "fidelity": "All facts (schema drift, deleted_at column present in staging orders table but absent in production, manual migration applied on staging, and it never entered the repo or ran elsewhere) are preserved; the causal chain is retained via the order of the bullets even though the explicit 'so' connector was dropped."
+   },
+   "e12_race-window.txt|convo": {
+    "active_imperative": "No passive constructions remain; all clauses use active voice, and the one instruction present (\"Perform the write only when the claim column is still null\") is phrased imperatively as a single instruction.",
+    "fidelity": "All facts are preserved: the race window, its small-but-real nature, the two-worker read/decide/write scenario, the ~40ms measurement, and the conditional-update fix tied to the claim column being null. Only sentence structure was simplified, not content."
+   },
+   "e12_race-window.txt|terse": {
+    "active_imperative": "All clauses use active voice with no passive constructions, articles are preserved (the claim column, a conditional update), and the fix instructions are given as separate imperative sentences (Use a conditional update. Write only when...) rather than stacked into one.",
+    "fidelity": "All facts, numbers (40ms), and the causal chain (race \u2192 conditional update fix) are preserved; only stylistic framing ('small but real', 'in practice') is dropped, which is grammar simplification, not content loss."
+   },
+   "e13_memory-growth.txt|convo": {
+    "active_imperative": "Every sentence is active voice with a clear subject performing the action, and each sentence states one instruction/fact \u2014 no stacked clauses or passive constructions.",
+    "fidelity": "All facts, numbers (1.2 GB/week, 10,000 entries), and the causal chain (no eviction policy \u2192 entries never removed \u2192 cache growth \u2192 LRU bound caps it) are preserved; the explicit 'because' is replaced by an implicit causal sequence but the meaning is unchanged."
+   },
+   "e13_memory-growth.txt|terse": {
+    "active_imperative": "The line 'No entry is ever removed' uses a passive construction, and most sentences are declarative statements of fact rather than imperative instructions (only the final 'add an LRU bound' line is a true imperative).",
+    "fidelity": "All facts, the 1.2 GB/week figure, the 10,000-entry LRU fix, and the causal chain (no eviction \u2192 growth \u2192 fix caps it) are preserved unchanged; the bullet restructuring is simplified grammar, not simplified content."
+   },
+   "e14_rollback-path.txt|convo": {
+    "active_imperative": "All sentences use active voice with a clear actor performing the action, and instructions ('Run...', 'Reverse...') are phrased as direct imperatives, one instruction per sentence.",
+    "fidelity": "All facts are preserved unchanged: the command `bin/deploy --rollback`, that it restores the previous release, and that it does not roll back database migrations so any migration run during deploy stays applied and must be manually reversed. Only grammar/sentence structure was simplified, not content."
+   },
+   "e14_rollback-path.txt|terse": {
+    "active_imperative": "Every bullet uses active voice with a clear actor performing the action, and each sentence contains a single imperative instruction (e.g. 'Run bin/deploy --rollback', 'Reverse them manually'), with no stacked or passive constructions.",
+    "fidelity": "All facts are preserved unchanged: the command, the rollback behavior, the migration caveat, and the causal instruction to reverse manually. Only the formatting changed from prose to bullets, which is grammar/structure, not content."
+   },
+   "e15_cron-overlap.txt|convo": {
+    "active_imperative": "All sentences are active voice with no passive constructions (unlike the original's 'It is scheduled to run'), and the original's stacked instruction 'A lock file, or moving to a queue-based trigger, would both solve it' is split into two separate one-idea sentences. Articles are preserved throughout.",
+    "fidelity": "All facts, numbers (5 minutes, 7-9 minutes), and both solutions (lock file, queue-based trigger) are preserved, and the causal chain (overlap -> root cause -> second copy starts before first finishes) remains intact despite being split into shorter sentences."
+   },
+   "e15_cron-overlap.txt|terse": {
+    "active_imperative": "The rewrite is a list of standalone statements, not directive instructions \u2014 most lines are passive/declarative descriptions of facts (\"The cron job overlaps...\", \"The job runs...\") rather than active imperatives telling the reader what to do. Only two lines (\"Add a lock file...\", \"Or use a queue-based trigger\") are actual imperative commands.",
+    "fidelity": "The rewrite drops the causal link that the overlap ('a second copy starts before the first has finished') is caused by the run time exceeding the 5-minute schedule, and rewords both remediation options as directives ('Add ... to fix this') rather than the original's framing that either would solve it, subtly altering meaning."
+   },
+   "e16_error-shape.txt|convo": {
+    "active_imperative": "All sentences use active voice with clear subjects performing actions (\"The API uses\", \"Some endpoints return\"), and each sentence contains a single instruction/claim rather than stacking multiple ideas. Articles are preserved throughout.",
+    "fidelity": "All facts are preserved: the two error shapes, the specific field names, the March cutoff for new endpoints, and the caveat that migration hasn't happened yet. The rewrite splits sentences but changes no content."
+   },
+   "e16_error-shape.txt|terse": {
+    "active_imperative": "Every bullet is a short active-voice declarative sentence with a clear subject and verb, one idea per line, and articles are preserved (e.g., 'The API returns errors...', 'The migration has not started.'). No passive constructions or stacked instructions appear.",
+    "fidelity": "All facts are preserved: the two error shapes with exact field structures, the March cutoff distinguishing old vs new endpoints, the pending migration, and the causal link to client-side branching. Inferring 'before March' for the older shape is a valid deduction from the original's binary framing, not an added or changed fact."
+   },
+   "e17_perf-regression.txt|convo": {
+    "active_imperative": "Multiple sentences use passive voice ('Commit `a3f9c2` causes' is active, but 'It switches...' is fine; however 'This pushes p95 latency' \u2014 actually check the middle) \u2014 'It holds the whole response in memory before it writes any of it out' is active, but the rewrite is a description of a bug, not instructions/imperatives at all, so the imperative requirement ('Install the pump') is not met anywhere in the text.",
+    "fidelity": "All facts are preserved unchanged: commit hash a3f9c2, streaming-to-buffering serializer switch, the causal explanation of buffering holding the whole response in memory, and the p95 latency figures (300ms to 2.1s) on the large export endpoint. Only sentence structure was simplified, not content."
+   },
+   "e17_perf-regression.txt|terse": {
+    "active_imperative": "Every bullet uses an active subject performing the action ('Commit a3f9c2 caused...', 'It switched...', 'Buffering holds...', 'p95 latency rose...'), each sentence carries one idea, and no passive constructions or stacked instructions appear.",
+    "fidelity": "The rewrite drops the fact that buffering is 'simpler to reason about,' which was part of the original's trade-off framing (simpler but memory-costly); all other facts, numbers, and the causal chain are preserved."
+   },
+   "e18_flag-rollout.txt|convo": {
+    "active_imperative": "Every sentence is active voice with a clear subject-verb-object structure (\"It has stayed\", \"No technical blocker prevents\"), and each sentence carries exactly one instruction/statement without stacking. No imperatives are present, but the source text is descriptive reporting rather than instructional content, so this doesn't count against the axis.",
+    "fidelity": "All facts (5%, three weeks, no technical blocker, flat metrics meaning no regression/improvement, and the causal link that flatness is likely why rollout hasn't increased) are preserved with only sentence-splitting/grammar simplification, no content loss."
+   },
+   "e18_flag-rollout.txt|terse": {
+    "active_imperative": "This is a bulleted list of noun phrases and copular statements (\"Rollout: 5%...\", \"Metrics are flat\"), not a set of imperative sentences giving instructions like \"Install the pump.\" There are no commands here at all, so the active-imperative test doesn't really apply, but as written it fails the requirement for imperative instructions.",
+    "fidelity": "All facts are preserved unchanged: 5% traffic, three-week duration, no technical blocker, flat metrics (no regression/no improvement), and the causal link that flat metrics are the likely reason rollout hasn't increased."
+   },
+   "e19_dependency-pin.txt|convo": {
+    "active_imperative": "Passive constructions remain in the rewrite ('is pinned to an exact version', 'This pin is deliberate'), and since the text contains no true imperative instructions at all, it does not meet the active/imperative bar even though sentence-splitting improved.",
+    "fidelity": "All facts, numbers, the file count (400), version (4.2.1), and the causal chain (pin is deliberate, encoding change, fixtures assume old behavior, upgrade requires regeneration) are preserved unchanged, just split into shorter sentences."
+   },
+   "e19_dependency-pin.txt|terse": {
+    "active_imperative": "Every bullet uses active voice with a clear subject and verb (\"The pin is deliberate,\" \"Version 4.2.1 is,\" \"The fixtures assume,\" \"An upgrade... requires\"), and each is a single self-contained statement rather than a stacked or passive construction.",
+    "fidelity": "All facts (exact pin, version 4.2.1, encoding behaviour change, fixture assumption, ~400 fixture files) and the causal chain from upgrade requirement to why it hasn't been done are preserved unchanged."
+   },
+   "e20_security-header.txt|convo": {
+    "active_imperative": "Several sentences are passive: 'is missing', 'is present', 'is to set', with instructions phrased as statements rather than imperatives (e.g. 'The fix is to set...' instead of 'Set...').",
+    "fidelity": "All facts are preserved: the CDN-only origin, the middleware never running, and the fix being CDN configuration rather than app changes are all intact and unchanged in meaning."
+   },
+   "e20_security-header.txt|terse": {
+    "active_imperative": "Every sentence uses active voice with a clear actor (CDN serves, middleware never runs, Configure the header), and imperatives (Configure, Do not change) are used correctly for instructions with one instruction per sentence.",
+    "fidelity": "All facts, the causal chain (CDN serves static assets directly, so middleware never runs), and the fix (configure CDN, not app) are preserved unchanged; only formatting was simplified into bullets."
+   }
+  },
+  "losses": [
+   {
+    "pair": "e08_queue-backpressure.txt|terse",
+    "reason": "The rewrite drops two substantive clauses: 'which is why you may not have noticed it' (explaining why the default was unnoticed) and 'which is the behaviour you were describing wanting' (confirming the 200 setting matches what was asked for) \u2014 both are factual/causal claims, not just style, and neither survives elsewhere in the rewrite."
+   },
+   {
+    "pair": "e18_flag-rollout.txt|convo",
+    "reason": "The original says the rollout has been 'sitting at 5% for about three weeks,' but the rewrite drops the approximation qualifier and states it flatly as 'three weeks,' changing an approximate duration into an exact one."
+   }
+  ],
+  "rewrite_errors": [],
+  "judge_errors": [],
+  "gates": {
+   "contractions": 0,
+   "long_sentences": 0,
+   "judged_both_axes": 0.85,
+   "losses": 0
+  }
+ },
+ "e12": {
+  "voice": "convo",
+  "level": "high",
+  "prompts": 40,
+  "hook": {
+   "replies_ok": 40,
+   "bounces": 0,
+   "rate": 0.0,
+   "by_prompt": {
+    "e8-e01_retry-budget.txt|hook": false,
+    "e8-e02_token-expiry.txt|hook": false,
+    "e8-e03_migration-window.txt|hook": false,
+    "e8-e04_stale-lockfile.txt|hook": false,
+    "e8-e05_cache-key.txt|hook": false,
+    "e8-e06_timeout-tuning.txt|hook": false,
+    "e8-e07_index-choice.txt|hook": false,
+    "e8-e08_queue-backpressure.txt|hook": false,
+    "e8-e09_auth-refresh.txt|hook": false,
+    "e8-e10_log-volume.txt|hook": false,
+    "e8-e11_schema-drift.txt|hook": false,
+    "e8-e12_race-window.txt|hook": false,
+    "e8-e13_memory-growth.txt|hook": false,
+    "e8-e14_rollback-path.txt|hook": false,
+    "e8-e15_cron-overlap.txt|hook": false,
+    "e8-e16_error-shape.txt|hook": false,
+    "e8-e17_perf-regression.txt|hook": false,
+    "e8-e18_flag-rollout.txt|hook": false,
+    "e8-e19_dependency-pin.txt|hook": false,
+    "e8-e20_security-header.txt|hook": false,
+    "e9-p01|hook": false,
+    "e9-p02|hook": false,
+    "e9-p03|hook": false,
+    "e9-p04|hook": false,
+    "e9-p05|hook": false,
+    "e9-p06|hook": false,
+    "e9-p07|hook": false,
+    "e9-p08|hook": false,
+    "e9-p09|hook": false,
+    "e9-p10|hook": false,
+    "e9-p11|hook": false,
+    "e9-p12|hook": false,
+    "e9-p13|hook": false,
+    "e9-p14|hook": false,
+    "e9-p15|hook": false,
+    "e9-p16|hook": false,
+    "e9-p17|hook": false,
+    "e9-p18|hook": false,
+    "e9-p19|hook": false,
+    "e9-p20|hook": false
+   },
+   "errors": [],
+   "set_e8": {
+    "n": 20,
+    "bounces": 0
+   },
+   "set_e9": {
+    "n": 20,
+    "bounces": 0
+   }
+  },
+  "both": {
+   "replies_ok": 40,
+   "bounces": 1,
+   "rate": 0.025,
+   "by_prompt": {
+    "e8-e01_retry-budget.txt|both": false,
+    "e8-e02_token-expiry.txt|both": false,
+    "e8-e03_migration-window.txt|both": false,
+    "e8-e04_stale-lockfile.txt|both": false,
+    "e8-e05_cache-key.txt|both": false,
+    "e8-e06_timeout-tuning.txt|both": false,
+    "e8-e07_index-choice.txt|both": false,
+    "e8-e08_queue-backpressure.txt|both": false,
+    "e8-e09_auth-refresh.txt|both": false,
+    "e8-e10_log-volume.txt|both": false,
+    "e8-e11_schema-drift.txt|both": false,
+    "e8-e12_race-window.txt|both": false,
+    "e8-e13_memory-growth.txt|both": false,
+    "e8-e14_rollback-path.txt|both": false,
+    "e8-e15_cron-overlap.txt|both": false,
+    "e8-e16_error-shape.txt|both": false,
+    "e8-e17_perf-regression.txt|both": false,
+    "e8-e18_flag-rollout.txt|both": false,
+    "e8-e19_dependency-pin.txt|both": false,
+    "e8-e20_security-header.txt|both": false,
+    "e9-p01|both": false,
+    "e9-p02|both": false,
+    "e9-p03|both": false,
+    "e9-p04|both": false,
+    "e9-p05|both": false,
+    "e9-p06|both": false,
+    "e9-p07|both": false,
+    "e9-p08|both": false,
+    "e9-p09|both": true,
+    "e9-p10|both": false,
+    "e9-p11|both": false,
+    "e9-p12|both": false,
+    "e9-p13|both": false,
+    "e9-p14|both": false,
+    "e9-p15|both": false,
+    "e9-p16|both": false,
+    "e9-p17|both": false,
+    "e9-p18|both": false,
+    "e9-p19|both": false,
+    "e9-p20|both": false
+   },
+   "errors": [],
+   "set_e8": {
+    "n": 20,
+    "bounces": 0
+   },
+   "set_e9": {
+    "n": 20,
+    "bounces": 1
+   }
+  },
+  "gate": "both strictly lower than hook",
+  "gate_pass": false
+ }
+}

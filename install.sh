@@ -24,12 +24,12 @@
 
 set -eu
 
-VERSION_HINT="0.2.0"
+VERSION_HINT="0.3.0"
 
 # Set by the maintainer at release time — the published npm tarball for this
 # version, and its SHA-256.
-DEFAULT_URL="https://registry.npmjs.org/speakingwords/-/speakingwords-0.2.0.tgz"
-DEFAULT_SHA256="996807c75d12b73782a55e0c366589d3cb78638d61636b0c7f57373b326c7dec"
+DEFAULT_URL="https://registry.npmjs.org/speakingwords/-/speakingwords-0.3.0.tgz"
+DEFAULT_SHA256="31e720ade72163a2101c5b37dc7d6708d7693f62d242e1d452dbb92e933e53c8"
 
 URL="${SPEAKINGWORDS_URL:-$DEFAULT_URL}"
 SHA256="${SPEAKINGWORDS_SHA256:-$DEFAULT_SHA256}"

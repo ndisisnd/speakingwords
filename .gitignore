@@ -8,3 +8,4 @@ hits.jsonl.1
 .claude/
 sessions.json
 __pycache__/
+evals/rig2/

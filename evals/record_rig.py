@@ -44,10 +44,16 @@ _done = [0]
 
 
 def _token():
+    # Two shapes are accepted: an env-style CLAUDE_CODE_OAUTH_TOKEN= line, or
+    # the bare token on its own line — which is what `claude setup-token`
+    # hands over to paste.
     for line in open(TOKEN_FILE, encoding="utf-8"):
+        line = line.strip()
         if line.startswith("CLAUDE_CODE_OAUTH_TOKEN="):
-            return line.strip().split("=", 1)[1]
-    raise SystemExit("token file has no CLAUDE_CODE_OAUTH_TOKEN line")
+            return line.split("=", 1)[1]
+        if line.startswith("sk-ant-"):
+            return line
+    raise SystemExit("token file has no CLAUDE_CODE_OAUTH_TOKEN line or bare sk-ant- token")
 
 
 def _env(home):
@@ -62,8 +68,12 @@ def _env(home):
 
 # ---------------------------------------------------------------- provisioning
 
-def provision(voice, level, mode="hook"):
-    """One install per (voice, level, mode): temp HOME + project, real init.
+def provision(voice, level, mode="hook", register="slack"):
+    """One install per (voice, level, mode, register): temp HOME + project, real init.
+
+    `register` is the seam E11 needs (plan v0.3.0 W5): the STE rewrites have to
+    run inside an install whose pref, hook and injected contract all say `ste`.
+    A slack install keeps its old slug, so nothing already provisioned moves.
 
     `mode` is the seam E12 needs (plan v0.3.0 W6): the same prompt set has to run
     against a hook-only install and a `both` install so the two bounce rates are
@@ -76,6 +86,8 @@ def provision(voice, level, mode="hook"):
     mode as it ships.
     """
     slug = "%s-%s" % (voice, level) if mode == "hook" else "%s-%s-%s" % (voice, level, mode)
+    if register != "slack":
+        slug += "-%s" % register
     home = os.path.join(RIG, "installs", slug, "home")
     proj = os.path.join(RIG, "installs", slug, "proj")
     if os.path.isdir(os.path.join(proj, ".claude")):
@@ -85,7 +97,7 @@ def provision(voice, level, mode="hook"):
     p = subprocess.run(
         ["node", os.path.join(ROOT, "bin", "speakingwords.js"), "init",
          "--%s" % mode, "--agent", "claude", "--scope", "local",
-         "--voice", voice, "--conciseness", level],
+         "--voice", voice, "--conciseness", level, "--register", register],
         cwd=proj, env={**os.environ, "HOME": home},
         capture_output=True, text=True, timeout=60,
     )
@@ -102,6 +114,8 @@ def provision(voice, level, mode="hook"):
         assert "SessionStart" in events, "injector not wired: %s" % slug
     skill = os.path.join(home, ".claude", "skills", "speakingwords")
     assert os.path.isfile(os.path.join(skill, "SKILL.md")), "skill core missing: %s" % slug
+    prefj = json.load(open(os.path.join(skill, "pref.json")))
+    assert prefj.get("register", "slack") == register, "wrong register: %s" % slug
     return home, proj
 
 
