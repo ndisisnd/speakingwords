@@ -55,6 +55,6 @@
     "url": "https://github.com/ndisisnd/speakingwords/issues"
   },
   "dependencies": {
-    "speakingwords": "^0.3.0"
+    "speakingwords": "^0.3.1"
   }
 }
