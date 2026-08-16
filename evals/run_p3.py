@@ -185,6 +185,12 @@ def eval_hook(voice="terse"):
             check("A6", "lint.py exits 2 on the violating fixture", code == 2, "exit %s" % code)
             check(
                 "P3",
+                "(a) reason opens with the compact violated-rules line",
+                reason.startswith("Rule(s) violated: "),
+                reason[:80],
+            )
+            check(
+                "P3",
                 "(a) reason names every rule id the linter found",
                 rule_ids and all(rid in reason for rid in rule_ids),
                 "missing: %s" % [r for r in rule_ids if r not in reason],

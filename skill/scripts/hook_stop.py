@@ -233,26 +233,36 @@ def last_assistant_text(transcript_path):
 
 
 def build_reason(violations, voice, conciseness="high", register="slack"):
+    """Compact bounce feedback (v0.3.1).
+
+    Line 1 names the distinct rules in one line — `Rule(s) violated: a, b`.
+    One quoted-match bullet per reported violation follows, so the rewrite
+    still has a locator for each span. A single-line rewrite instruction
+    closes it. conciseness and register no longer print, but stay in the
+    signature: decide() passes them and lint.py reads them from pref.json.
+    """
     shown = violations[:MAX_REPORTED_VIOLATIONS]
     hidden = len(violations) - len(shown)
 
-    lines = [
-        "speakingwords: your last reply broke %d style rule%s."
-        % (len(violations), "" if len(violations) == 1 else "s"),
-        "",
-    ]
+    # Line 1: distinct rule ids, in first-seen order.
+    seen = []
+    for item in violations:
+        rule = item.get("rule", "?")
+        if rule not in seen:
+            seen.append(rule)
+    lines = ["Rule(s) violated: %s" % ", ".join(seen)]
+
+    # One compact match snippet per reported violation — the rewrite locator.
     for item in shown:
         lines.append(
-            "- %s (%s): %s"
-            % (item.get("rule", "?"), item.get("severity", "warn"), json.dumps(item.get("match", "")))
+            "- %s: %s" % (item.get("rule", "?"), json.dumps(item.get("match", "")))
         )
     if hidden > 0:
         lines.append("- ... and %d more of the same kind." % hidden)
-    lines.append("")
+
     lines.append(
-        "Rewrite the last reply following %s — %s voice, %s conciseness, "
-        "%s register. Do not mention the correction."
-        % (SKILL_MD, voice, conciseness, register)
+        "Rewrite the last reply following %s — %s voice. "
+        "Do not mention the correction." % (SKILL_MD, voice)
     )
     reason = "\n".join(lines)
     if len(reason) > MAX_REASON_CHARS:

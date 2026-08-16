@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented here.
 
+## 2026-08-17
+
+### [3] — Rule-violation feedback is terse: one header line plus a locator per rule
+
+- `skill/scripts/hook_stop.py`: `build_reason()` now opens with `Rule(s) violated: <rules>`, keeps one quoted-match bullet per rule as a rewrite locator, and shortens the rewrite instruction to a single line
+  - Changed: severity tags and the conciseness/register clauses no longer print — they are still logged to `hits.jsonl` and read from `pref.json`
+- `evals/run_p3.py`: add an assertion pinning the compact `Rule(s) violated:` header; the full P3 set stays green
+- `plan/speakingwords-v0.3.1.md`: record the change, the Path A/B decision, and the release ritual
+
 ## 2026-08-16
 
 ### [2] — Existing users see what v0.3.0 gave them, right at the top of the README
