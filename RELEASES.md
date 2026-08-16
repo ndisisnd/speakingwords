@@ -2,6 +2,13 @@
 
 What's new for you, release by release.
 
+## 0.3.1 — 2026-08-17
+
+> Style corrections take up far less room in your terminal. When the checker catches a slip and asks for a rewrite, it now shows one compact line naming the broken rules — plus a short quote of each phrase to fix — instead of a multi-line report.
+
+### 📈 Improved
+- When the style checker bounces a reply for a rewrite, its feedback is now a single line — `Rule(s) violated: …` — followed by one short quote per offending phrase. You see exactly what to fix without a wall of text scrolling past.
+
 ## 0.3.0 — 2026-08-15
 
 > You can now switch your assistant's writing to a Simplified Technical English register — short sentences, no contractions, active voice — built for runbooks, procedures, and readers whose first language isn't English. A new "both" mode pairs the always-present style reminder with active enforcement, and never states a rule twice.
